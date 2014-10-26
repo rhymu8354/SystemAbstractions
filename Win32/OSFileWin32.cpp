@@ -7,14 +7,14 @@
  * Copyright (c) 2013-2014 by Richard Walters
  */
 
-#include "../OSFile.h"
-
 /**
  * Windows.h should always be included first because other Windows header
  * files, such as KnownFolders.h, don't always define things properly if
  * you don't include Windows.h first.
  */
 #include <Windows.h>
+
+#include "../OSFile.h"
 
 #include <io.h>
 #include <stddef.h>
