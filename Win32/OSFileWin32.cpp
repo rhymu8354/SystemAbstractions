@@ -17,8 +17,16 @@
 #include "../OSFile.h"
 
 #include <io.h>
+#include <KnownFolders.h>
+#include <ShlObj.h>
+#include <Shlwapi.h>
 #include <stddef.h>
 #include <stdio.h>
+#include <StringExtensions/StringExtensions.h>
+
+// Ensure we link with Windows shell utility libraries.
+#pragma comment(lib, "Shlwapi")
+#pragma comment(lib, "Shell32")
 
 namespace Files {
 
@@ -87,6 +95,86 @@ namespace Files {
     void OSFile::Destroy() {
         Close();
         (void)DeleteFileA(_path.c_str());
+    }
+
+    std::string OSFile::GetExeDirectory() {
+        std::vector< char > exeDirectory(MAX_PATH + 1);
+        GetModuleFileNameA(NULL, &exeDirectory[0], static_cast< DWORD >(exeDirectory.size()));
+        PathRemoveFileSpecA(&exeDirectory[0]);
+        return std::string(&exeDirectory[0]);
+    }
+
+    std::string OSFile::GetResourcesDirectory() {
+        return GetExeDirectory();
+    }
+
+    std::string OSFile::GetUserSavedGamesDirectory(const std::string& nameKey) {
+        PWSTR pathWide;
+        if (SHGetKnownFolderPath(FOLDERID_SavedGames, 0, NULL, &pathWide) != S_OK) {
+            return "";
+        }
+        std::string pathNarrow(StringExtensions::wcstombs(pathWide));
+        CoTaskMemFree(pathWide);
+        return StringExtensions::sprintf("%s/%s", pathNarrow.c_str(), nameKey.c_str());
+    }
+
+    void OSFile::ListDirectory(const std::string& directory, std::vector< std::string >& list) {
+        std::string directoryWithSeparator(directory);
+        if (
+            (directoryWithSeparator.length() > 0)
+            && (directoryWithSeparator[directoryWithSeparator.length() - 1] != '\\')
+            && (directoryWithSeparator[directoryWithSeparator.length() - 1] != '/')
+        ) {
+            directoryWithSeparator += '\\';
+        }
+        std::string listGlob(directoryWithSeparator);
+        listGlob += "*.*";
+        WIN32_FIND_DATAA findFileData;
+        const HANDLE searchHandle = FindFirstFileA(listGlob.c_str(), &findFileData);
+        list.clear();
+        if (searchHandle != INVALID_HANDLE_VALUE) {
+            do {
+                std::string filePath(directoryWithSeparator);
+                filePath += findFileData.cFileName;
+                list.push_back(filePath);
+            } while (FindNextFileA(searchHandle, &findFileData) == TRUE);
+            FindClose(searchHandle);
+        }
+    }
+
+    void OSFile::DeleteDirectory(const std::string& directory) {
+        std::string directoryWithSeparator(directory);
+        if (
+            (directoryWithSeparator.length() > 0)
+            && (directoryWithSeparator[directoryWithSeparator.length() - 1] != '\\')
+            && (directoryWithSeparator[directoryWithSeparator.length() - 1] != '/')
+        ) {
+            directoryWithSeparator += '\\';
+        }
+        std::string listGlob(directoryWithSeparator);
+        listGlob += "*.*";
+        WIN32_FIND_DATAA findFileData;
+        const HANDLE searchHandle = FindFirstFileA(listGlob.c_str(), &findFileData);
+        if (searchHandle != INVALID_HANDLE_VALUE) {
+            do {
+                std::string name(findFileData.cFileName);
+                if (
+                    (name == ".")
+                    || (name == "..")
+                ) {
+                    continue;
+                }
+                std::string filePath(directoryWithSeparator);
+                filePath += name;
+                if (PathIsDirectoryA(filePath.c_str())) {
+                    DeleteDirectory(filePath.c_str());
+                } else {
+                    (void)DeleteFileA(filePath.c_str());
+                }
+            } while (FindNextFileA(searchHandle, &findFileData) == TRUE);
+            FindClose(searchHandle);
+        }
+        (void)RemoveDirectoryA(directory.c_str());
     }
 
     uint64_t OSFile::GetSize() const {

@@ -16,6 +16,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 namespace Files {
 
@@ -77,6 +78,60 @@ namespace Files {
          * This method destroys the file in the file system.
          */
         void Destroy();
+
+        /**
+         * This method returns the directory containing the application's
+         * executable image.
+         *
+         * @return
+         *     The directory containing the application's executable image
+         *     is returned.
+         */
+        static std::string GetExeDirectory();
+
+        /**
+         * This method returns the directory containing the application's
+         * resource files.
+         *
+         * @return
+         *     The directory containing the application's resource files
+         *     is returned.
+         */
+        static std::string GetResourcesDirectory();
+
+        /**
+         * This method returns the directory containing the user's
+         * saved game files.
+         *
+         * @param[in] nameKey
+         *     This is a short string identifying the game, to use for
+         *     purposes such as naming the directory containg the user's
+         *     saved games.
+         *
+         * @return
+         *     The directory containing the user's saved game files
+         *     is returned.
+         */
+        static std::string GetUserSavedGamesDirectory(const std::string& nameKey);
+
+        /**
+         * This method lists the contents of a directory.
+         *
+         * @param[in] directory
+         *     This is the directory to list.
+         *
+         * @param[out] list
+         *     This is where to store the list of directory entries.
+         */
+        static void ListDirectory(const std::string& directory, std::vector< std::string >& list);
+
+        /**
+         * This method deletes a directory and all its contents.
+         *
+         * @param[in] directory
+         *     This is the directory to delete.
+         */
+        static void DeleteDirectory(const std::string& directory);
 
         // IFile
     public:
