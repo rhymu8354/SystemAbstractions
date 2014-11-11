@@ -31,6 +31,20 @@ namespace StringExtensions {
      */
     std::string sprintf(const char* format, ...);
 
+    /**
+     * This method converts a given string from wide (UNICODE) to
+     * narrow (multibyte) format, using the currently set locale.
+     *
+     * This method has the same semantics as the C function "wcstombs".
+     *
+     * @param[in] src
+     *     This is the string to convert.
+     *
+     * @return
+     *     The converted string is returned.
+     */
+    std::string wcstombs(const std::wstring& src);
+
 }
 
 #endif /* STRING_EXTENSIONS_H */
