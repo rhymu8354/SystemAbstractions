@@ -9,6 +9,7 @@
 
 #include "../OSFile.h"
 
+#include <CoreFoundation/CoreFoundation.h>
 #include <dirent.h>
 #include <mach-o/dyld.h>
 #include <errno.h>
@@ -105,8 +106,12 @@ namespace Files {
         return std::string(&buffer[0]);
     }
 
-    std::string OSFile::GetResourcesDirectory() {
-        return StringExtensions::sprintf("%s/../Resources", GetExeDirectory().c_str());
+    std::string OSFile::GetResourceFilePath(const std::string& name) {
+        CFURLRef appUrlRef;
+        CFStringRef nameCfString = CFStringCreateWithCString(NULL, name.c_str(), kCFStringEncodingUTF8);
+        appUrlRef = CFBundleCopyResourceURL(CFBundleGetMainBundle(), nameCfString, NULL, NULL);
+        CFStringRef filePathRef = CFURLCopyPath(appUrlRef);
+        return CFStringGetCStringPtr(filePathRef, kCFStringEncodingUTF8);
     }
 
     std::string OSFile::GetUserSavedGamesDirectory(const std::string& nameKey) {

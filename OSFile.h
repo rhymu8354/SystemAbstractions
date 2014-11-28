@@ -90,14 +90,16 @@ namespace Files {
         static std::string GetExeDirectory();
 
         /**
-         * This method returns the directory containing the application's
-         * resource files.
+         * This method returns the path to the application resource file
+         * with the given name.
+         *
+         * @param[in] name
+         *     This is the name of the application resource file to find.
          *
          * @return
-         *     The directory containing the application's resource files
-         *     is returned.
+         *     The path to the given application resource file is returned.
          */
-        static std::string GetResourcesDirectory();
+        static std::string GetResourceFilePath(const std::string& name);
 
         /**
          * This method returns the directory containing the user's
