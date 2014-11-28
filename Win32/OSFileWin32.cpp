@@ -105,7 +105,7 @@ namespace Files {
     }
 
     std::string OSFile::GetResourceFilePath(const std::string& name) {
-        return StringExtensions::sprintf("%s/%s", GetExeDirectory().c_str(), name.c_str()));
+        return StringExtensions::sprintf("%s/%s", GetExeDirectory().c_str(), name.c_str());
     }
 
     std::string OSFile::GetUserSavedGamesDirectory(const std::string& nameKey) {
