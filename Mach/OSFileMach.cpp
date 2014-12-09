@@ -110,8 +110,12 @@ namespace Files {
         CFURLRef appUrlRef;
         CFStringRef nameCfString = CFStringCreateWithCString(NULL, name.c_str(), kCFStringEncodingUTF8);
         appUrlRef = CFBundleCopyResourceURL(CFBundleGetMainBundle(), nameCfString, NULL, NULL);
-        CFStringRef filePathRef = CFURLCopyPath(appUrlRef);
-        return CFStringGetCStringPtr(filePathRef, kCFStringEncodingUTF8);
+        if (appUrlRef == nullptr) {
+            return "";
+        } else {
+            CFStringRef filePathRef = CFURLCopyPath(appUrlRef);
+            return CFStringGetCStringPtr(filePathRef, kCFStringEncodingUTF8);
+        }
     }
 
     std::string OSFile::GetUserSavedGamesDirectory(const std::string& nameKey) {
