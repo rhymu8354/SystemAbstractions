@@ -137,16 +137,16 @@ namespace Files {
 
         // IFile
     public:
-        virtual uint64_t GetSize() const;
-        virtual bool SetSize(uint64_t size);
-        virtual uint64_t GetPosition() const;
-        virtual void SetPosition(uint64_t position);
-        virtual size_t Peek(Buffer& buffer, size_t numBytes = 0, size_t offset = 0) const;
-        virtual size_t Peek(void* buffer, size_t numBytes) const;
-        virtual size_t Read(Buffer& buffer, size_t numBytes = 0, size_t offset = 0);
-        virtual size_t Read(void* buffer, size_t numBytes);
-        virtual size_t Write(const Buffer& buffer, size_t numBytes = 0, size_t offset = 0);
-        virtual size_t Write(const void* buffer, size_t numBytes);
+        virtual uint64_t GetSize() const override;
+        virtual bool SetSize(uint64_t size) override;
+        virtual uint64_t GetPosition() const override;
+        virtual void SetPosition(uint64_t position) override;
+        virtual size_t Peek(Buffer& buffer, size_t numBytes = 0, size_t offset = 0) const override;
+        virtual size_t Peek(void* buffer, size_t numBytes) const override;
+        virtual size_t Read(Buffer& buffer, size_t numBytes = 0, size_t offset = 0) override;
+        virtual size_t Read(void* buffer, size_t numBytes) override;
+        virtual size_t Write(const Buffer& buffer, size_t numBytes = 0, size_t offset = 0) override;
+        virtual size_t Write(const void* buffer, size_t numBytes) override;
 
         // Private methods
     private:
