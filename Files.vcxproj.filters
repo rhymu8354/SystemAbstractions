@@ -24,12 +24,18 @@
     <ClInclude Include="OSFile.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="StringFile.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="OSFile.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Win32\OSFileWin32.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StringFile.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

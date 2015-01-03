@@ -20,12 +20,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="OSFile.cpp" />
+    <ClCompile Include="StringFile.cpp" />
     <ClCompile Include="Win32\OSFileWin32.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="OSFile.h" />
     <ClInclude Include="IFile.h" />
     <ClInclude Include="IFileCollection.h" />
+    <ClInclude Include="StringFile.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{4BD919D4-D1A4-4B92-8223-B78559F4C524}</ProjectGuid>
