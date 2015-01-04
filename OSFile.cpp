@@ -11,6 +11,10 @@
 
 namespace Files {
 
+    std::string OSFile::GetPath() const {
+        return _path;
+    }
+
     size_t OSFile::Peek(Buffer& buffer, size_t numBytes, size_t offset) const {
         if (numBytes == 0) {
             numBytes = buffer.size();

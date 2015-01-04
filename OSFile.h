@@ -80,6 +80,14 @@ namespace Files {
         void Destroy();
 
         /**
+         * This method returns the path of the file.
+         *
+         * @return
+         *     The path of the file is returned.
+         */
+        std::string GetPath() const;
+
+        /**
          * This method returns the directory containing the application's
          * executable image.
          *
