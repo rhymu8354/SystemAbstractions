@@ -51,7 +51,8 @@ namespace Files {
         bool IsExisting();
 
         /**
-         * This method opens the file, expecting it to already exist.
+         * This method opens the file for reading, expecting it to
+         * already exist.
          *
          * @return
          *     A flag indicating whether or not the method succeeded
@@ -65,8 +66,8 @@ namespace Files {
         void Close();
 
         /**
-         * This method opens the file, creating it or destroying its
-         * previous contents, if any.
+         * This method opens the file for reading and writing, creating
+         * it if it does not already exist.
          *
          * @return
          *     A flag indicating whether or not the method succeeded

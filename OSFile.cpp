@@ -37,7 +37,7 @@ namespace Files {
             numBytes = buffer.size() - offset;
         }
         if (numBytes == 0) {
-            return true;
+            return 0;
         }
         return Write(&buffer[offset], numBytes);
     }

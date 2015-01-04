@@ -55,7 +55,7 @@ namespace Files {
             numBytes = buffer.size();
         }
         if (numBytes == 0) {
-            return true;
+            return 0;
         }
         return Peek(&buffer[offset], numBytes);
     }
@@ -73,7 +73,7 @@ namespace Files {
             numBytes = buffer.size();
         }
         if (numBytes == 0) {
-            return true;
+            return 0;
         }
         return Read(&buffer[offset], numBytes);
     }
@@ -92,7 +92,7 @@ namespace Files {
             numBytes = buffer.size();
         }
         if (numBytes == 0) {
-            return true;
+            return 0;
         }
         if (_position + numBytes > _value.length()) {
             _value.resize(_position + numBytes);
@@ -104,7 +104,7 @@ namespace Files {
 
     size_t StringFile::Write(const void* buffer, size_t numBytes) {
         if (numBytes == 0) {
-            return true;
+            return 0;
         }
         if (_position + numBytes > _value.length()) {
             _value.resize(_position + numBytes);
