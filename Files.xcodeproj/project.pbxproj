@@ -12,6 +12,8 @@
 		BB8470C11A0AE3F2000B45D6 /* OSFileMach.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BB8470BC1A0AE3F2000B45D6 /* OSFileMach.cpp */; };
 		BB8470C21A0AE3F2000B45D6 /* OSFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BB8470BD1A0AE3F2000B45D6 /* OSFile.cpp */; };
 		BB8470C31A0AE3F2000B45D6 /* OSFile.h in Headers */ = {isa = PBXBuildFile; fileRef = BB8470BE1A0AE3F2000B45D6 /* OSFile.h */; };
+		BB9AA6C11A5A5FAD0072E88C /* StringFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BB9AA6BF1A5A5FAD0072E88C /* StringFile.cpp */; };
+		BB9AA6C21A5A5FAD0072E88C /* StringFile.h in Headers */ = {isa = PBXBuildFile; fileRef = BB9AA6C01A5A5FAD0072E88C /* StringFile.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -21,6 +23,8 @@
 		BB8470BC1A0AE3F2000B45D6 /* OSFileMach.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OSFileMach.cpp; sourceTree = "<group>"; };
 		BB8470BD1A0AE3F2000B45D6 /* OSFile.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OSFile.cpp; sourceTree = "<group>"; };
 		BB8470BE1A0AE3F2000B45D6 /* OSFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSFile.h; sourceTree = "<group>"; };
+		BB9AA6BF1A5A5FAD0072E88C /* StringFile.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StringFile.cpp; sourceTree = "<group>"; };
+		BB9AA6C01A5A5FAD0072E88C /* StringFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StringFile.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -43,6 +47,8 @@
 				BB8470BD1A0AE3F2000B45D6 /* OSFile.cpp */,
 				BB8470BE1A0AE3F2000B45D6 /* OSFile.h */,
 				BB8470B31A0AE3D8000B45D6 /* Products */,
+				BB9AA6BF1A5A5FAD0072E88C /* StringFile.cpp */,
+				BB9AA6C01A5A5FAD0072E88C /* StringFile.h */,
 			);
 			sourceTree = "<group>";
 		};
@@ -70,6 +76,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				BB8470C01A0AE3F2000B45D6 /* IFileCollection.h in Headers */,
+				BB9AA6C21A5A5FAD0072E88C /* StringFile.h in Headers */,
 				BB8470BF1A0AE3F2000B45D6 /* IFile.h in Headers */,
 				BB8470C31A0AE3F2000B45D6 /* OSFile.h in Headers */,
 			);
@@ -127,6 +134,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				BB8470C11A0AE3F2000B45D6 /* OSFileMach.cpp in Sources */,
+				BB9AA6C11A5A5FAD0072E88C /* StringFile.cpp in Sources */,
 				BB8470C21A0AE3F2000B45D6 /* OSFile.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
