@@ -80,16 +80,28 @@ namespace Files {
 
     bool OSFile::Create() {
         Close();
-        _impl->handle = CreateFileA(
-            _path.c_str(),
-            GENERIC_READ | GENERIC_WRITE,
-            FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
-            NULL,
-            OPEN_ALWAYS,
-            FILE_ATTRIBUTE_NORMAL,
-            NULL
-        );
-        return (_impl->handle != INVALID_HANDLE_VALUE);
+        bool createPathTried = false;
+        while (_impl->handle == INVALID_HANDLE_VALUE) {
+            _impl->handle = CreateFileA(
+                _path.c_str(),
+                GENERIC_READ | GENERIC_WRITE,
+                FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
+                NULL,
+                OPEN_ALWAYS,
+                FILE_ATTRIBUTE_NORMAL,
+                NULL
+            );
+            if (_impl->handle == INVALID_HANDLE_VALUE) {
+                if (
+                    createPathTried
+                    || !CreatePath(_path)
+                ) {
+                    return false;
+                }
+                createPathTried = true;
+            }
+        }
+        return true;
     }
 
     void OSFile::Destroy() {
