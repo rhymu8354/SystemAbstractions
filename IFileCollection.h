@@ -78,6 +78,18 @@ namespace Files {
          *     successfully is returned.
          */
         virtual bool Read(const std::string& fileName, void* fileContents, size_t maxFileContents) = 0;
+
+        /**
+         * This method lists the contents of a directory of files within
+         * the collection.
+         *
+         * @param[in] directory
+         *     This is the directory to list.
+         *
+         * @param[out] list
+         *     This is where to store the list of directory entries.
+         */
+        virtual void ListDirectory(const std::string& directory, std::vector< std::string >& list) = 0;
     };
 
 }
