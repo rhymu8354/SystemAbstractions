@@ -63,7 +63,7 @@ namespace Files {
         Close();
         _impl->handle = CreateFileA(
             _path.c_str(),
-            GENERIC_READ,
+            GENERIC_READ | GENERIC_WRITE,
             FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
             NULL,
             OPEN_EXISTING,
