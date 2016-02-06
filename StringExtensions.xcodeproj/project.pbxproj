@@ -7,14 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		BB2E69DF1C6696B400EFD7DD /* StringExtensions.hpp in Headers */ = {isa = PBXBuildFile; fileRef = BB2E69DE1C6696B400EFD7DD /* StringExtensions.hpp */; };
 		BB8470EA1A0B4843000B45D6 /* StringExtensions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BB8470E81A0B4843000B45D6 /* StringExtensions.cpp */; };
-		BB8470EB1A0B4843000B45D6 /* StringExtensions.hpp in Headers */ = {isa = PBXBuildFile; fileRef = BB8470E91A0B4843000B45D6 /* StringExtensions.hpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		BB2E69DE1C6696B400EFD7DD /* StringExtensions.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = StringExtensions.hpp; sourceTree = "<group>"; };
 		BB8470E11A0B4824000B45D6 /* libStringExtensions.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libStringExtensions.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		BB8470E81A0B4843000B45D6 /* StringExtensions.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StringExtensions.cpp; sourceTree = "<group>"; };
-		BB8470E91A0B4843000B45D6 /* StringExtensions.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StringExtensions.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -31,9 +31,9 @@
 		BB8470D81A0B4824000B45D6 = {
 			isa = PBXGroup;
 			children = (
-				BB8470E81A0B4843000B45D6 /* StringExtensions.cpp */,
-				BB8470E91A0B4843000B45D6 /* StringExtensions.hpp */,
 				BB8470E21A0B4824000B45D6 /* Products */,
+				BB8470E81A0B4843000B45D6 /* StringExtensions.cpp */,
+				BB2E69DE1C6696B400EFD7DD /* StringExtensions.hpp */,
 			);
 			sourceTree = "<group>";
 		};
@@ -52,7 +52,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BB8470EB1A0B4843000B45D6 /* StringExtensions.hpp in Headers */,
+				BB2E69DF1C6696B400EFD7DD /* StringExtensions.hpp in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
