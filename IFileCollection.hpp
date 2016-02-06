@@ -1,15 +1,12 @@
-#ifndef FILES_I_FILE_COLLECTION_H
-#define FILES_I_FILE_COLLECTION_H
-#ifndef __cplusplus
-#error This is a C++ only header file
-#endif
+#ifndef FILES_I_FILE_COLLECTION_HPP
+#define FILES_I_FILE_COLLECTION_HPP
 
 /**
- * @file IFileCollection.h
+ * @file IFileCollection.hpp
  *
  * This module declares the Files::IFileCollection interface.
  *
- * Copyright (c) 2013-2014 by Richard Walters
+ * Copyright (c) 2013-2016 by Richard Walters
  */
 
 #include <stdint.h>
@@ -94,4 +91,4 @@ namespace Files {
 
 }
 
-#endif /* FILES_I_FILE_COLLECTION_H */
+#endif /* FILES_I_FILE_COLLECTION_HPP */

@@ -3,10 +3,10 @@
  *
  * This module contains the implementation of the StringFile class.
  *
- * Copyright (c) 2013-2015 by Richard Walters
+ * Copyright (c) 2013-2016 by Richard Walters
  */
 
-#include "StringFile.h"
+#include "StringFile.hpp"
 
 #include <algorithm>
 #include <string>

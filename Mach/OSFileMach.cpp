@@ -4,17 +4,17 @@
  * This module contains the Mac (e.g. Mac OS X) specific part of the
  * implementation of the Files::OSFile class.
  *
- * Copyright (c) 2013-2014 by Richard Walters
+ * Copyright (c) 2013-2016 by Richard Walters
  */
 
-#include "../OSFile.h"
+#include "../OSFile.hpp"
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <dirent.h>
 #include <mach-o/dyld.h>
 #include <errno.h>
 #include <pwd.h>
-#include <StringExtensions/StringExtensions.h>
+#include <StringExtensions/StringExtensions.hpp>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>

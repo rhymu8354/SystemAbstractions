@@ -1,18 +1,15 @@
-#ifndef FILES_O_S_FILE_H
-#define FILES_O_S_FILE_H
-#ifndef __cplusplus
-#error This is a C++ only header file
-#endif
+#ifndef FILES_O_S_FILE_HPP
+#define FILES_O_S_FILE_HPP
 
 /**
- * @file OSFile.h
+ * @file OSFile.hpp
  *
  * This module declares the Files::OSFile class.
  *
- * Copyright (c) 2013-2014 by Richard Walters
+ * Copyright (c) 2013-2016 by Richard Walters
  */
 
-#include "IFile.h"
+#include "IFile.hpp"
 
 #include <memory>
 #include <string>
@@ -176,4 +173,4 @@ namespace Files {
 
 }
 
-#endif /* FILES_O_S_FILE_H */
+#endif /* FILES_O_S_FILE_HPP */

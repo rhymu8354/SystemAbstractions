@@ -1,15 +1,12 @@
-#ifndef FILES_I_FILE_H
-#define FILES_I_FILE_H
-#ifndef __cplusplus
-#error This is a C++ only header file
-#endif
+#ifndef FILES_I_FILE_HPP
+#define FILES_I_FILE_HPP
 
 /**
- * @file IFile.h
+ * @file IFile.hpp
  *
  * This module declares the Files::IFile interface.
  *
- * Copyright (c) 2013-2014 by Richard Walters
+ * Copyright (c) 2013-2016 by Richard Walters
  */
 
 #include <stddef.h>
@@ -178,4 +175,4 @@ namespace Files {
 
 }
 
-#endif /* FILES_I_FILE_H */
+#endif /* FILES_I_FILE_HPP */

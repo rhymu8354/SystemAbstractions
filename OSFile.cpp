@@ -4,10 +4,10 @@
  * This module contains the platform-independent part of the
  * implementation of the Files::OSFile class.
  *
- * Copyright (c) 2013-2014 by Richard Walters
+ * Copyright (c) 2013-2016 by Richard Walters
  */
 
-#include "OSFile.h"
+#include "OSFile.hpp"
 
 namespace Files {
 

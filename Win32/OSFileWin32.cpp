@@ -4,7 +4,7 @@
  * This module contains the Win32 specific part of the 
  * implementation of the Files::OSFile class.
  *
- * Copyright (c) 2013-2014 by Richard Walters
+ * Copyright (c) 2013-2016 by Richard Walters
  */
 
 /**
@@ -14,7 +14,7 @@
  */
 #include <Windows.h>
 
-#include "../OSFile.h"
+#include "../OSFile.hpp"
 
 #include <io.h>
 #include <KnownFolders.h>
@@ -22,7 +22,7 @@
 #include <Shlwapi.h>
 #include <stddef.h>
 #include <stdio.h>
-#include <StringExtensions/StringExtensions.h>
+#include <StringExtensions/StringExtensions.hpp>
 
 // Ensure we link with Windows shell utility libraries.
 #pragma comment(lib, "Shlwapi")

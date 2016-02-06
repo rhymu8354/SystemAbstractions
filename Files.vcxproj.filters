@@ -15,16 +15,16 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="IFile.h">
+    <ClInclude Include="IFile.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="IFileCollection.h">
+    <ClInclude Include="IFileCollection.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="OSFile.h">
+    <ClInclude Include="OSFile.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="StringFile.h">
+    <ClInclude Include="StringFile.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

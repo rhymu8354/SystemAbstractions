@@ -1,18 +1,15 @@
-#ifndef FILES_STRING_FILE_H
-#define FILES_STRING_FILE_H
-#ifndef __cplusplus
-#error This is a C++ only header file
-#endif
+#ifndef FILES_STRING_FILE_HPP
+#define FILES_STRING_FILE_HPP
 
 /**
- * @file StringFile.h
+ * @file StringFile.hpp
  *
  * This module declares the StringFile class.
  *
- * Copyright (c) 2013-2015 by Richard Walters
+ * Copyright (c) 2013-2016 by Richard Walters
  */
 
-#include "IFile.h"
+#include "IFile.hpp"
 
 #include <string>
 
@@ -75,4 +72,4 @@ namespace Files {
 
 }
 
-#endif /* FILES_STRING_FILE_H */
+#endif /* FILES_STRING_FILE_HPP */
