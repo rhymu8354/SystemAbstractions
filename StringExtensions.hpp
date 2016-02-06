@@ -1,15 +1,12 @@
-#ifndef STRING_EXTENSIONS_H
-#define STRING_EXTENSIONS_H
-#ifndef __cplusplus
-#error This is a C++ only header file
-#endif
+#ifndef STRING_EXTENSIONS_HPP
+#define STRING_EXTENSIONS_HPP
 
 /**
- * @file StringExtensions.h
+ * @file StringExtensions.hpp
  *
  * This module declares the StringExtensions functions.
  *
- * Copyright (c) 2014 by Richard Walters
+ * Copyright (c) 2014-2016 by Richard Walters
  */
 
 #include <stdarg.h>
@@ -47,4 +44,4 @@ namespace StringExtensions {
 
 }
 
-#endif /* STRING_EXTENSIONS_H */
+#endif /* STRING_EXTENSIONS_HPP */

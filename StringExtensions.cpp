@@ -6,7 +6,7 @@
  * Copyright (c) 2014 by Richard Walters
  */
 
-#include "StringExtensions.h"
+#include "StringExtensions.hpp"
 
 #include <stdarg.h>
 #include <stdlib.h>

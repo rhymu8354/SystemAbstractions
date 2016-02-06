@@ -19,7 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="StringExtensions.h" />
+    <ClInclude Include="StringExtensions.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="StringExtensions.cpp" />
