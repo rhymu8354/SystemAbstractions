@@ -8,13 +8,13 @@
 
 /* Begin PBXBuildFile section */
 		BB8470EA1A0B4843000B45D6 /* StringExtensions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BB8470E81A0B4843000B45D6 /* StringExtensions.cpp */; };
-		BB8470EB1A0B4843000B45D6 /* StringExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = BB8470E91A0B4843000B45D6 /* StringExtensions.h */; };
+		BB8470EB1A0B4843000B45D6 /* StringExtensions.hpp in Headers */ = {isa = PBXBuildFile; fileRef = BB8470E91A0B4843000B45D6 /* StringExtensions.hpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		BB8470E11A0B4824000B45D6 /* libStringExtensions.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libStringExtensions.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		BB8470E81A0B4843000B45D6 /* StringExtensions.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StringExtensions.cpp; sourceTree = "<group>"; };
-		BB8470E91A0B4843000B45D6 /* StringExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StringExtensions.h; sourceTree = "<group>"; };
+		BB8470E91A0B4843000B45D6 /* StringExtensions.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StringExtensions.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -32,7 +32,7 @@
 			isa = PBXGroup;
 			children = (
 				BB8470E81A0B4843000B45D6 /* StringExtensions.cpp */,
-				BB8470E91A0B4843000B45D6 /* StringExtensions.h */,
+				BB8470E91A0B4843000B45D6 /* StringExtensions.hpp */,
 				BB8470E21A0B4824000B45D6 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -52,7 +52,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BB8470EB1A0B4843000B45D6 /* StringExtensions.h in Headers */,
+				BB8470EB1A0B4843000B45D6 /* StringExtensions.hpp in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
