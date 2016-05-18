@@ -18,34 +18,18 @@ Import("platformEnvironments")
 # containing the object code.
 name = "StringExtensions"
 
-# If the project depends on static-link object code from another project
-# in the workspace, list their build nodes here.
-staticObjectDependencies = [
-]
-
-# If the project depends on libraries built by another project in the
-# workspace, list their build nodes here.
-localLibraryDependencies = {
-    "staticLibrary": [
-    ],
-    "sharedLibrary": [
-    ],
-}
-
-# If the project depends on additional system libraries,
-# list their names here.
-systemLibraryDependencies = [
-]
-
 # List all supported platforms here.
 # For each one, list any platform-specific dependencies.
 platforms = {
     "arm-linux": {
-        "staticObjectDependencies": [
+        # If the project depends on object/library code from another project
+        # in the workspace, list their build nodes here.
+        "deps": [
         ],
-        "localLibraryDependencies": [
-        ],
-        "systemLibraryDependencies": [
+
+        # If the project depends on additional system libraries,
+        # list their names here.
+        "libs": [
         ],
     },
 }
@@ -61,10 +45,7 @@ for platform in platforms:
     env = platformEnvironments[platform].Clone()
     products[platform] = env.LibraryProject(
         name,
-        platform,
-        platforms[platform],
-        staticObjectDependencies = staticObjectDependencies,
-        localLibraryDependencies = localLibraryDependencies,
-        systemLibraryDependencies = systemLibraryDependencies
+        platforms[platform]["deps"],
+        platforms[platform]["libs"]
     )
 Return("products")
