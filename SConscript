@@ -38,12 +38,15 @@ platforms = {
 # listed in this project in the platforms list and must have a
 # corresponding platform build environment in order for the project
 # to be built for that platform.
-products = {}
+products = {
+    "interface": [Dir(".")],
+    "library": {}
+}
 for platform in platforms:
     if platform not in platformEnvironments:
         continue
     env = platformEnvironments[platform].Clone()
-    products[platform] = env.LibraryProject(
+    products["library"][platform] = env.LibraryProject(
         name,
         platforms[platform]["deps"],
         platforms[platform]["libs"]
