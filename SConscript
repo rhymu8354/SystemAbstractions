@@ -10,8 +10,8 @@ import os
 # Import the default build environments for all supported build platforms.
 Import("platformEnvironments")
 
-# Import other projects in the workspace on which this project depends.
-Import("StringExtensions")
+# Import products of other projects on which this project depends.
+Import("products")
 
 # This is the name of the project, used to form the names of build products.
 name = "Files"
@@ -24,7 +24,7 @@ interface = [
 # If the project depends on libraries from another project
 # in the workspace, list their product trees here.
 deps = [
-    StringExtensions,
+    products["StringExtensions"],
 ]
 
 # List all supported platforms here.
@@ -40,16 +40,16 @@ platforms = {
 # listed in this project in the platforms list and must have a
 # corresponding platform build environment in order for the project
 # to be built for that platform.
-products = {}
+subproducts = {}
 for platform in platforms:
     if platform not in platformEnvironments:
         continue
     env = platformEnvironments[platform].Clone()
     env.AppendUnique(**platforms[platform])
-    products[platform] = env.LibraryProject(
+    subproducts[platform] = env.LibraryProject(
         name,
         platform,
         interface,
         deps
     )
-Return("products")
+Return("subproducts")
