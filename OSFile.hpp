@@ -93,7 +93,7 @@ namespace Files {
          *     The directory containing the application's executable image
          *     is returned.
          */
-        static std::string GetExeDirectory();
+        static std::string GetExeParentDirectory();
 
         /**
          * This method returns the path to the application resource file

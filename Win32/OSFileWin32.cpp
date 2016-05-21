@@ -109,15 +109,15 @@ namespace Files {
         (void)DeleteFileA(_path.c_str());
     }
 
-    std::string OSFile::GetExeDirectory() {
+    std::string OSFile::GetExeParentDirectory() {
         std::vector< char > exeDirectory(MAX_PATH + 1);
-        GetModuleFileNameA(NULL, &exeDirectory[0], static_cast< DWORD >(exeDirectory.size()));
-        PathRemoveFileSpecA(&exeDirectory[0]);
+        (void)GetModuleFileNameA(NULL, &exeDirectory[0], static_cast< DWORD >(exeDirectory.size()));
+        (void)PathRemoveFileSpecA(&exeDirectory[0]);
         return std::string(&exeDirectory[0]);
     }
 
     std::string OSFile::GetResourceFilePath(const std::string& name) {
-        return StringExtensions::sprintf("%s/%s", GetExeDirectory().c_str(), name.c_str());
+        return StringExtensions::sprintf("%s/%s", GetExeParentDirectory().c_str(), name.c_str());
     }
 
     std::string OSFile::GetUserSavedGamesDirectory(const std::string& nameKey) {

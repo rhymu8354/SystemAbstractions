@@ -77,7 +77,7 @@ namespace Files {
         (void)remove(_path.c_str());
     }
 
-    std::string OSFile::GetExeDirectory() {
+    std::string OSFile::GetExeParentDirectory() {
         // Path to self is always available through procfs /proc/self/exe.
         // This is a link, so use realpath to reduce the path to
         // an absolute path.
@@ -97,7 +97,7 @@ namespace Files {
     }
 
     std::string OSFile::GetResourceFilePath(const std::string& name) {
-        return StringExtensions::sprintf("%s/%s", GetExeDirectory().c_str(), name.c_str());
+        return StringExtensions::sprintf("%s/%s", GetExeParentDirectory().c_str(), name.c_str());
     }
 
     std::string OSFile::GetUserSavedGamesDirectory(const std::string& nameKey) {

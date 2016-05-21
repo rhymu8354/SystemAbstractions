@@ -80,7 +80,7 @@ namespace Files {
         (void)remove(_path.c_str());
     }
 
-    std::string OSFile::GetExeDirectory() {
+    std::string OSFile::GetExeParentDirectory() {
         // Get the path to the executable.
         std::vector< char > buffer(PATH_MAX);
         uint32_t length = 0;
