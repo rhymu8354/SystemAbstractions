@@ -109,6 +109,12 @@ namespace Files {
         (void)DeleteFileA(_path.c_str());
     }
 
+    std::string OSFile::GetExeImagePath() {
+        std::vector< char > exeImagePath(MAX_PATH + 1);
+        (void)GetModuleFileNameA(NULL, &exeImagePath[0], static_cast< DWORD >(exeImagePath.size()));
+        return std::string(&exeImagePath[0]);
+    }
+
     std::string OSFile::GetExeParentDirectory() {
         std::vector< char > exeDirectory(MAX_PATH + 1);
         (void)GetModuleFileNameA(NULL, &exeDirectory[0], static_cast< DWORD >(exeDirectory.size()));

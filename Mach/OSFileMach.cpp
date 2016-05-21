@@ -80,6 +80,22 @@ namespace Files {
         (void)remove(_path.c_str());
     }
 
+    std::string OSFile::GetExeImagePath() {
+        // Get the path to the executable.
+        std::vector< char > buffer(PATH_MAX);
+        uint32_t length = 0;
+        if (_NSGetExecutablePath(&buffer[0], &length) < 0) {
+            buffer.resize(length);
+            (void)_NSGetExecutablePath(&buffer[0], &length);
+        }
+        const std::string pathWithLinks(&buffer[0]);
+
+        // The returned path might include symbolic links,
+        // so use realpath to reduce the path to an absolute path.
+        (void)realpath(pathWithLinks.c_str(), &buffer[0]);
+        return std::string(&buffer[0]);
+    }
+
     std::string OSFile::GetExeParentDirectory() {
         // Get the path to the executable.
         std::vector< char > buffer(PATH_MAX);

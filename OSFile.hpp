@@ -86,6 +86,16 @@ namespace Files {
         std::string GetPath() const;
 
         /**
+         * This method returns the absolute path of the application's
+         * executable image.
+         *
+         * @return
+         *     The absolute path of the application's executable image
+         *     is returned.
+         */
+        static std::string GetExeImagePath();
+
+        /**
          * This method returns the directory containing the application's
          * executable image.
          *

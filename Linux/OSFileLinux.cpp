@@ -77,6 +77,15 @@ namespace Files {
         (void)remove(_path.c_str());
     }
 
+    std::string OSFile::GetExeImagePath() {
+        // Path to self is always available through procfs /proc/self/exe.
+        // This is a link, so use realpath to reduce the path to
+        // an absolute path.
+        std::vector< char > buffer(PATH_MAX);
+        (void)realpath("/proc/self/exe", &buffer[0]);
+        return std::string(&buffer[0]);
+    }
+
     std::string OSFile::GetExeParentDirectory() {
         // Path to self is always available through procfs /proc/self/exe.
         // This is a link, so use realpath to reduce the path to
