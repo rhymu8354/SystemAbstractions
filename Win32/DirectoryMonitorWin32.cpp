@@ -110,7 +110,9 @@ namespace Files {
         _impl->changeEvent = FindFirstChangeNotificationA(
             path.c_str(),
             FALSE,
-            FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_LAST_WRITE
+            FILE_NOTIFY_CHANGE_FILE_NAME
+            | FILE_NOTIFY_CHANGE_DIR_NAME
+            | FILE_NOTIFY_CHANGE_LAST_WRITE
         );
         if (_impl->changeEvent == INVALID_HANDLE_VALUE) {
             return false;

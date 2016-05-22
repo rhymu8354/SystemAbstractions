@@ -78,6 +78,14 @@ namespace Files {
         void Destroy();
 
         /**
+         * This method returns the time the file was last modified.
+         *
+         * @return
+         *     The time the file was last modified is returned.
+         */
+        time_t GetLastModifiedTime() const;
+
+        /**
          * This method returns the path of the file.
          *
          * @return
@@ -116,6 +124,19 @@ namespace Files {
          *     The path to the given application resource file is returned.
          */
         static std::string GetResourceFilePath(const std::string& name);
+
+        /**
+         * This method returns the directory containing the application's
+         * local per user configuration files.
+         *
+         * @param[in] nameKey
+         *     This is the name of the application.
+         *
+         * @return
+         *     The directory containing the application's local per
+         *     user configuration files is returned.
+         */
+        static std::string GetLocalPerUserConfigDirectory(const std::string& nameKey);
 
         /**
          * This method returns the directory containing the user's

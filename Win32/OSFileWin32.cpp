@@ -109,6 +109,15 @@ namespace Files {
         (void)DeleteFileA(_path.c_str());
     }
 
+    time_t OSFile::GetLastModifiedTime() const {
+        struct stat s;
+        if (stat(_path.c_str(), &s) == 0) {
+            return s.st_mtime;
+        } else {
+            return 0;
+        }
+    }
+
     std::string OSFile::GetExeImagePath() {
         std::vector< char > exeImagePath(MAX_PATH + 1);
         (void)GetModuleFileNameA(NULL, &exeImagePath[0], static_cast< DWORD >(exeImagePath.size()));
@@ -124,6 +133,16 @@ namespace Files {
 
     std::string OSFile::GetResourceFilePath(const std::string& name) {
         return StringExtensions::sprintf("%s/%s", GetExeParentDirectory().c_str(), name.c_str());
+    }
+
+    std::string OSFile::GetLocalPerUserConfigDirectory(const std::string& nameKey) {
+        PWSTR pathWide;
+        if (SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, NULL, &pathWide) != S_OK) {
+            return "";
+        }
+        std::string pathNarrow(StringExtensions::wcstombs(pathWide));
+        CoTaskMemFree(pathWide);
+        return StringExtensions::sprintf("%s/%s", pathNarrow.c_str(), nameKey.c_str());
     }
 
     std::string OSFile::GetUserSavedGamesDirectory(const std::string& nameKey) {

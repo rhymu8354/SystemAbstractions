@@ -25,6 +25,31 @@
 #include <unistd.h>
 #include <vector>
 
+namespace {
+
+    /**
+     * This is a helper function that returns the home directory path
+     * of the current user.
+     *
+     * @return
+     *     The home directory path of the current user is returned.
+     */
+    std::string GetUserHomeDirectoryPath() {
+        auto suggestedBufferSize = sysconf(_GC_GETPW_R_SIZE_MAX);
+        const size_t bufferSize = ((suggestedBufferSize < 0) ? 65536 : suggestedBufferSize);
+        std::vector< char > buffer(bufferSize);
+        struct passwd pwd;
+        struct passwd* resultEntry;
+        (void)getpwuid_r(getuid(), &pwd, &buffer[0], bufferSize, &resultEntry);
+        if (resultEntry == NULL) {
+            return "";
+        } else {
+            return pwd.pw_dir;
+        }
+    }
+
+}
+
 namespace Files {
 
     /**
@@ -78,6 +103,15 @@ namespace Files {
     void OSFile::Destroy() {
         Close();
         (void)remove(_path.c_str());
+    }
+
+    time_t OSFile::GetLastModifiedTime() const {
+        struct stat s;
+        if (stat(_path.c_str(), &s) == 0) {
+            return s.st_mtime;
+        } else {
+            return 0;
+        }
     }
 
     std::string OSFile::GetExeImagePath() {
@@ -134,9 +168,12 @@ namespace Files {
         }
     }
 
+    std::string OSFile::GetLocalPerUserConfigDirectory(const std::string& nameKey) {
+        return StringExtensions::sprintf("%s/Library/Application Support/%s", GetUserHomeDirectoryPath().c_str(), nameKey.c_str());
+    }
+
     std::string OSFile::GetUserSavedGamesDirectory(const std::string& nameKey) {
-        struct passwd* pw = getpwuid(getuid());
-        return StringExtensions::sprintf("%s/Library/Application Support/%s/Saved Games", pw->pw_dir, nameKey.c_str());
+        return StringExtensions::sprintf("%s/Library/Application Support/%s/Saved Games", GetUserHomeDirectoryPath().c_str(), nameKey.c_str());
     }
 
     void OSFile::ListDirectory(const std::string& directory, std::vector< std::string >& list) {
