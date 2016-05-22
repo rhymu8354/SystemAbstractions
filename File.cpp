@@ -1,28 +1,28 @@
 /**
- * @file OSFile.cpp
+ * @file File.cpp
  *
  * This module contains the platform-independent part of the
- * implementation of the Files::OSFile class.
+ * implementation of the SystemAbstractions::File class.
  *
  * Copyright (c) 2013-2016 by Richard Walters
  */
 
-#include "OSFile.hpp"
+#include "File.hpp"
 
-namespace Files {
+namespace SystemAbstractions {
 
-    std::string OSFile::GetPath() const {
+    std::string File::GetPath() const {
         return _path;
     }
 
-    size_t OSFile::Peek(Buffer& buffer, size_t numBytes, size_t offset) const {
+    size_t File::Peek(Buffer& buffer, size_t numBytes, size_t offset) const {
         if (numBytes == 0) {
             numBytes = buffer.size();
         }
         return Peek(&buffer[offset], numBytes);
     }
 
-    size_t OSFile::Read(Buffer& buffer, size_t numBytes, size_t offset) {
+    size_t File::Read(Buffer& buffer, size_t numBytes, size_t offset) {
         if (numBytes == 0) {
             numBytes = buffer.size() - offset;
         }
@@ -32,7 +32,7 @@ namespace Files {
         return Read(&buffer[offset], numBytes);
     }
 
-    size_t OSFile::Write(const Buffer& buffer, size_t numBytes, size_t offset) {
+    size_t File::Write(const Buffer& buffer, size_t numBytes, size_t offset) {
         if (numBytes == 0) {
             numBytes = buffer.size() - offset;
         }

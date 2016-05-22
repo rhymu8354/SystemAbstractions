@@ -1,8 +1,8 @@
 /**
- * @file OSFileWin32.cpp
+ * @file FileWin32.cpp
  *
  * This module contains the Win32 specific part of the 
- * implementation of the Files::OSFile class.
+ * implementation of the SystemAbstractions::File class.
  *
  * Copyright (c) 2013-2016 by Richard Walters
  */
@@ -14,7 +14,8 @@
  */
 #include <Windows.h>
 
-#include "../OSFile.hpp"
+#include "../File.hpp"
+#include "../StringExtensions.hpp"
 
 #include <io.h>
 #include <KnownFolders.h>
@@ -22,33 +23,32 @@
 #include <Shlwapi.h>
 #include <stddef.h>
 #include <stdio.h>
-#include <StringExtensions/StringExtensions.hpp>
 
 // Ensure we link with Windows shell utility libraries.
 #pragma comment(lib, "Shlwapi")
 #pragma comment(lib, "Shell32")
 
-namespace Files {
+namespace SystemAbstractions {
 
     /**
-     * This is the Win32-specific state for the OSFile class.
+     * This is the Win32-specific state for the File class.
      */
-    struct OSFileImpl {
+    struct FileImpl {
         HANDLE handle;
     };
 
-    OSFile::OSFile(std::string path)
+    File::File(std::string path)
         : _path(path)
-        , _impl(new OSFileImpl())
+        , _impl(new FileImpl())
     {
         _impl->handle = INVALID_HANDLE_VALUE;
     }
 
-    OSFile::~OSFile() {
+    File::~File() {
         Close();
     }
 
-    bool OSFile::IsExisting() {
+    bool File::IsExisting() {
         const DWORD attr = GetFileAttributesA(_path.c_str());
         if (attr == INVALID_FILE_ATTRIBUTES) {
             return false;
@@ -56,7 +56,7 @@ namespace Files {
         return true;
     }
 
-    bool OSFile::Open() {
+    bool File::Open() {
         Close();
         _impl->handle = CreateFileA(
             _path.c_str(),
@@ -70,12 +70,12 @@ namespace Files {
         return (_impl->handle != INVALID_HANDLE_VALUE);
     }
 
-    void OSFile::Close() {
+    void File::Close() {
         (void)CloseHandle(_impl->handle);
         _impl->handle = INVALID_HANDLE_VALUE;
     }
 
-    bool OSFile::Create() {
+    bool File::Create() {
         Close();
         bool createPathTried = false;
         while (_impl->handle == INVALID_HANDLE_VALUE) {
@@ -101,12 +101,12 @@ namespace Files {
         return true;
     }
 
-    void OSFile::Destroy() {
+    void File::Destroy() {
         Close();
         (void)DeleteFileA(_path.c_str());
     }
 
-    bool OSFile::Move(const std::string& newPath) {
+    bool File::Move(const std::string& newPath) {
         if (MoveFileA(_path.c_str(), newPath.c_str()) == 0) {
             return false;
         }
@@ -114,11 +114,11 @@ namespace Files {
         return true;
     }
 
-    bool OSFile::Copy(const std::string& destination) {
+    bool File::Copy(const std::string& destination) {
         return (CopyFileA(_path.c_str(), destination.c_str(), FALSE) != FALSE);
     }
 
-    time_t OSFile::GetLastModifiedTime() const {
+    time_t File::GetLastModifiedTime() const {
         struct stat s;
         if (stat(_path.c_str(), &s) == 0) {
             return s.st_mtime;
@@ -127,44 +127,44 @@ namespace Files {
         }
     }
 
-    std::string OSFile::GetExeImagePath() {
+    std::string File::GetExeImagePath() {
         std::vector< char > exeImagePath(MAX_PATH + 1);
         (void)GetModuleFileNameA(NULL, &exeImagePath[0], static_cast< DWORD >(exeImagePath.size()));
         return std::string(&exeImagePath[0]);
     }
 
-    std::string OSFile::GetExeParentDirectory() {
+    std::string File::GetExeParentDirectory() {
         std::vector< char > exeDirectory(MAX_PATH + 1);
         (void)GetModuleFileNameA(NULL, &exeDirectory[0], static_cast< DWORD >(exeDirectory.size()));
         (void)PathRemoveFileSpecA(&exeDirectory[0]);
         return std::string(&exeDirectory[0]);
     }
 
-    std::string OSFile::GetResourceFilePath(const std::string& name) {
-        return StringExtensions::sprintf("%s/%s", GetExeParentDirectory().c_str(), name.c_str());
+    std::string File::GetResourceFilePath(const std::string& name) {
+        return SystemAbstractions::sprintf("%s/%s", GetExeParentDirectory().c_str(), name.c_str());
     }
 
-    std::string OSFile::GetLocalPerUserConfigDirectory(const std::string& nameKey) {
+    std::string File::GetLocalPerUserConfigDirectory(const std::string& nameKey) {
         PWSTR pathWide;
         if (SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, NULL, &pathWide) != S_OK) {
             return "";
         }
-        std::string pathNarrow(StringExtensions::wcstombs(pathWide));
+        std::string pathNarrow(SystemAbstractions::wcstombs(pathWide));
         CoTaskMemFree(pathWide);
-        return StringExtensions::sprintf("%s/%s", pathNarrow.c_str(), nameKey.c_str());
+        return SystemAbstractions::sprintf("%s/%s", pathNarrow.c_str(), nameKey.c_str());
     }
 
-    std::string OSFile::GetUserSavedGamesDirectory(const std::string& nameKey) {
+    std::string File::GetUserSavedGamesDirectory(const std::string& nameKey) {
         PWSTR pathWide;
         if (SHGetKnownFolderPath(FOLDERID_SavedGames, 0, NULL, &pathWide) != S_OK) {
             return "";
         }
-        std::string pathNarrow(StringExtensions::wcstombs(pathWide));
+        std::string pathNarrow(SystemAbstractions::wcstombs(pathWide));
         CoTaskMemFree(pathWide);
-        return StringExtensions::sprintf("%s/%s", pathNarrow.c_str(), nameKey.c_str());
+        return SystemAbstractions::sprintf("%s/%s", pathNarrow.c_str(), nameKey.c_str());
     }
 
-    void OSFile::ListDirectory(const std::string& directory, std::vector< std::string >& list) {
+    void File::ListDirectory(const std::string& directory, std::vector< std::string >& list) {
         std::string directoryWithSeparator(directory);
         if (
             (directoryWithSeparator.length() > 0)
@@ -188,7 +188,7 @@ namespace Files {
         }
     }
 
-    bool OSFile::DeleteDirectory(const std::string& directory) {
+    bool File::DeleteDirectory(const std::string& directory) {
         std::string directoryWithSeparator(directory);
         if (
             (directoryWithSeparator.length() > 0)
@@ -227,7 +227,7 @@ namespace Files {
         return (RemoveDirectoryA(directory.c_str()) != 0);
     }
 
-    bool OSFile::CopyDirectory(
+    bool File::CopyDirectory(
         const std::string& existingDirectory,
         const std::string& newDirectory
     ) {
@@ -247,7 +247,7 @@ namespace Files {
         ) {
             newDirectoryWithSeparator += '\\';
         }
-        if (!OSFile::CreatePath(newDirectoryWithSeparator)) {
+        if (!File::CreatePath(newDirectoryWithSeparator)) {
             return false;
         }
         std::string listGlob(existingDirectoryWithSeparator);
@@ -282,7 +282,7 @@ namespace Files {
         return true;
     }
 
-    uint64_t OSFile::GetSize() const {
+    uint64_t File::GetSize() const {
         LARGE_INTEGER size;
         if (GetFileSizeEx(_impl->handle, &size) == 0) {
             return 0;
@@ -290,7 +290,7 @@ namespace Files {
         return (uint64_t)size.QuadPart;
     }
 
-    bool OSFile::SetSize(uint64_t size) {
+    bool File::SetSize(uint64_t size) {
         const uint64_t position = GetPosition();
         SetPosition(size);
         const bool success = (SetEndOfFile(_impl->handle) != 0);
@@ -298,7 +298,7 @@ namespace Files {
         return success;
     }
 
-    uint64_t OSFile::GetPosition() const {
+    uint64_t File::GetPosition() const {
         LARGE_INTEGER distanceToMove;
         distanceToMove.QuadPart = 0;
         LARGE_INTEGER newPosition;
@@ -308,14 +308,14 @@ namespace Files {
         return (uint64_t)newPosition.QuadPart;
     }
 
-    void OSFile::SetPosition(uint64_t position) {
+    void File::SetPosition(uint64_t position) {
         LARGE_INTEGER distanceToMove;
         distanceToMove.QuadPart = position;
         LARGE_INTEGER newPosition;
         (void)SetFilePointerEx(_impl->handle, distanceToMove, &newPosition, FILE_BEGIN);
     }
 
-    size_t OSFile::Peek(void* buffer, size_t numBytes) const {
+    size_t File::Peek(void* buffer, size_t numBytes) const {
         const uint64_t position = GetPosition();
         DWORD amountRead;
         if (ReadFile(_impl->handle, buffer, (DWORD)numBytes, &amountRead, NULL) == 0) {
@@ -328,7 +328,7 @@ namespace Files {
         return (size_t)amountRead;
     }
 
-    size_t OSFile::Read(void* buffer, size_t numBytes) {
+    size_t File::Read(void* buffer, size_t numBytes) {
         if (numBytes == 0) {
             return 0;
         }
@@ -339,7 +339,7 @@ namespace Files {
         return (size_t)amountRead;
     }
 
-    size_t OSFile::Write(const void* buffer, size_t numBytes) {
+    size_t File::Write(const void* buffer, size_t numBytes) {
         DWORD amountWritten;
         if (WriteFile(_impl->handle, buffer, (DWORD)numBytes, &amountWritten, NULL) == 0) {
             return 0;
@@ -347,7 +347,7 @@ namespace Files {
         return (size_t)amountWritten;
     }
 
-    bool OSFile::CreatePath(std::string path) {
+    bool File::CreatePath(std::string path) {
         const size_t delimiter = path.find_last_of("/\\");
         if (delimiter == std::string::npos) {
             return false;

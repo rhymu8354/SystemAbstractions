@@ -1,10 +1,10 @@
-#ifndef FILES_I_FILE_COLLECTION_HPP
-#define FILES_I_FILE_COLLECTION_HPP
+#ifndef SYSTEM_ABSTRACTIONS_I_FILE_COLLECTION_HPP
+#define SYSTEM_ABSTRACTIONS_I_FILE_COLLECTION_HPP
 
 /**
  * @file IFileCollection.hpp
  *
- * This module declares the Files::IFileCollection interface.
+ * This module declares the SystemAbstractions::IFileCollection interface.
  *
  * Copyright (c) 2013-2016 by Richard Walters
  */
@@ -13,7 +13,7 @@
 #include <string>
 #include <vector>
 
-namespace Files {
+namespace SystemAbstractions {
 
     /**
      * This interface represents a collection of files organized by path name
@@ -91,4 +91,4 @@ namespace Files {
 
 }
 
-#endif /* FILES_I_FILE_COLLECTION_HPP */
+#endif /* SYSTEM_ABSTRACTIONS_I_FILE_COLLECTION_HPP */

@@ -1,10 +1,10 @@
-#ifndef FILES_I_FILE_HPP
-#define FILES_I_FILE_HPP
+#ifndef SYSTEM_ABSTRACTIONS_I_FILE_HPP
+#define SYSTEM_ABSTRACTIONS_I_FILE_HPP
 
 /**
  * @file IFile.hpp
  *
- * This module declares the Files::IFile interface.
+ * This module declares the SystemAbstractions::IFile interface.
  *
  * Copyright (c) 2013-2016 by Richard Walters
  */
@@ -14,7 +14,7 @@
 #include <string>
 #include <vector>
 
-namespace Files {
+namespace SystemAbstractions {
 
     /**
      * This is the interface to an object holding a mutable array of
@@ -175,4 +175,4 @@ namespace Files {
 
 }
 
-#endif /* FILES_I_FILE_HPP */
+#endif /* SYSTEM_ABSTRACTIONS_I_FILE_HPP */

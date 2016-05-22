@@ -1,10 +1,10 @@
-#ifndef FILES_STRING_FILE_HPP
-#define FILES_STRING_FILE_HPP
+#ifndef SYSTEM_ABSTRACTIONS_STRING_FILE_HPP
+#define SYSTEM_ABSTRACTIONS_STRING_FILE_HPP
 
 /**
  * @file StringFile.hpp
  *
- * This module declares the StringFile class.
+ * This module declares the SystemAbstractions::StringFile class.
  *
  * Copyright (c) 2013-2016 by Richard Walters
  */
@@ -13,7 +13,7 @@
 
 #include <string>
 
-namespace Files {
+namespace SystemAbstractions {
 
     /**
      * This class represents a file stored in a string.
@@ -72,4 +72,4 @@ namespace Files {
 
 }
 
-#endif /* FILES_STRING_FILE_HPP */
+#endif /* SYSTEM_ABSTRACTIONS_STRING_FILE_HPP */

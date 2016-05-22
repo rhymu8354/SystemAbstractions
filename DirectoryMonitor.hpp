@@ -1,10 +1,10 @@
-#ifndef FILES_DIRECTORY_MONITOR_HPP
-#define FILES_DIRECTORY_MONITOR_HPP
+#ifndef SYSTEM_ABSTRACTIONS_DIRECTORY_MONITOR_HPP
+#define SYSTEM_ABSTRACTIONS_DIRECTORY_MONITOR_HPP
 
 /**
  * @file DirectoryMonitor.hpp
  *
- * This module declares the Files::DirectoryMonitor class.
+ * This module declares the SystemAbstractions::DirectoryMonitor class.
  *
  * Copyright (c) 2016 by Richard Walters
  */
@@ -12,7 +12,7 @@
 #include <memory>
 #include <string>
 
-namespace Files {
+namespace SystemAbstractions {
 
     /**
      * This class is used to monitor for changes to a directory
@@ -89,4 +89,4 @@ namespace Files {
 
 }
 
-#endif /* FILES_DIRECTORY_MONITOR_HPP */
+#endif /* SYSTEM_ABSTRACTIONS_DIRECTORY_MONITOR_HPP */

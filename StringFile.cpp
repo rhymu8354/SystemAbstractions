@@ -12,7 +12,7 @@
 #include <string>
 #include <string.h>
 
-namespace Files {
+namespace SystemAbstractions {
 
     StringFile::StringFile(std::string initialValue)
         : _value(initialValue)

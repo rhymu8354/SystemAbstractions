@@ -1,10 +1,10 @@
-#ifndef FILES_O_S_FILE_HPP
-#define FILES_O_S_FILE_HPP
+#ifndef SYSTEM_ABSTRACTIONS_FILE_HPP
+#define SYSTEM_ABSTRACTIONS_FILE_HPP
 
 /**
- * @file OSFile.hpp
+ * @file File.hpp
  *
- * This module declares the Files::OSFile class.
+ * This module declares the SystemAbstractions::File class.
  *
  * Copyright (c) 2013-2016 by Richard Walters
  */
@@ -15,13 +15,13 @@
 #include <string>
 #include <vector>
 
-namespace Files {
+namespace SystemAbstractions {
 
     /**
      * This class represents a file accessed through the
      * native operating system.
      */
-    class OSFile: public IFile {
+    class File: public IFile {
         // Public methods
     public:
         /**
@@ -30,12 +30,12 @@ namespace Files {
          * @param[in] path
          *     This is the path to the file in the file system.
          */
-        OSFile(std::string path);
+        File(std::string path);
 
         /**
          * This is the instance destructor.
          */
-        ~OSFile();
+        ~File();
 
         /**
          * This method is used to check if the file exists in the
@@ -245,9 +245,9 @@ namespace Files {
         /**
          * This contains any platform-specific state for the object.
          */
-        std::unique_ptr< struct OSFileImpl > _impl;
+        std::unique_ptr< struct FileImpl > _impl;
     };
 
 }
 
-#endif /* FILES_O_S_FILE_HPP */
+#endif /* SYSTEM_ABSTRACTIONS_FILE_HPP */

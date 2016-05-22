@@ -2,7 +2,7 @@
  * @file DirectoryMonitorWin32.cpp
  *
  * This module contains the Windows implementation of the
- * Files::DirectoryMonitor class.
+ * SystemAbstractions::DirectoryMonitor class.
  *
  * Copyright (c) 2016 by Richard Walters
  */
@@ -19,7 +19,7 @@
 #include <assert.h>
 #include <thread>
 
-namespace Files {
+namespace SystemAbstractions {
 
     /**
      * This structure contains the private methods and properties of

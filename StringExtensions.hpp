@@ -1,10 +1,10 @@
-#ifndef STRING_EXTENSIONS_HPP
-#define STRING_EXTENSIONS_HPP
+#ifndef SYSTEM_ABSTRACTIONS_STRING_EXTENSIONS_HPP
+#define SYSTEM_ABSTRACTIONS_STRING_EXTENSIONS_HPP
 
 /**
  * @file StringExtensions.hpp
  *
- * This module declares the StringExtensions functions.
+ * This module declares functions which extend the string library.
  *
  * Copyright (c) 2014-2016 by Richard Walters
  */
@@ -12,7 +12,7 @@
 #include <stdarg.h>
 #include <string>
 
-namespace StringExtensions {
+namespace SystemAbstractions {
 
     /**
      * This function is like the vsprintf funtion in the standard C
@@ -44,4 +44,4 @@ namespace StringExtensions {
 
 }
 
-#endif /* STRING_EXTENSIONS_HPP */
+#endif /* SYSTEM_ABSTRACTIONS_STRING_EXTENSIONS_HPP */
