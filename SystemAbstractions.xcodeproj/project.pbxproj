@@ -19,7 +19,7 @@
 		BB2E69AE1C66964300EFD7DD /* IFile.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = IFile.hpp; sourceTree = "<group>"; };
 		BB2E69AF1C66964300EFD7DD /* OSFile.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = OSFile.hpp; sourceTree = "<group>"; };
 		BB2E69B01C66964300EFD7DD /* StringFile.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = StringFile.hpp; sourceTree = "<group>"; };
-		BB8470B21A0AE3D8000B45D6 /* libFiles.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libFiles.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		BB8470B21A0AE3D8000B45D6 /* libSystemAbstractions.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libSystemAbstractions.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		BB8470BC1A0AE3F2000B45D6 /* OSFileMach.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OSFileMach.cpp; sourceTree = "<group>"; };
 		BB8470BD1A0AE3F2000B45D6 /* OSFile.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OSFile.cpp; sourceTree = "<group>"; };
 		BB9AA6BF1A5A5FAD0072E88C /* StringFile.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StringFile.cpp; sourceTree = "<group>"; };
@@ -52,7 +52,7 @@
 		BB8470B31A0AE3D8000B45D6 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				BB8470B21A0AE3D8000B45D6 /* libFiles.a */,
+				BB8470B21A0AE3D8000B45D6 /* libSystemAbstractions.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -81,9 +81,9 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		BB8470B11A0AE3D8000B45D6 /* Files */ = {
+		BB8470B11A0AE3D8000B45D6 /* SystemAbstractions */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = BB8470B61A0AE3D8000B45D6 /* Build configuration list for PBXNativeTarget "Files" */;
+			buildConfigurationList = BB8470B61A0AE3D8000B45D6 /* Build configuration list for PBXNativeTarget "SystemAbstractions" */;
 			buildPhases = (
 				BB8470AE1A0AE3D8000B45D6 /* Sources */,
 				BB8470AF1A0AE3D8000B45D6 /* Frameworks */,
@@ -93,9 +93,9 @@
 			);
 			dependencies = (
 			);
-			name = Files;
-			productName = Files;
-			productReference = BB8470B21A0AE3D8000B45D6 /* libFiles.a */;
+			name = SystemAbstractions;
+			productName = SystemAbstractions;
+			productReference = BB8470B21A0AE3D8000B45D6 /* libSystemAbstractions.a */;
 			productType = "com.apple.product-type.library.static";
 		};
 /* End PBXNativeTarget section */
@@ -107,7 +107,7 @@
 				LastUpgradeCheck = 0610;
 				ORGANIZATIONNAME = "Richard Walters";
 			};
-			buildConfigurationList = BB8470AD1A0AE3D8000B45D6 /* Build configuration list for PBXProject "Files" */;
+			buildConfigurationList = BB8470AD1A0AE3D8000B45D6 /* Build configuration list for PBXProject "SystemAbstractions" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
@@ -119,7 +119,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				BB8470B11A0AE3D8000B45D6 /* Files */,
+				BB8470B11A0AE3D8000B45D6 /* SystemAbstractions */,
 			);
 		};
 /* End PBXProject section */
@@ -241,7 +241,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		BB8470AD1A0AE3D8000B45D6 /* Build configuration list for PBXProject "Files" */ = {
+		BB8470AD1A0AE3D8000B45D6 /* Build configuration list for PBXProject "SystemAbstractions" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				BB8470B41A0AE3D8000B45D6 /* Debug */,
@@ -250,7 +250,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		BB8470B61A0AE3D8000B45D6 /* Build configuration list for PBXNativeTarget "Files" */ = {
+		BB8470B61A0AE3D8000B45D6 /* Build configuration list for PBXNativeTarget "SystemAbstractions" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				BB8470B71A0AE3D8000B45D6 /* Debug */,
