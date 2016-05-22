@@ -22,6 +22,7 @@
 #include <string>
 #include <string.h>
 #include <sys/stat.h>
+#include <sys/types.h>
 #include <unistd.h>
 #include <vector>
 
@@ -47,6 +48,12 @@ namespace {
             return pwd.pw_dir;
         }
     }
+
+    /**
+     * This is the maximum number of bytes to copy from one file to another
+     * at a time.
+     */
+    static const size_t MAX_BLOCK_COPY_SIZE = 65536;
 
 }
 
@@ -103,6 +110,39 @@ namespace Files {
     void OSFile::Destroy() {
         Close();
         (void)remove(_path.c_str());
+    }
+
+    bool OSFile::Move(const std::string& newPath) {
+        if (rename(_path.c_str(), newPath.c_str()) != 0) {
+            return false;
+        }
+        _path = newPath;
+        return true;
+    }
+
+    bool OSFile::Copy(const std::string& destination) {
+        if (_impl->handle == NULL) {
+            if (!Open()) {
+                return false;
+            }
+        } else {
+            SetPosition(0);
+        }
+        OSFile newFile(destination);
+        if (!newFile.Create()) {
+            return false;
+        }
+        IFile::Buffer buffer(MAX_BLOCK_COPY_SIZE);
+        for (;;) {
+            const size_t amt = Read(buffer);
+            if (amt == 0) {
+                break;
+            }
+            if (newFile.Write(buffer, amt) != amt) {
+                return false;
+            }
+        }
+        return true;
     }
 
     time_t OSFile::GetLastModifiedTime() const {
@@ -209,7 +249,7 @@ namespace Files {
         if (
             (directoryWithSeparator.length() > 0)
             && (directoryWithSeparator[directoryWithSeparator.length() - 1] != '/')
-            ) {
+        ) {
             directoryWithSeparator += '/';
         }
         DIR* dir = opendir(directory.c_str());
@@ -233,14 +273,78 @@ namespace Files {
                 std::string filePath(directoryWithSeparator);
                 filePath += entry.d_name;
                 if (entry.d_type == DT_DIR) {
-                    DeleteDirectory(filePath.c_str());
+                    if (!DeleteDirectory(filePath.c_str())) {
+                        return false;
+                    }
                 } else {
-                    (void)unlink(filePath.c_str());
+                    if (unlink(filePath.c_str()) != 0) {
+                        return false;
+                    }
                 }
             }
             (void)closedir(dir);
-            (void)rmdir(directory.c_str());
+            return (rmdir(directory.c_str()) == 0);
         }
+        return true;
+    }
+
+    bool OSFile::CopyDirectory(
+        const std::string& existingDirectory,
+        const std::string& newDirectory
+    ) {
+        std::string existingDirectoryWithSeparator(existingDirectory);
+        if (
+            (existingDirectoryWithSeparator.length() > 0)
+            && (existingDirectoryWithSeparator[existingDirectoryWithSeparator.length() - 1] != '/')
+        ) {
+            existingDirectoryWithSeparator += '/';
+        }
+        std::string newDirectoryWithSeparator(newDirectory);
+        if (
+            (newDirectoryWithSeparator.length() > 0)
+            && (newDirectoryWithSeparator[newDirectoryWithSeparator.length() - 1] != '/')
+        ) {
+            newDirectoryWithSeparator += '/';
+        }
+        if (!OSFile::CreatePath(newDirectoryWithSeparator)) {
+            return false;
+        }
+        DIR* dir = opendir(existingDirectory.c_str());
+        if (dir != NULL) {
+            struct dirent entry;
+            struct dirent* entryBack;
+            while (true) {
+                if (readdir_r(dir, &entry, &entryBack)) {
+                    break;
+                }
+                if (entryBack == NULL) {
+                    break;
+                }
+                std::string name(entry.d_name);
+                if (
+                    (name == ".")
+                    || (name == "..")
+                ) {
+                    continue;
+                }
+                std::string filePath(existingDirectoryWithSeparator);
+                filePath += entry.d_name;
+                std::string newFilePath(newDirectoryWithSeparator);
+                newFilePath += entry.d_name;
+                if (entry.d_type == DT_DIR) {
+                    if (!CopyDirectory(filePath, newFilePath)) {
+                        return false;
+                    }
+                } else {
+                    OSFile newFile(newFilePath);
+                    if (!newFile.Copy(filePath)) {
+                        return false;
+                    }
+                }
+            }
+            (void)closedir(dir);
+        }
+        return true;
     }
 
     uint64_t OSFile::GetSize() const {
@@ -319,6 +423,9 @@ namespace Files {
         }
         const std::string oneLevelUp(path.substr(0, delimiter));
         if (mkdir(oneLevelUp.c_str(), S_IRUSR | S_IWUSR | S_IXUSR) == 0) {
+            return true;
+        }
+        if (errno == EEXIST) {
             return true;
         }
         if (errno != ENOENT) {

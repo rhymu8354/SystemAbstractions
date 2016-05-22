@@ -78,6 +78,30 @@ namespace Files {
         void Destroy();
 
         /**
+         * This method moves the file to a new path in the file system.
+         *
+         * @param[in] newPath
+         *     This is the new path to which to move the file.
+         *
+         * @return
+         *     A flag indicating whether or not the method succeeded
+         *     is returned.
+         */
+        bool Move(const std::string& newPath);
+
+        /**
+         * This method copies the file to another location in the file system.
+         *
+         * @param[in] destination
+         *     This is the file name and path to create as a copy of the file.
+         *
+         * @return
+         *     A flag indicating whether or not the method succeeded
+         *     is returned.
+         */
+        bool Copy(const std::string& destination);
+
+        /**
          * This method returns the time the file was last modified.
          *
          * @return
@@ -169,8 +193,30 @@ namespace Files {
          *
          * @param[in] directory
          *     This is the directory to delete.
+         *
+         * @return
+         *     A flag indicating whether or not the method succeeded
+         *     is returned.
          */
-        static void DeleteDirectory(const std::string& directory);
+        static bool DeleteDirectory(const std::string& directory);
+
+        /**
+         * This method copies a directory and all its contents.
+         *
+         * @param[in] existingDirectory
+         *     This is the directory to copy.
+         *
+         * @param[in] newDirectory
+         *     This is the destination to which to copy the existing directory.
+         *
+         * @return
+         *     A flag indicating whether or not the method succeeded
+         *     is returned.
+         */
+        static bool CopyDirectory(
+            const std::string& existingDirectory,
+            const std::string& newDirectory
+        );
 
         // IFile
     public:
@@ -187,7 +233,7 @@ namespace Files {
 
         // Private methods
     private:
-        bool CreatePath(std::string path);
+        static bool CreatePath(std::string path);
 
         // Private properties
     private:

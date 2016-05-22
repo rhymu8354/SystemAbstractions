@@ -53,9 +53,6 @@ namespace Files {
         if (attr == INVALID_FILE_ATTRIBUTES) {
             return false;
         }
-        if (attr & FILE_ATTRIBUTE_DIRECTORY) {
-            return false;
-        }
         return true;
     }
 
@@ -107,6 +104,18 @@ namespace Files {
     void OSFile::Destroy() {
         Close();
         (void)DeleteFileA(_path.c_str());
+    }
+
+    bool OSFile::Move(const std::string& newPath) {
+        if (MoveFileA(_path.c_str(), newPath.c_str()) == 0) {
+            return false;
+        }
+        _path = newPath;
+        return true;
+    }
+
+    bool OSFile::Copy(const std::string& destination) {
+        return (CopyFileA(_path.c_str(), destination.c_str(), FALSE) != FALSE);
     }
 
     time_t OSFile::GetLastModifiedTime() const {
@@ -179,7 +188,7 @@ namespace Files {
         }
     }
 
-    void OSFile::DeleteDirectory(const std::string& directory) {
+    bool OSFile::DeleteDirectory(const std::string& directory) {
         std::string directoryWithSeparator(directory);
         if (
             (directoryWithSeparator.length() > 0)
@@ -204,14 +213,73 @@ namespace Files {
                 std::string filePath(directoryWithSeparator);
                 filePath += name;
                 if (PathIsDirectoryA(filePath.c_str())) {
-                    DeleteDirectory(filePath.c_str());
+                    if (!DeleteDirectory(filePath.c_str())) {
+                        return false;
+                    }
                 } else {
-                    (void)DeleteFileA(filePath.c_str());
+                    if (DeleteFileA(filePath.c_str()) == 0) {
+                        return false;
+                    }
                 }
             } while (FindNextFileA(searchHandle, &findFileData) == TRUE);
             FindClose(searchHandle);
         }
-        (void)RemoveDirectoryA(directory.c_str());
+        return (RemoveDirectoryA(directory.c_str()) != 0);
+    }
+
+    bool OSFile::CopyDirectory(
+        const std::string& existingDirectory,
+        const std::string& newDirectory
+    ) {
+        std::string existingDirectoryWithSeparator(existingDirectory);
+        if (
+            (existingDirectoryWithSeparator.length() > 0)
+            && (existingDirectoryWithSeparator[existingDirectoryWithSeparator.length() - 1] != '\\')
+            && (existingDirectoryWithSeparator[existingDirectoryWithSeparator.length() - 1] != '/')
+        ) {
+            existingDirectoryWithSeparator += '\\';
+        }
+        std::string newDirectoryWithSeparator(newDirectory);
+        if (
+            (newDirectoryWithSeparator.length() > 0)
+            && (newDirectoryWithSeparator[newDirectoryWithSeparator.length() - 1] != '\\')
+            && (newDirectoryWithSeparator[newDirectoryWithSeparator.length() - 1] != '/')
+        ) {
+            newDirectoryWithSeparator += '\\';
+        }
+        if (!OSFile::CreatePath(newDirectoryWithSeparator)) {
+            return false;
+        }
+        std::string listGlob(existingDirectoryWithSeparator);
+        listGlob += "*.*";
+        WIN32_FIND_DATAA findFileData;
+        const HANDLE searchHandle = FindFirstFileA(listGlob.c_str(), &findFileData);
+        if (searchHandle != INVALID_HANDLE_VALUE) {
+            do {
+                std::string name(findFileData.cFileName);
+                if (
+                    (name == ".")
+                    || (name == "..")
+                ) {
+                    continue;
+                }
+                std::string filePath(existingDirectoryWithSeparator);
+                filePath += name;
+                std::string newFilePath(newDirectoryWithSeparator);
+                newFilePath += name;
+                if (PathIsDirectoryA(filePath.c_str())) {
+                    if (!CopyDirectory(filePath, newFilePath)) {
+                        return false;
+                    }
+                } else {
+                    if (!CopyFileA(filePath.c_str(), newFilePath.c_str(), FALSE)) {
+                        return false;
+                    }
+                }
+            } while (FindNextFileA(searchHandle, &findFileData) == TRUE);
+            FindClose(searchHandle);
+        }
+        return true;
     }
 
     uint64_t OSFile::GetSize() const {
@@ -289,6 +357,9 @@ namespace Files {
             return true;
         }
         const DWORD error = GetLastError();
+        if (error == ERROR_ALREADY_EXISTS) {
+            return true;
+        }
         if (error != ERROR_PATH_NOT_FOUND) {
             return false;
         }
