@@ -1,4 +1,4 @@
-﻿"""
+"""
 SConscript
 
 This file is used by SCons to learn what to build for this project, along
@@ -14,7 +14,7 @@ Import("platformEnvironments")
 Import("products")
 
 # This is the name of the project, used to form the names of build products.
-name = "Files"
+name = "SystemAbstractions"
 
 # List directories containing external interfaces here.
 interface = [
@@ -24,7 +24,6 @@ interface = [
 # If the project depends on libraries from another project
 # in the workspace, list their product trees here.
 deps = [
-    products["StringExtensions"],
 ]
 
 # List all supported platforms here.
