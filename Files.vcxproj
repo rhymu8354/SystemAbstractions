@@ -21,9 +21,11 @@
   <ItemGroup>
     <ClCompile Include="OSFile.cpp" />
     <ClCompile Include="StringFile.cpp" />
+    <ClCompile Include="Win32\DirectoryMonitorWin32.cpp" />
     <ClCompile Include="Win32\OSFileWin32.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="DirectoryMonitor.hpp" />
     <ClInclude Include="OSFile.hpp" />
     <ClInclude Include="IFile.hpp" />
     <ClInclude Include="IFileCollection.hpp" />
