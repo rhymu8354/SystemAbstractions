@@ -34,7 +34,7 @@ namespace {
      *     The home directory path of the current user is returned.
      */
     std::string GetUserHomeDirectoryPath() {
-        auto suggestedBufferSize = sysconf(_GC_GETPW_R_SIZE_MAX);
+        auto suggestedBufferSize = sysconf(_SC_GETPW_R_SIZE_MAX);
         const size_t bufferSize = ((suggestedBufferSize < 0) ? 65536 : suggestedBufferSize);
         std::vector< char > buffer(bufferSize);
         struct passwd pwd;
@@ -312,8 +312,8 @@ namespace Files {
                         return false;
                     }
                 } else {
-                    OSFile newFile(newFilePath);
-                    if (!newFile.Copy(filePath)) {
+                    OSFile file(filePath);
+                    if (!file.Copy(newFilePath)) {
                         return false;
                     }
                 }
