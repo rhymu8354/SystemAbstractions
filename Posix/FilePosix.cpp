@@ -1,20 +1,18 @@
 /**
- * @file OSFileMach.cpp
+ * @file OSFilePosix.cpp
  *
- * This module contains the Mac (e.g. Mac OS X) specific part of the
- * implementation of the Files::OSFile class.
+ * This module contains the Posix specific part of the
+ * implementation of the SystemAbstractions::File class.
  *
  * Copyright (c) 2013-2016 by Richard Walters
  */
 
-#include "../OSFile.hpp"
+#include "../File.hpp"
+#include "FilePosix.hpp"
 
-#include <CoreFoundation/CoreFoundation.h>
 #include <dirent.h>
-#include <mach-o/dyld.h>
 #include <errno.h>
 #include <pwd.h>
-#include <StringExtensions/StringExtensions.hpp>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -57,36 +55,29 @@ namespace {
 
 }
 
-namespace Files {
+namespace SystemAbstractions {
 
-    /**
-     * This is the Mach-specific state for the OSFile class.
-     */
-    struct OSFileImpl {
-        FILE* handle;
-    };
-
-    OSFile::OSFile(std::string path)
+    File::File(std::string path)
         : _path(path)
         , _impl(new OSFileImpl())
     {
     }
 
-    OSFile::~OSFile() {
+    File::~File() {
         Close();
     }
 
-    bool OSFile::IsExisting() {
+    bool File::IsExisting() {
         return (access(_path.c_str(), 0) == 0);
     }
 
-    bool OSFile::Open() {
+    bool File::Open() {
         Close();
         _impl->handle = fopen(_path.c_str(), "r+b");
         return (_impl->handle != NULL);
     }
 
-    void OSFile::Close() {
+    void File::Close() {
         if (_impl->handle == NULL) {
             return;
         }
@@ -94,7 +85,7 @@ namespace Files {
         _impl->handle = NULL;
     }
 
-    bool OSFile::Create() {
+    bool File::Create() {
         Close();
         _impl->handle = fopen(_path.c_str(), "w+b");
         if (_impl->handle == NULL) {
@@ -107,12 +98,12 @@ namespace Files {
         return (_impl->handle != NULL);
     }
 
-    void OSFile::Destroy() {
+    void File::Destroy() {
         Close();
         (void)remove(_path.c_str());
     }
 
-    bool OSFile::Move(const std::string& newPath) {
+    bool File::Move(const std::string& newPath) {
         if (rename(_path.c_str(), newPath.c_str()) != 0) {
             return false;
         }
@@ -120,7 +111,7 @@ namespace Files {
         return true;
     }
 
-    bool OSFile::Copy(const std::string& destination) {
+    bool File::Copy(const std::string& destination) {
         if (_impl->handle == NULL) {
             if (!Open()) {
                 return false;
@@ -128,7 +119,7 @@ namespace Files {
         } else {
             SetPosition(0);
         }
-        OSFile newFile(destination);
+        File newFile(destination);
         if (!newFile.Create()) {
             return false;
         }
@@ -145,7 +136,7 @@ namespace Files {
         return true;
     }
 
-    time_t OSFile::GetLastModifiedTime() const {
+    time_t File::GetLastModifiedTime() const {
         struct stat s;
         if (stat(_path.c_str(), &s) == 0) {
             return s.st_mtime;
@@ -154,69 +145,7 @@ namespace Files {
         }
     }
 
-    std::string OSFile::GetExeImagePath() {
-        // Get the path to the executable.
-        std::vector< char > buffer(PATH_MAX);
-        uint32_t length = 0;
-        if (_NSGetExecutablePath(&buffer[0], &length) < 0) {
-            buffer.resize(length);
-            (void)_NSGetExecutablePath(&buffer[0], &length);
-        }
-        const std::string pathWithLinks(&buffer[0]);
-
-        // The returned path might include symbolic links,
-        // so use realpath to reduce the path to an absolute path.
-        (void)realpath(pathWithLinks.c_str(), &buffer[0]);
-        return std::string(&buffer[0]);
-    }
-
-    std::string OSFile::GetExeParentDirectory() {
-        // Get the path to the executable.
-        std::vector< char > buffer(PATH_MAX);
-        uint32_t length = 0;
-        if (_NSGetExecutablePath(&buffer[0], &length) < 0) {
-            buffer.resize(length);
-            (void)_NSGetExecutablePath(&buffer[0], &length);
-        }
-        const std::string pathWithLinks(&buffer[0]);
-
-        // The returned path might include symbolic links,
-        // so use realpath to reduce the path to an absolute path.
-        (void)realpath(pathWithLinks.c_str(), &buffer[0]);
-        length = static_cast< uint32_t >(strlen(&buffer[0]));
-        while (--length > 0) {
-            if (buffer[length] == '/') {
-                break;
-            }
-        }
-        if (length == 0) {
-            ++length;
-        }
-        buffer[length] = '\0';
-        return std::string(&buffer[0]);
-    }
-
-    std::string OSFile::GetResourceFilePath(const std::string& name) {
-        CFURLRef appUrlRef;
-        CFStringRef nameCfString = CFStringCreateWithCString(NULL, name.c_str(), kCFStringEncodingUTF8);
-        appUrlRef = CFBundleCopyResourceURL(CFBundleGetMainBundle(), nameCfString, NULL, NULL);
-        if (appUrlRef == nullptr) {
-            return "";
-        } else {
-            CFStringRef filePathRef = CFURLCopyPath(appUrlRef);
-            return CFStringGetCStringPtr(filePathRef, kCFStringEncodingUTF8);
-        }
-    }
-
-    std::string OSFile::GetLocalPerUserConfigDirectory(const std::string& nameKey) {
-        return StringExtensions::sprintf("%s/Library/Application Support/%s", GetUserHomeDirectoryPath().c_str(), nameKey.c_str());
-    }
-
-    std::string OSFile::GetUserSavedGamesDirectory(const std::string& nameKey) {
-        return StringExtensions::sprintf("%s/Library/Application Support/%s/Saved Games", GetUserHomeDirectoryPath().c_str(), nameKey.c_str());
-    }
-
-    void OSFile::ListDirectory(const std::string& directory, std::vector< std::string >& list) {
+    void File::ListDirectory(const std::string& directory, std::vector< std::string >& list) {
         std::string directoryWithSeparator(directory);
         if (
             (directoryWithSeparator.length() > 0)
@@ -244,7 +173,7 @@ namespace Files {
         }
     }
 
-    bool OSFile::DeleteDirectory(const std::string& directory) {
+    bool File::DeleteDirectory(const std::string& directory) {
         std::string directoryWithSeparator(directory);
         if (
             (directoryWithSeparator.length() > 0)
@@ -288,7 +217,7 @@ namespace Files {
         return true;
     }
 
-    bool OSFile::CopyDirectory(
+    bool File::CopyDirectory(
         const std::string& existingDirectory,
         const std::string& newDirectory
     ) {
@@ -306,7 +235,7 @@ namespace Files {
         ) {
             newDirectoryWithSeparator += '/';
         }
-        if (!OSFile::CreatePath(newDirectoryWithSeparator)) {
+        if (!File::CreatePath(newDirectoryWithSeparator)) {
             return false;
         }
         DIR* dir = opendir(existingDirectory.c_str());
@@ -336,7 +265,7 @@ namespace Files {
                         return false;
                     }
                 } else {
-                    OSFile file(filePath);
+                    File file(filePath);
                     if (!file.Copy(newFilePath)) {
                         return false;
                     }
@@ -347,7 +276,7 @@ namespace Files {
         return true;
     }
 
-    uint64_t OSFile::GetSize() const {
+    uint64_t File::GetSize() const {
         if (_impl->handle == NULL) {
             return 0;
         }
@@ -367,11 +296,11 @@ namespace Files {
         return (uint64_t)endPosition;
     }
 
-    bool OSFile::SetSize(uint64_t size) {
+    bool File::SetSize(uint64_t size) {
         return (ftruncate(fileno(_impl->handle), (off_t)size) == 0);
     }
 
-    uint64_t OSFile::GetPosition() const {
+    uint64_t File::GetPosition() const {
         if (_impl->handle == NULL) {
             return 0;
         }
@@ -382,14 +311,14 @@ namespace Files {
         return (uint64_t)position;
     }
 
-    void OSFile::SetPosition(uint64_t position) {
+    void File::SetPosition(uint64_t position) {
         if (_impl->handle == NULL) {
             return;
         }
         (void)fseek(_impl->handle, (long)position, SEEK_SET);
     }
 
-    size_t OSFile::Peek(void* buffer, size_t numBytes) const {
+    size_t File::Peek(void* buffer, size_t numBytes) const {
         if (_impl->handle == NULL) {
             return 0;
         }
@@ -402,21 +331,21 @@ namespace Files {
         return readResult;
     }
 
-    size_t OSFile::Read(void* buffer, size_t numBytes) {
+    size_t File::Read(void* buffer, size_t numBytes) {
         if (_impl->handle == NULL) {
             return 0;
         }
         return fread(buffer, 1, numBytes, _impl->handle);
     }
 
-    size_t OSFile::Write(const void* buffer, size_t numBytes) {
+    size_t File::Write(const void* buffer, size_t numBytes) {
         if (_impl->handle == NULL) {
             return 0;
         }
         return fwrite(buffer, 1, numBytes, _impl->handle);
     }
 
-    bool OSFile::CreatePath(std::string path) {
+    bool File::CreatePath(std::string path) {
         const size_t delimiter = path.find_last_of("/\\");
         if (delimiter == std::string::npos) {
             return false;

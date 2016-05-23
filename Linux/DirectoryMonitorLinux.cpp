@@ -2,13 +2,13 @@
  * @file DirectoryMonitorLinux.cpp
  *
  * This module contains the Linux implementation of the
- * Files::DirectoryMonitor class.
+ * SystemAbstractions::DirectoryMonitor class.
  *
  * Copyright (c) 2016 by Richard Walters
  */
 
 #include "../DirectoryMonitor.hpp"
-#include "PipeSignal.hpp"
+#include "../Posix/PipeSignal.hpp"
 
 #include <assert.h>
 #include <fcntl.h>
@@ -21,7 +21,7 @@
 #include <unistd.h>
 #include <vector>
 
-namespace Files {
+namespace SystemAbstractions {
 
     /**
      * This structure contains the private methods and properties of

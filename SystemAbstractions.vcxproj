@@ -19,19 +19,36 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="DiagnosticsContext.cpp" />
+    <ClCompile Include="DiagnosticsSender.cpp" />
+    <ClCompile Include="DiagnosticsStreamReporter.cpp" />
     <ClCompile Include="File.cpp" />
+    <ClCompile Include="NetworkConnection.cpp" />
+    <ClCompile Include="NetworkEndpoint.cpp" />
     <ClCompile Include="StringExtensions.cpp" />
     <ClCompile Include="StringFile.cpp" />
     <ClCompile Include="Win32\DirectoryMonitorWin32.cpp" />
     <ClCompile Include="Win32\FileWin32.cpp" />
+    <ClCompile Include="Win32\NetworkConnectionWin32.cpp" />
+    <ClCompile Include="Win32\NetworkEndpointWin32.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="DiagnosticsContext.hpp" />
+    <ClInclude Include="DiagnosticsReceiver.hpp" />
+    <ClInclude Include="DiagnosticsSender.hpp" />
+    <ClInclude Include="DiagnosticsStreamReporter.hpp" />
     <ClInclude Include="DirectoryMonitor.hpp" />
     <ClInclude Include="File.hpp" />
     <ClInclude Include="IFile.hpp" />
     <ClInclude Include="IFileCollection.hpp" />
+    <ClInclude Include="NetworkConnection.hpp" />
+    <ClInclude Include="NetworkConnectionImpl.hpp" />
+    <ClInclude Include="NetworkEndpoint.hpp" />
+    <ClInclude Include="NetworkEndpointImpl.hpp" />
     <ClInclude Include="StringExtensions.hpp" />
     <ClInclude Include="StringFile.hpp" />
+    <ClInclude Include="Win32\NetworkConnectionWin32.hpp" />
+    <ClInclude Include="Win32\NetworkEndpointWin32.hpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{4BD919D4-D1A4-4B92-8223-B78559F4C524}</ProjectGuid>
