@@ -28,6 +28,7 @@
     <ClCompile Include="StringExtensions.cpp" />
     <ClCompile Include="StringFile.cpp" />
     <ClCompile Include="Win32\DirectoryMonitorWin32.cpp" />
+    <ClCompile Include="Win32\DynamicLibraryWin32.cpp" />
     <ClCompile Include="Win32\FileWin32.cpp" />
     <ClCompile Include="Win32\NetworkConnectionWin32.cpp" />
     <ClCompile Include="Win32\NetworkEndpointWin32.cpp" />
@@ -38,6 +39,7 @@
     <ClInclude Include="DiagnosticsSender.hpp" />
     <ClInclude Include="DiagnosticsStreamReporter.hpp" />
     <ClInclude Include="DirectoryMonitor.hpp" />
+    <ClInclude Include="DynamicLibrary.hpp" />
     <ClInclude Include="File.hpp" />
     <ClInclude Include="IFile.hpp" />
     <ClInclude Include="IFileCollection.hpp" />

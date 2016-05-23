@@ -57,11 +57,14 @@
     <ClInclude Include="NetworkEndpointImpl.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="DynamicLibrary.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="Win32\NetworkConnectionWin32.hpp">
-      <Filter>Source Files</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Win32\NetworkEndpointWin32.hpp">
-      <Filter>Source Files</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -99,6 +102,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Win32\NetworkEndpointWin32.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Win32\DynamicLibraryWin32.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
