@@ -10,18 +10,29 @@
  * Copyright (c) 2016 by Richard Walters
  */
 
+#include <string>
 
 namespace SystemAbstractions {
 
     /**
      * This is the POSIX-specific state for the File class.
      */
-    struct OSFileImpl {
+    struct FileImpl {
         /**
          * @todo Needs documentation
          */
         FILE* handle;
+
     };
+
+    /**
+     * This is a helper function that returns the home directory path
+     * of the current user.
+     *
+     * @return
+     *     The home directory path of the current user is returned.
+     */
+    std::string GetUserHomeDirectoryPath();
 
 }
 

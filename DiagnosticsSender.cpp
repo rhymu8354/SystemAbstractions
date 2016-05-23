@@ -8,10 +8,10 @@
  */
 
 #include "DiagnosticsSender.hpp"
+#include "StringExtensions.hpp"
 
 #include <algorithm>
 #include <limits>
-#include <SystemAbstractions/StringExtensions.hpp>
 
 namespace SystemAbstractions {
 

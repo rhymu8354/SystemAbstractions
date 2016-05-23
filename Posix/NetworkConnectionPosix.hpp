@@ -10,10 +10,10 @@
  * Copyright (c) 2016 by Richard Walters
  */
 
+#include "../DiagnosticsSender.hpp"
 #include "PipeSignal.hpp"
 
 #include <deque>
-#include <DigitalStirling/DiagnosticsSender.hpp>
 #include <mutex>
 #include <stdint.h>
 #include <thread>
@@ -61,7 +61,7 @@ namespace SystemAbstractions {
         static bool Bind(
             int& sock,
             uint16_t port,
-            DigitalStirling::DiagnosticsSender& diagnosticsSender
+            DiagnosticsSender& diagnosticsSender
         );
     };
 

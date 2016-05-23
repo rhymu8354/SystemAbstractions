@@ -4,7 +4,7 @@
 /**
  * @file PipeSignal.hpp
  *
- * This module declares the Files::PipeSignal class.
+ * This module declares the SystemAbstractions::PipeSignal class.
  *
  * Copyright (c) 2016 by Richard Walters
  */
@@ -12,7 +12,7 @@
 #include <memory>
 #include <string>
 
-namespace Files {
+namespace SystemAbstractions {
 
     /**
      * This class implements a level-sensitive signal that exposes

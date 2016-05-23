@@ -2,7 +2,7 @@
  * @file PipeSignal.cpp
  *
  * This module contains the implementation of the
- * Files::PipeSignal class.
+ * SystemAbstractions::PipeSignal class.
  *
  * Copyright (c) 2016 by Richard Walters
  */
@@ -17,7 +17,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-namespace Files {
+namespace SystemAbstractions {
 
     /**
      * This contains the private properties and methods of the class.

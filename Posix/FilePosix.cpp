@@ -27,12 +27,15 @@
 namespace {
 
     /**
-     * This is a helper function that returns the home directory path
-     * of the current user.
-     *
-     * @return
-     *     The home directory path of the current user is returned.
+     * This is the maximum number of bytes to copy from one file to another
+     * at a time.
      */
+    static const size_t MAX_BLOCK_COPY_SIZE = 65536;
+
+}
+
+namespace SystemAbstractions {
+
     std::string GetUserHomeDirectoryPath() {
         auto suggestedBufferSize = sysconf(_SC_GETPW_R_SIZE_MAX);
         const size_t bufferSize = ((suggestedBufferSize < 0) ? 65536 : suggestedBufferSize);
@@ -47,19 +50,9 @@ namespace {
         }
     }
 
-    /**
-     * This is the maximum number of bytes to copy from one file to another
-     * at a time.
-     */
-    static const size_t MAX_BLOCK_COPY_SIZE = 65536;
-
-}
-
-namespace SystemAbstractions {
-
     File::File(std::string path)
         : _path(path)
-        , _impl(new OSFileImpl())
+        , _impl(new FileImpl())
     {
     }
 

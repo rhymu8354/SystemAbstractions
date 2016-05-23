@@ -35,7 +35,7 @@ namespace SystemAbstractions {
     bool NetworkConnectionPlatform::Bind(
         int& sock,
         uint16_t port,
-        DigitalStirling::DiagnosticsSender& diagnosticsSender
+        SystemAbstractions::DiagnosticsSender& diagnosticsSender
     ) {
         struct sockaddr_in socketAddress;
         (void)memset(&socketAddress, 0, sizeof(socketAddress));
@@ -44,7 +44,7 @@ namespace SystemAbstractions {
         sock = socket(socketAddress.sin_family, SOCK_STREAM, 0);
         if (sock < 0) {
             diagnosticsSender.SendDiagnosticInformationFormatted(
-                DigitalStirling::DiagnosticsReceiver::Levels::ERROR,
+                SystemAbstractions::DiagnosticsReceiver::Levels::ERROR,
                 "error creating socket: %s",
                 strerror(errno)
             );
@@ -52,7 +52,7 @@ namespace SystemAbstractions {
         }
         if (bind(sock, (struct sockaddr*)&socketAddress, (socklen_t)sizeof(socketAddress)) != 0) {
             diagnosticsSender.SendDiagnosticInformationFormatted(
-                DigitalStirling::DiagnosticsReceiver::Levels::ERROR,
+                SystemAbstractions::DiagnosticsReceiver::Levels::ERROR,
                 "error in bind: %s",
                 strerror(errno)
             );
@@ -85,7 +85,7 @@ namespace SystemAbstractions {
         socketAddress.sin_port = htons(peerPort);
         if (connect(platform->sock, (const sockaddr*)&socketAddress, (socklen_t)sizeof(socketAddress)) != 0) {
             diagnosticsSender.SendDiagnosticInformationFormatted(
-                DigitalStirling::DiagnosticsReceiver::Levels::ERROR,
+                SystemAbstractions::DiagnosticsReceiver::Levels::ERROR,
                 "error in connect: %s",
                 strerror(errno)
             );
@@ -98,14 +98,14 @@ namespace SystemAbstractions {
     bool NetworkConnectionImpl::Process() {
         if (platform->sock < 0) {
             diagnosticsSender.SendDiagnosticInformationString(
-                DigitalStirling::DiagnosticsReceiver::Levels::ERROR,
+                SystemAbstractions::DiagnosticsReceiver::Levels::ERROR,
                 "not connected"
             );
             return false;
         }
         if (platform->processor.joinable()) {
             diagnosticsSender.SendDiagnosticInformationString(
-                DigitalStirling::DiagnosticsReceiver::Levels::WARNING,
+                SystemAbstractions::DiagnosticsReceiver::Levels::WARNING,
                 "already processing"
             );
             return true;
@@ -113,7 +113,7 @@ namespace SystemAbstractions {
         platform->processorStop = false;
         if (!platform->processorStateChangeSignal.Initialize()) {
             diagnosticsSender.SendDiagnosticInformationFormatted(
-                DigitalStirling::DiagnosticsReceiver::Levels::ERROR,
+                SystemAbstractions::DiagnosticsReceiver::Levels::ERROR,
                 "error creating processor state change event: %s",
                 platform->processorStateChangeSignal.GetLastError().c_str()
             );

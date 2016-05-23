@@ -47,14 +47,14 @@ namespace SystemAbstractions {
         }
         if (platform->listener.joinable()) {
             diagnosticsSender.SendDiagnosticInformationString(
-                DigitalStirling::DiagnosticsReceiver::Levels::WARNING,
+                SystemAbstractions::DiagnosticsReceiver::Levels::WARNING,
                 "already listening"
             );
             return true;
         }
         if (!platform->listenerStopSignal.Initialize()) {
             diagnosticsSender.SendDiagnosticInformationFormatted(
-                DigitalStirling::DiagnosticsReceiver::Levels::ERROR,
+                SystemAbstractions::DiagnosticsReceiver::Levels::ERROR,
                 "error creating listener stop event (%s)",
                 platform->listenerStopSignal.GetLastError().c_str()
             );
@@ -63,7 +63,7 @@ namespace SystemAbstractions {
         platform->listenerStopSignal.Clear();
         if (listen(platform->sock, SOMAXCONN) != 0) {
             diagnosticsSender.SendDiagnosticInformationFormatted(
-                DigitalStirling::DiagnosticsReceiver::Levels::ERROR,
+                SystemAbstractions::DiagnosticsReceiver::Levels::ERROR,
                 "error in listen: %s",
                 strerror(errno)
             );
@@ -99,7 +99,7 @@ namespace SystemAbstractions {
             const int client = accept(platform->sock, (struct sockaddr*)&socketAddress, &socketAddressSize);
             if (client < 0) {
                 diagnosticsSender.SendDiagnosticInformationFormatted(
-                    DigitalStirling::DiagnosticsReceiver::Levels::WARNING,
+                    SystemAbstractions::DiagnosticsReceiver::Levels::WARNING,
                     "error in accept: %s",
                     strerror(errno)
                 );
