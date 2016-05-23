@@ -31,6 +31,7 @@ deps = [
 platforms = {
     "Linux": {
         "LIBS": [
+            "dl",
         ],
     },
 }
