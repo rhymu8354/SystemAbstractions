@@ -32,6 +32,7 @@
     <ClCompile Include="Win32\FileWin32.cpp" />
     <ClCompile Include="Win32\NetworkConnectionWin32.cpp" />
     <ClCompile Include="Win32\NetworkEndpointWin32.cpp" />
+    <ClCompile Include="Win32\SubprocessWin32.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DiagnosticsContext.hpp" />
@@ -49,6 +50,7 @@
     <ClInclude Include="NetworkEndpointImpl.hpp" />
     <ClInclude Include="StringExtensions.hpp" />
     <ClInclude Include="StringFile.hpp" />
+    <ClInclude Include="Subprocess.hpp" />
     <ClInclude Include="Win32\NetworkConnectionWin32.hpp" />
     <ClInclude Include="Win32\NetworkEndpointWin32.hpp" />
   </ItemGroup>
