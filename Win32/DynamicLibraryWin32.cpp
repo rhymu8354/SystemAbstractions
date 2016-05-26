@@ -41,6 +41,9 @@ namespace SystemAbstractions {
     }
 
     DynamicLibrary::~DynamicLibrary() {
+        if (_impl == nullptr) {
+            return;
+        }
         Unload();
     }
 
