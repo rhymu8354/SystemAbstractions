@@ -62,15 +62,16 @@ namespace SystemAbstractions {
          * @todo Needs documentation
          */
         void Run() {
-            struct kevent kqueueEvents[2];
-            EV_SET(&kqueueEvents[0], stopSignal.GetSelectHandle(), EVFILT_READ, EV_ADD, 0, 0, NULL);
-            EV_SET(&kqueueEvents[1], dirHandle, EVFILT_VNODE, EV_ADD, NOTE_WRITE, 0, NULL);
-            struct kevent change;
+            struct kevent changes[2];
+            EV_SET(&changes[0], stopSignal.GetSelectHandle(), EVFILT_READ, EV_ADD, 0, 0, NULL);
+            EV_SET(&changes[1], dirHandle, EVFILT_VNODE, EV_ADD | EV_CLEAR, NOTE_WRITE, 0, NULL);
+            struct kevent event;
             for (;;) {
-                if (kevent(kqueueHandle, &change, 1, kqueueEvents, 2, NULL) < 0) {
+                int keventResult = kevent(kqueueHandle, changes, 2, &event, 1, NULL);
+                if (keventResult < 0) {
                     break;
                 }
-                if (change.ident == stopSignal.GetSelectHandle()) {
+                if (event.ident == stopSignal.GetSelectHandle()) {
                     break;
                 }
                 owner->DirectoryMonitorChangeDetected();
