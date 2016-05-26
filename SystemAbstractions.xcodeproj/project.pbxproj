@@ -41,6 +41,9 @@
 		BB41CB5C1CF4DE1100CB9791 /* PipeSignal.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BB41CB521CF4DE1100CB9791 /* PipeSignal.cpp */; };
 		BB41CB5D1CF4DE1100CB9791 /* PipeSignal.hpp in Headers */ = {isa = PBXBuildFile; fileRef = BB41CB531CF4DE1100CB9791 /* PipeSignal.hpp */; };
 		BB41CB5E1CF4DE1100CB9791 /* SubprocessPosix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BB41CB541CF4DE1100CB9791 /* SubprocessPosix.cpp */; };
+		BB41CB601CF7883E00CB9791 /* TimeMach.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BB41CB5F1CF7883E00CB9791 /* TimeMach.cpp */; };
+		BB41CB621CF7885800CB9791 /* Time.hpp in Headers */ = {isa = PBXBuildFile; fileRef = BB41CB611CF7885800CB9791 /* Time.hpp */; };
+		BB41CB641CF7889300CB9791 /* DirectoryMonitorMach.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BB41CB631CF7889300CB9791 /* DirectoryMonitorMach.cpp */; };
 		BB9AA6C11A5A5FAD0072E88C /* StringFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BB9AA6BF1A5A5FAD0072E88C /* StringFile.cpp */; };
 /* End PBXBuildFile section */
 
@@ -79,6 +82,9 @@
 		BB41CB521CF4DE1100CB9791 /* PipeSignal.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PipeSignal.cpp; path = Posix/PipeSignal.cpp; sourceTree = "<group>"; };
 		BB41CB531CF4DE1100CB9791 /* PipeSignal.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = PipeSignal.hpp; path = Posix/PipeSignal.hpp; sourceTree = "<group>"; };
 		BB41CB541CF4DE1100CB9791 /* SubprocessPosix.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SubprocessPosix.cpp; path = Posix/SubprocessPosix.cpp; sourceTree = "<group>"; };
+		BB41CB5F1CF7883E00CB9791 /* TimeMach.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TimeMach.cpp; path = Mach/TimeMach.cpp; sourceTree = "<group>"; };
+		BB41CB611CF7885800CB9791 /* Time.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Time.hpp; sourceTree = "<group>"; };
+		BB41CB631CF7889300CB9791 /* DirectoryMonitorMach.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DirectoryMonitorMach.cpp; path = Mach/DirectoryMonitorMach.cpp; sourceTree = "<group>"; };
 		BB8470B21A0AE3D8000B45D6 /* libSystemAbstractions.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libSystemAbstractions.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		BB9AA6BF1A5A5FAD0072E88C /* StringFile.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StringFile.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -97,7 +103,9 @@
 		BB41CB491CF4DDF800CB9791 /* Mach */ = {
 			isa = PBXGroup;
 			children = (
+				BB41CB631CF7889300CB9791 /* DirectoryMonitorMach.cpp */,
 				BB41CB471CF4DDF200CB9791 /* FileMach.cpp */,
+				BB41CB5F1CF7883E00CB9791 /* TimeMach.cpp */,
 			);
 			name = Mach;
 			sourceTree = "<group>";
@@ -122,6 +130,7 @@
 		BB8470A91A0AE3D8000B45D6 = {
 			isa = PBXGroup;
 			children = (
+				BB41CB611CF7885800CB9791 /* Time.hpp */,
 				BB41CB1D1CF4DDD600CB9791 /* DiagnosticsContext.cpp */,
 				BB41CB1E1CF4DDD600CB9791 /* DiagnosticsContext.hpp */,
 				BB41CB1F1CF4DDD600CB9791 /* DiagnosticsReceiver.hpp */,
@@ -174,6 +183,7 @@
 				BB41CB3F1CF4DDD600CB9791 /* NetworkConnection.hpp in Headers */,
 				BB41CB3A1CF4DDD600CB9791 /* DynamicLibrary.hpp in Headers */,
 				BB41CB431CF4DDD600CB9791 /* NetworkEndpointImpl.hpp in Headers */,
+				BB41CB621CF7885800CB9791 /* Time.hpp in Headers */,
 				BB41CB391CF4DDD600CB9791 /* DirectoryMonitor.hpp in Headers */,
 				BB41CB3C1CF4DDD600CB9791 /* File.hpp in Headers */,
 				BB2E69B31C66964300EFD7DD /* StringFile.hpp in Headers */,
@@ -246,6 +256,8 @@
 				BB41CB321CF4DDD600CB9791 /* DiagnosticsContext.cpp in Sources */,
 				BB9AA6C11A5A5FAD0072E88C /* StringFile.cpp in Sources */,
 				BB41CB581CF4DE1100CB9791 /* NetworkConnectionPosix.cpp in Sources */,
+				BB41CB601CF7883E00CB9791 /* TimeMach.cpp in Sources */,
+				BB41CB641CF7889300CB9791 /* DirectoryMonitorMach.cpp in Sources */,
 				BB41CB3B1CF4DDD600CB9791 /* File.cpp in Sources */,
 				BB41CB561CF4DE1100CB9791 /* FilePosix.cpp in Sources */,
 				BB41CB481CF4DDF200CB9791 /* FileMach.cpp in Sources */,
