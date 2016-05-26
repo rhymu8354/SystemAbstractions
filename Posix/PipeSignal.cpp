@@ -54,11 +54,29 @@ namespace SystemAbstractions {
         if (_impl->pipe[0] >= 0) {
             return true;
         }
-        if (pipe2(_impl->pipe, O_NONBLOCK) != 0) {
+        if (pipe(_impl->pipe) != 0) {
             _impl->lastError = strerror(errno);
             _impl->pipe[0] = -1;
             _impl->pipe[1] = -1;
             return false;
+        }
+        for (int i = 0; i < 2; ++i) {
+            int flags = fcntl(_impl->pipe[i], F_GETFL, 0);
+            if (flags < 0) {
+                (void)close(_impl->pipe[0]);
+                (void)close(_impl->pipe[1]);
+                _impl->pipe[0] = -1;
+                _impl->pipe[1] = -1;
+                return false;
+            }
+            flags |= O_NONBLOCK;
+            if (fcntl(_impl->pipe[i], F_SETFL, flags) < 0) {
+                (void)close(_impl->pipe[0]);
+                (void)close(_impl->pipe[1]);
+                _impl->pipe[0] = -1;
+                _impl->pipe[1] = -1;
+                return false;
+            }
         }
         return true;
     }
