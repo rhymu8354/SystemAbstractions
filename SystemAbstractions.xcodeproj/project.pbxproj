@@ -44,6 +44,8 @@
 		BB41CB601CF7883E00CB9791 /* TimeMach.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BB41CB5F1CF7883E00CB9791 /* TimeMach.cpp */; };
 		BB41CB621CF7885800CB9791 /* Time.hpp in Headers */ = {isa = PBXBuildFile; fileRef = BB41CB611CF7885800CB9791 /* Time.hpp */; };
 		BB41CB641CF7889300CB9791 /* DirectoryMonitorMach.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BB41CB631CF7889300CB9791 /* DirectoryMonitorMach.cpp */; };
+		BB41CBF91CF7B24C00CB9791 /* DynamicLibraryMach.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BB41CBF81CF7B24C00CB9791 /* DynamicLibraryMach.cpp */; };
+		BB41CC121CF7B26700CB9791 /* DynamicLibraryImpl.hpp in Headers */ = {isa = PBXBuildFile; fileRef = BB41CC111CF7B26700CB9791 /* DynamicLibraryImpl.hpp */; };
 		BB9AA6C11A5A5FAD0072E88C /* StringFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BB9AA6BF1A5A5FAD0072E88C /* StringFile.cpp */; };
 /* End PBXBuildFile section */
 
@@ -85,6 +87,8 @@
 		BB41CB5F1CF7883E00CB9791 /* TimeMach.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TimeMach.cpp; path = Mach/TimeMach.cpp; sourceTree = "<group>"; };
 		BB41CB611CF7885800CB9791 /* Time.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Time.hpp; sourceTree = "<group>"; };
 		BB41CB631CF7889300CB9791 /* DirectoryMonitorMach.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DirectoryMonitorMach.cpp; path = Mach/DirectoryMonitorMach.cpp; sourceTree = "<group>"; };
+		BB41CBF81CF7B24C00CB9791 /* DynamicLibraryMach.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DynamicLibraryMach.cpp; path = Mach/DynamicLibraryMach.cpp; sourceTree = "<group>"; };
+		BB41CC111CF7B26700CB9791 /* DynamicLibraryImpl.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = DynamicLibraryImpl.hpp; path = Posix/DynamicLibraryImpl.hpp; sourceTree = "<group>"; };
 		BB8470B21A0AE3D8000B45D6 /* libSystemAbstractions.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libSystemAbstractions.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		BB9AA6BF1A5A5FAD0072E88C /* StringFile.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StringFile.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -104,6 +108,7 @@
 			isa = PBXGroup;
 			children = (
 				BB41CB631CF7889300CB9791 /* DirectoryMonitorMach.cpp */,
+				BB41CBF81CF7B24C00CB9791 /* DynamicLibraryMach.cpp */,
 				BB41CB471CF4DDF200CB9791 /* FileMach.cpp */,
 				BB41CB5F1CF7883E00CB9791 /* TimeMach.cpp */,
 			);
@@ -113,6 +118,7 @@
 		BB41CB4A1CF4DE0100CB9791 /* POSIX */ = {
 			isa = PBXGroup;
 			children = (
+				BB41CC111CF7B26700CB9791 /* DynamicLibraryImpl.hpp */,
 				BB41CB4B1CF4DE1100CB9791 /* DynamicLibraryPosix.cpp */,
 				BB41CB4C1CF4DE1100CB9791 /* FilePosix.cpp */,
 				BB41CB4D1CF4DE1100CB9791 /* FilePosix.hpp */,
@@ -186,6 +192,7 @@
 				BB41CB621CF7885800CB9791 /* Time.hpp in Headers */,
 				BB41CB391CF4DDD600CB9791 /* DirectoryMonitor.hpp in Headers */,
 				BB41CB3C1CF4DDD600CB9791 /* File.hpp in Headers */,
+				BB41CC121CF7B26700CB9791 /* DynamicLibraryImpl.hpp in Headers */,
 				BB2E69B31C66964300EFD7DD /* StringFile.hpp in Headers */,
 				BB41CB5B1CF4DE1100CB9791 /* NetworkEndpointPosix.hpp in Headers */,
 				BB41CB3D1CF4DDD600CB9791 /* IFileCollection.hpp in Headers */,
@@ -265,6 +272,7 @@
 				BB41CB351CF4DDD600CB9791 /* DiagnosticsSender.cpp in Sources */,
 				BB41CB5C1CF4DE1100CB9791 /* PipeSignal.cpp in Sources */,
 				BB41CB3E1CF4DDD600CB9791 /* NetworkConnection.cpp in Sources */,
+				BB41CBF91CF7B24C00CB9791 /* DynamicLibraryMach.cpp in Sources */,
 				BB41CB371CF4DDD600CB9791 /* DiagnosticsStreamReporter.cpp in Sources */,
 				BB41CB411CF4DDD600CB9791 /* NetworkEndpoint.cpp in Sources */,
 				BB41CB5A1CF4DE1100CB9791 /* NetworkEndpointPosix.cpp in Sources */,

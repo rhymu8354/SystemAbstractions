@@ -9,19 +9,13 @@
 
 #include "../DynamicLibrary.hpp"
 #include "../StringExtensions.hpp"
+#include "DynamicLibraryImpl.hpp"
 
 #include <assert.h>
 #include <dlfcn.h>
+#include <string>
 
 namespace SystemAbstractions {
-
-    /**
-     * This structure contains the private properties of the
-     * DynamicLibrary class.
-     */
-    struct DynamicLibraryImpl {
-        void* libraryHandle = NULL;
-    };
 
     DynamicLibrary::DynamicLibrary()
         : _impl(new DynamicLibraryImpl())
@@ -54,7 +48,12 @@ namespace SystemAbstractions {
 
     bool DynamicLibrary::Load(const std::string& path, const std::string& name) {
         Unload();
-        const auto library = SystemAbstractions::sprintf("%s/lib%s.so", path.c_str(), name.c_str());
+        const auto library = SystemAbstractions::sprintf(
+            "%s/lib%s.%s",
+            path.c_str(),
+            name.c_str(),
+            DynamicLibraryImpl::GetDynamicLibraryFileExtension().c_str()
+        );
         _impl->libraryHandle = dlopen(library.c_str(), RTLD_LAZY);
         return (_impl->libraryHandle != NULL);
     }
