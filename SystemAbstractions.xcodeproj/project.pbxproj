@@ -8,20 +8,78 @@
 
 /* Begin PBXBuildFile section */
 		BB2E69B11C66964300EFD7DD /* IFile.hpp in Headers */ = {isa = PBXBuildFile; fileRef = BB2E69AE1C66964300EFD7DD /* IFile.hpp */; };
-		BB2E69B21C66964300EFD7DD /* OSFile.hpp in Headers */ = {isa = PBXBuildFile; fileRef = BB2E69AF1C66964300EFD7DD /* OSFile.hpp */; };
 		BB2E69B31C66964300EFD7DD /* StringFile.hpp in Headers */ = {isa = PBXBuildFile; fileRef = BB2E69B01C66964300EFD7DD /* StringFile.hpp */; };
-		BB8470C11A0AE3F2000B45D6 /* OSFileMach.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BB8470BC1A0AE3F2000B45D6 /* OSFileMach.cpp */; };
-		BB8470C21A0AE3F2000B45D6 /* OSFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BB8470BD1A0AE3F2000B45D6 /* OSFile.cpp */; };
+		BB41CB321CF4DDD600CB9791 /* DiagnosticsContext.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BB41CB1D1CF4DDD600CB9791 /* DiagnosticsContext.cpp */; };
+		BB41CB331CF4DDD600CB9791 /* DiagnosticsContext.hpp in Headers */ = {isa = PBXBuildFile; fileRef = BB41CB1E1CF4DDD600CB9791 /* DiagnosticsContext.hpp */; };
+		BB41CB341CF4DDD600CB9791 /* DiagnosticsReceiver.hpp in Headers */ = {isa = PBXBuildFile; fileRef = BB41CB1F1CF4DDD600CB9791 /* DiagnosticsReceiver.hpp */; };
+		BB41CB351CF4DDD600CB9791 /* DiagnosticsSender.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BB41CB201CF4DDD600CB9791 /* DiagnosticsSender.cpp */; };
+		BB41CB361CF4DDD600CB9791 /* DiagnosticsSender.hpp in Headers */ = {isa = PBXBuildFile; fileRef = BB41CB211CF4DDD600CB9791 /* DiagnosticsSender.hpp */; };
+		BB41CB371CF4DDD600CB9791 /* DiagnosticsStreamReporter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BB41CB221CF4DDD600CB9791 /* DiagnosticsStreamReporter.cpp */; };
+		BB41CB381CF4DDD600CB9791 /* DiagnosticsStreamReporter.hpp in Headers */ = {isa = PBXBuildFile; fileRef = BB41CB231CF4DDD600CB9791 /* DiagnosticsStreamReporter.hpp */; };
+		BB41CB391CF4DDD600CB9791 /* DirectoryMonitor.hpp in Headers */ = {isa = PBXBuildFile; fileRef = BB41CB241CF4DDD600CB9791 /* DirectoryMonitor.hpp */; };
+		BB41CB3A1CF4DDD600CB9791 /* DynamicLibrary.hpp in Headers */ = {isa = PBXBuildFile; fileRef = BB41CB251CF4DDD600CB9791 /* DynamicLibrary.hpp */; };
+		BB41CB3B1CF4DDD600CB9791 /* File.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BB41CB261CF4DDD600CB9791 /* File.cpp */; };
+		BB41CB3C1CF4DDD600CB9791 /* File.hpp in Headers */ = {isa = PBXBuildFile; fileRef = BB41CB271CF4DDD600CB9791 /* File.hpp */; };
+		BB41CB3D1CF4DDD600CB9791 /* IFileCollection.hpp in Headers */ = {isa = PBXBuildFile; fileRef = BB41CB281CF4DDD600CB9791 /* IFileCollection.hpp */; };
+		BB41CB3E1CF4DDD600CB9791 /* NetworkConnection.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BB41CB291CF4DDD600CB9791 /* NetworkConnection.cpp */; };
+		BB41CB3F1CF4DDD600CB9791 /* NetworkConnection.hpp in Headers */ = {isa = PBXBuildFile; fileRef = BB41CB2A1CF4DDD600CB9791 /* NetworkConnection.hpp */; };
+		BB41CB401CF4DDD600CB9791 /* NetworkConnectionImpl.hpp in Headers */ = {isa = PBXBuildFile; fileRef = BB41CB2B1CF4DDD600CB9791 /* NetworkConnectionImpl.hpp */; };
+		BB41CB411CF4DDD600CB9791 /* NetworkEndpoint.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BB41CB2C1CF4DDD600CB9791 /* NetworkEndpoint.cpp */; };
+		BB41CB421CF4DDD600CB9791 /* NetworkEndpoint.hpp in Headers */ = {isa = PBXBuildFile; fileRef = BB41CB2D1CF4DDD600CB9791 /* NetworkEndpoint.hpp */; };
+		BB41CB431CF4DDD600CB9791 /* NetworkEndpointImpl.hpp in Headers */ = {isa = PBXBuildFile; fileRef = BB41CB2E1CF4DDD600CB9791 /* NetworkEndpointImpl.hpp */; };
+		BB41CB441CF4DDD600CB9791 /* StringExtensions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BB41CB2F1CF4DDD600CB9791 /* StringExtensions.cpp */; };
+		BB41CB451CF4DDD600CB9791 /* StringExtensions.hpp in Headers */ = {isa = PBXBuildFile; fileRef = BB41CB301CF4DDD600CB9791 /* StringExtensions.hpp */; };
+		BB41CB461CF4DDD600CB9791 /* Subprocess.hpp in Headers */ = {isa = PBXBuildFile; fileRef = BB41CB311CF4DDD600CB9791 /* Subprocess.hpp */; };
+		BB41CB481CF4DDF200CB9791 /* FileMach.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BB41CB471CF4DDF200CB9791 /* FileMach.cpp */; };
+		BB41CB551CF4DE1100CB9791 /* DynamicLibraryPosix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BB41CB4B1CF4DE1100CB9791 /* DynamicLibraryPosix.cpp */; };
+		BB41CB561CF4DE1100CB9791 /* FilePosix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BB41CB4C1CF4DE1100CB9791 /* FilePosix.cpp */; };
+		BB41CB571CF4DE1100CB9791 /* FilePosix.hpp in Headers */ = {isa = PBXBuildFile; fileRef = BB41CB4D1CF4DE1100CB9791 /* FilePosix.hpp */; };
+		BB41CB581CF4DE1100CB9791 /* NetworkConnectionPosix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BB41CB4E1CF4DE1100CB9791 /* NetworkConnectionPosix.cpp */; };
+		BB41CB591CF4DE1100CB9791 /* NetworkConnectionPosix.hpp in Headers */ = {isa = PBXBuildFile; fileRef = BB41CB4F1CF4DE1100CB9791 /* NetworkConnectionPosix.hpp */; };
+		BB41CB5A1CF4DE1100CB9791 /* NetworkEndpointPosix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BB41CB501CF4DE1100CB9791 /* NetworkEndpointPosix.cpp */; };
+		BB41CB5B1CF4DE1100CB9791 /* NetworkEndpointPosix.hpp in Headers */ = {isa = PBXBuildFile; fileRef = BB41CB511CF4DE1100CB9791 /* NetworkEndpointPosix.hpp */; };
+		BB41CB5C1CF4DE1100CB9791 /* PipeSignal.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BB41CB521CF4DE1100CB9791 /* PipeSignal.cpp */; };
+		BB41CB5D1CF4DE1100CB9791 /* PipeSignal.hpp in Headers */ = {isa = PBXBuildFile; fileRef = BB41CB531CF4DE1100CB9791 /* PipeSignal.hpp */; };
+		BB41CB5E1CF4DE1100CB9791 /* SubprocessPosix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BB41CB541CF4DE1100CB9791 /* SubprocessPosix.cpp */; };
 		BB9AA6C11A5A5FAD0072E88C /* StringFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BB9AA6BF1A5A5FAD0072E88C /* StringFile.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		BB2E69AE1C66964300EFD7DD /* IFile.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = IFile.hpp; sourceTree = "<group>"; };
-		BB2E69AF1C66964300EFD7DD /* OSFile.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = OSFile.hpp; sourceTree = "<group>"; };
 		BB2E69B01C66964300EFD7DD /* StringFile.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = StringFile.hpp; sourceTree = "<group>"; };
+		BB41CB1D1CF4DDD600CB9791 /* DiagnosticsContext.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DiagnosticsContext.cpp; sourceTree = "<group>"; };
+		BB41CB1E1CF4DDD600CB9791 /* DiagnosticsContext.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = DiagnosticsContext.hpp; sourceTree = "<group>"; };
+		BB41CB1F1CF4DDD600CB9791 /* DiagnosticsReceiver.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = DiagnosticsReceiver.hpp; sourceTree = "<group>"; };
+		BB41CB201CF4DDD600CB9791 /* DiagnosticsSender.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DiagnosticsSender.cpp; sourceTree = "<group>"; };
+		BB41CB211CF4DDD600CB9791 /* DiagnosticsSender.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = DiagnosticsSender.hpp; sourceTree = "<group>"; };
+		BB41CB221CF4DDD600CB9791 /* DiagnosticsStreamReporter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DiagnosticsStreamReporter.cpp; sourceTree = "<group>"; };
+		BB41CB231CF4DDD600CB9791 /* DiagnosticsStreamReporter.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = DiagnosticsStreamReporter.hpp; sourceTree = "<group>"; };
+		BB41CB241CF4DDD600CB9791 /* DirectoryMonitor.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = DirectoryMonitor.hpp; sourceTree = "<group>"; };
+		BB41CB251CF4DDD600CB9791 /* DynamicLibrary.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = DynamicLibrary.hpp; sourceTree = "<group>"; };
+		BB41CB261CF4DDD600CB9791 /* File.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = File.cpp; sourceTree = "<group>"; };
+		BB41CB271CF4DDD600CB9791 /* File.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = File.hpp; sourceTree = "<group>"; };
+		BB41CB281CF4DDD600CB9791 /* IFileCollection.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = IFileCollection.hpp; sourceTree = "<group>"; };
+		BB41CB291CF4DDD600CB9791 /* NetworkConnection.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NetworkConnection.cpp; sourceTree = "<group>"; };
+		BB41CB2A1CF4DDD600CB9791 /* NetworkConnection.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = NetworkConnection.hpp; sourceTree = "<group>"; };
+		BB41CB2B1CF4DDD600CB9791 /* NetworkConnectionImpl.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = NetworkConnectionImpl.hpp; sourceTree = "<group>"; };
+		BB41CB2C1CF4DDD600CB9791 /* NetworkEndpoint.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NetworkEndpoint.cpp; sourceTree = "<group>"; };
+		BB41CB2D1CF4DDD600CB9791 /* NetworkEndpoint.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = NetworkEndpoint.hpp; sourceTree = "<group>"; };
+		BB41CB2E1CF4DDD600CB9791 /* NetworkEndpointImpl.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = NetworkEndpointImpl.hpp; sourceTree = "<group>"; };
+		BB41CB2F1CF4DDD600CB9791 /* StringExtensions.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StringExtensions.cpp; sourceTree = "<group>"; };
+		BB41CB301CF4DDD600CB9791 /* StringExtensions.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = StringExtensions.hpp; sourceTree = "<group>"; };
+		BB41CB311CF4DDD600CB9791 /* Subprocess.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Subprocess.hpp; sourceTree = "<group>"; };
+		BB41CB471CF4DDF200CB9791 /* FileMach.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FileMach.cpp; path = Mach/FileMach.cpp; sourceTree = "<group>"; };
+		BB41CB4B1CF4DE1100CB9791 /* DynamicLibraryPosix.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DynamicLibraryPosix.cpp; path = Posix/DynamicLibraryPosix.cpp; sourceTree = "<group>"; };
+		BB41CB4C1CF4DE1100CB9791 /* FilePosix.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FilePosix.cpp; path = Posix/FilePosix.cpp; sourceTree = "<group>"; };
+		BB41CB4D1CF4DE1100CB9791 /* FilePosix.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = FilePosix.hpp; path = Posix/FilePosix.hpp; sourceTree = "<group>"; };
+		BB41CB4E1CF4DE1100CB9791 /* NetworkConnectionPosix.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = NetworkConnectionPosix.cpp; path = Posix/NetworkConnectionPosix.cpp; sourceTree = "<group>"; };
+		BB41CB4F1CF4DE1100CB9791 /* NetworkConnectionPosix.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = NetworkConnectionPosix.hpp; path = Posix/NetworkConnectionPosix.hpp; sourceTree = "<group>"; };
+		BB41CB501CF4DE1100CB9791 /* NetworkEndpointPosix.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = NetworkEndpointPosix.cpp; path = Posix/NetworkEndpointPosix.cpp; sourceTree = "<group>"; };
+		BB41CB511CF4DE1100CB9791 /* NetworkEndpointPosix.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = NetworkEndpointPosix.hpp; path = Posix/NetworkEndpointPosix.hpp; sourceTree = "<group>"; };
+		BB41CB521CF4DE1100CB9791 /* PipeSignal.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PipeSignal.cpp; path = Posix/PipeSignal.cpp; sourceTree = "<group>"; };
+		BB41CB531CF4DE1100CB9791 /* PipeSignal.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = PipeSignal.hpp; path = Posix/PipeSignal.hpp; sourceTree = "<group>"; };
+		BB41CB541CF4DE1100CB9791 /* SubprocessPosix.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SubprocessPosix.cpp; path = Posix/SubprocessPosix.cpp; sourceTree = "<group>"; };
 		BB8470B21A0AE3D8000B45D6 /* libSystemAbstractions.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libSystemAbstractions.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		BB8470BC1A0AE3F2000B45D6 /* OSFileMach.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OSFileMach.cpp; sourceTree = "<group>"; };
-		BB8470BD1A0AE3F2000B45D6 /* OSFile.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OSFile.cpp; sourceTree = "<group>"; };
 		BB9AA6BF1A5A5FAD0072E88C /* StringFile.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StringFile.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -36,16 +94,61 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		BB41CB491CF4DDF800CB9791 /* Mach */ = {
+			isa = PBXGroup;
+			children = (
+				BB41CB471CF4DDF200CB9791 /* FileMach.cpp */,
+			);
+			name = Mach;
+			sourceTree = "<group>";
+		};
+		BB41CB4A1CF4DE0100CB9791 /* POSIX */ = {
+			isa = PBXGroup;
+			children = (
+				BB41CB4B1CF4DE1100CB9791 /* DynamicLibraryPosix.cpp */,
+				BB41CB4C1CF4DE1100CB9791 /* FilePosix.cpp */,
+				BB41CB4D1CF4DE1100CB9791 /* FilePosix.hpp */,
+				BB41CB4E1CF4DE1100CB9791 /* NetworkConnectionPosix.cpp */,
+				BB41CB4F1CF4DE1100CB9791 /* NetworkConnectionPosix.hpp */,
+				BB41CB501CF4DE1100CB9791 /* NetworkEndpointPosix.cpp */,
+				BB41CB511CF4DE1100CB9791 /* NetworkEndpointPosix.hpp */,
+				BB41CB521CF4DE1100CB9791 /* PipeSignal.cpp */,
+				BB41CB531CF4DE1100CB9791 /* PipeSignal.hpp */,
+				BB41CB541CF4DE1100CB9791 /* SubprocessPosix.cpp */,
+			);
+			name = POSIX;
+			sourceTree = "<group>";
+		};
 		BB8470A91A0AE3D8000B45D6 = {
 			isa = PBXGroup;
 			children = (
+				BB41CB1D1CF4DDD600CB9791 /* DiagnosticsContext.cpp */,
+				BB41CB1E1CF4DDD600CB9791 /* DiagnosticsContext.hpp */,
+				BB41CB1F1CF4DDD600CB9791 /* DiagnosticsReceiver.hpp */,
+				BB41CB201CF4DDD600CB9791 /* DiagnosticsSender.cpp */,
+				BB41CB211CF4DDD600CB9791 /* DiagnosticsSender.hpp */,
+				BB41CB221CF4DDD600CB9791 /* DiagnosticsStreamReporter.cpp */,
+				BB41CB231CF4DDD600CB9791 /* DiagnosticsStreamReporter.hpp */,
+				BB41CB241CF4DDD600CB9791 /* DirectoryMonitor.hpp */,
+				BB41CB251CF4DDD600CB9791 /* DynamicLibrary.hpp */,
+				BB41CB261CF4DDD600CB9791 /* File.cpp */,
+				BB41CB271CF4DDD600CB9791 /* File.hpp */,
 				BB2E69AE1C66964300EFD7DD /* IFile.hpp */,
-				BB8470BB1A0AE3F2000B45D6 /* Mach */,
-				BB8470BD1A0AE3F2000B45D6 /* OSFile.cpp */,
-				BB2E69AF1C66964300EFD7DD /* OSFile.hpp */,
+				BB41CB281CF4DDD600CB9791 /* IFileCollection.hpp */,
+				BB41CB491CF4DDF800CB9791 /* Mach */,
+				BB41CB291CF4DDD600CB9791 /* NetworkConnection.cpp */,
+				BB41CB2A1CF4DDD600CB9791 /* NetworkConnection.hpp */,
+				BB41CB2B1CF4DDD600CB9791 /* NetworkConnectionImpl.hpp */,
+				BB41CB2C1CF4DDD600CB9791 /* NetworkEndpoint.cpp */,
+				BB41CB2D1CF4DDD600CB9791 /* NetworkEndpoint.hpp */,
+				BB41CB2E1CF4DDD600CB9791 /* NetworkEndpointImpl.hpp */,
+				BB41CB4A1CF4DE0100CB9791 /* POSIX */,
 				BB8470B31A0AE3D8000B45D6 /* Products */,
+				BB41CB2F1CF4DDD600CB9791 /* StringExtensions.cpp */,
+				BB41CB301CF4DDD600CB9791 /* StringExtensions.hpp */,
 				BB9AA6BF1A5A5FAD0072E88C /* StringFile.cpp */,
 				BB2E69B01C66964300EFD7DD /* StringFile.hpp */,
+				BB41CB311CF4DDD600CB9791 /* Subprocess.hpp */,
 			);
 			sourceTree = "<group>";
 		};
@@ -57,14 +160,6 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		BB8470BB1A0AE3F2000B45D6 /* Mach */ = {
-			isa = PBXGroup;
-			children = (
-				BB8470BC1A0AE3F2000B45D6 /* OSFileMach.cpp */,
-			);
-			path = Mach;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -72,9 +167,26 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BB2E69B21C66964300EFD7DD /* OSFile.hpp in Headers */,
+				BB41CB5D1CF4DE1100CB9791 /* PipeSignal.hpp in Headers */,
+				BB41CB381CF4DDD600CB9791 /* DiagnosticsStreamReporter.hpp in Headers */,
+				BB41CB591CF4DE1100CB9791 /* NetworkConnectionPosix.hpp in Headers */,
 				BB2E69B11C66964300EFD7DD /* IFile.hpp in Headers */,
+				BB41CB3F1CF4DDD600CB9791 /* NetworkConnection.hpp in Headers */,
+				BB41CB3A1CF4DDD600CB9791 /* DynamicLibrary.hpp in Headers */,
+				BB41CB431CF4DDD600CB9791 /* NetworkEndpointImpl.hpp in Headers */,
+				BB41CB391CF4DDD600CB9791 /* DirectoryMonitor.hpp in Headers */,
+				BB41CB3C1CF4DDD600CB9791 /* File.hpp in Headers */,
 				BB2E69B31C66964300EFD7DD /* StringFile.hpp in Headers */,
+				BB41CB5B1CF4DE1100CB9791 /* NetworkEndpointPosix.hpp in Headers */,
+				BB41CB3D1CF4DDD600CB9791 /* IFileCollection.hpp in Headers */,
+				BB41CB361CF4DDD600CB9791 /* DiagnosticsSender.hpp in Headers */,
+				BB41CB341CF4DDD600CB9791 /* DiagnosticsReceiver.hpp in Headers */,
+				BB41CB451CF4DDD600CB9791 /* StringExtensions.hpp in Headers */,
+				BB41CB571CF4DE1100CB9791 /* FilePosix.hpp in Headers */,
+				BB41CB421CF4DDD600CB9791 /* NetworkEndpoint.hpp in Headers */,
+				BB41CB461CF4DDD600CB9791 /* Subprocess.hpp in Headers */,
+				BB41CB331CF4DDD600CB9791 /* DiagnosticsContext.hpp in Headers */,
+				BB41CB401CF4DDD600CB9791 /* NetworkConnectionImpl.hpp in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -129,9 +241,21 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BB8470C11A0AE3F2000B45D6 /* OSFileMach.cpp in Sources */,
+				BB41CB5E1CF4DE1100CB9791 /* SubprocessPosix.cpp in Sources */,
+				BB41CB551CF4DE1100CB9791 /* DynamicLibraryPosix.cpp in Sources */,
+				BB41CB321CF4DDD600CB9791 /* DiagnosticsContext.cpp in Sources */,
 				BB9AA6C11A5A5FAD0072E88C /* StringFile.cpp in Sources */,
-				BB8470C21A0AE3F2000B45D6 /* OSFile.cpp in Sources */,
+				BB41CB581CF4DE1100CB9791 /* NetworkConnectionPosix.cpp in Sources */,
+				BB41CB3B1CF4DDD600CB9791 /* File.cpp in Sources */,
+				BB41CB561CF4DE1100CB9791 /* FilePosix.cpp in Sources */,
+				BB41CB481CF4DDF200CB9791 /* FileMach.cpp in Sources */,
+				BB41CB441CF4DDD600CB9791 /* StringExtensions.cpp in Sources */,
+				BB41CB351CF4DDD600CB9791 /* DiagnosticsSender.cpp in Sources */,
+				BB41CB5C1CF4DE1100CB9791 /* PipeSignal.cpp in Sources */,
+				BB41CB3E1CF4DDD600CB9791 /* NetworkConnection.cpp in Sources */,
+				BB41CB371CF4DDD600CB9791 /* DiagnosticsStreamReporter.cpp in Sources */,
+				BB41CB411CF4DDD600CB9791 /* NetworkEndpoint.cpp in Sources */,
+				BB41CB5A1CF4DE1100CB9791 /* NetworkEndpointPosix.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
