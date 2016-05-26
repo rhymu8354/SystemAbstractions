@@ -170,8 +170,15 @@ namespace SystemAbstractions {
                 if (entryBack == NULL) {
                     break;
                 }
+                std::string name(entry.d_name);
+                if (
+                    (name == ".")
+                    || (name == "..")
+                ) {
+                    continue;
+                }
                 std::string filePath(directoryWithSeparator);
-                filePath += entry.d_name;
+                filePath += name;
                 list.push_back(filePath);
             }
             (void)closedir(dir);

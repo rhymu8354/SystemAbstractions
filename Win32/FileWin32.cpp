@@ -191,8 +191,15 @@ namespace SystemAbstractions {
         list.clear();
         if (searchHandle != INVALID_HANDLE_VALUE) {
             do {
+                std::string name(findFileData.cFileName);
+                if (
+                    (name == ".")
+                    || (name == "..")
+                ) {
+                    continue;
+                }
                 std::string filePath(directoryWithSeparator);
-                filePath += findFileData.cFileName;
+                filePath += name;
                 list.push_back(filePath);
             } while (FindNextFileA(searchHandle, &findFileData) == TRUE);
             FindClose(searchHandle);
