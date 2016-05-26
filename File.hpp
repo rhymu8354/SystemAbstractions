@@ -198,6 +198,18 @@ namespace SystemAbstractions {
         static void ListDirectory(const std::string& directory, std::vector< std::string >& list);
 
         /**
+         * This method creates a directory if it doesn't already exist.
+         *
+         * @param[in] directory
+         *     This is the directory to create.
+         *
+         * @return
+         *     A flag indicating whether or not the method succeeded
+         *     is returned.
+         */
+        static bool CreateDirectory(const std::string& directory);
+
+        /**
          * This method deletes a directory and all its contents.
          *
          * @param[in] directory

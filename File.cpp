@@ -42,4 +42,16 @@ namespace SystemAbstractions {
         return Write(&buffer[offset], numBytes);
     }
 
+    bool File::CreateDirectory(const std::string& directory) {
+        std::string directoryWithSeparator(directory);
+        if (
+            (directoryWithSeparator.length() > 0)
+            && (directoryWithSeparator[directoryWithSeparator.length() - 1] != '\\')
+            && (directoryWithSeparator[directoryWithSeparator.length() - 1] != '/')
+        ) {
+            directoryWithSeparator += '/';
+        }
+        return File::CreatePath(directoryWithSeparator);
+    }
+
 }
