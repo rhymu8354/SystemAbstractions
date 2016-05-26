@@ -15,6 +15,7 @@ namespace SystemAbstractions {
         : _output(output)
         , _error(error)
     {
+        _timeReference = _time.GetTime();
     }
 
     void DiagnosticsStreamReporter::ReceiveDiagnosticInformation(
@@ -33,7 +34,7 @@ namespace SystemAbstractions {
         } else {
             destination = _output;
         }
-        fprintf(destination, "[%s:%u] %s%s\n", senderName.c_str(), (unsigned int)level, prefix.c_str(),  message.c_str());
+        fprintf(destination, "[%.6lf %s:%u] %s%s\n", _time.GetTime() - _timeReference, senderName.c_str(), (unsigned int)level, prefix.c_str(),  message.c_str());
     }
 
 }

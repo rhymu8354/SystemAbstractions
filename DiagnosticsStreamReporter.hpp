@@ -10,6 +10,7 @@
  */
 
 #include "DiagnosticsReceiver.hpp"
+#include "Time.hpp"
 
 #include <stddef.h>
 #include <stdio.h>
@@ -39,6 +40,8 @@ namespace SystemAbstractions {
     private:
         FILE* _output;
         FILE* _error;
+        Time _time;
+        double _timeReference;
     };
 
 }
