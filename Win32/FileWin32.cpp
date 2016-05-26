@@ -56,6 +56,17 @@ namespace SystemAbstractions {
         return true;
     }
 
+    bool File::IsDirectory() {
+        const DWORD attr = GetFileAttributesA(_path.c_str());
+        if (
+            (attr == INVALID_FILE_ATTRIBUTES)
+            || ((attr & FILE_ATTRIBUTE_DIRECTORY) == 0)
+        ) {
+            return false;
+        }
+        return true;
+    }
+
     bool File::Open() {
         Close();
         _impl->handle = CreateFileA(

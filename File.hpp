@@ -48,6 +48,15 @@ namespace SystemAbstractions {
         bool IsExisting();
 
         /**
+         * This method is used to check if the file is a directory.
+         *
+         * @return
+         *     A flag is returned that indicates whether or not the
+         *     file exists in the file system as a directory.
+         */
+        bool IsDirectory();
+
+        /**
          * This method opens the file for reading, expecting it to
          * already exist.
          *

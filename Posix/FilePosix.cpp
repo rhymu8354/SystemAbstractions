@@ -64,6 +64,18 @@ namespace SystemAbstractions {
         return (access(_path.c_str(), 0) == 0);
     }
 
+    bool File::IsDirectory() {
+        struct stat s;
+        if (
+            (stat(_path.c_str(), &s) == 0)
+            && (S_ISDIR(s.st_mode))
+        ) {
+            return s.st_mtime;
+        } else {
+            return false;
+        }
+    }
+
     bool File::Open() {
         Close();
         _impl->handle = fopen(_path.c_str(), "r+b");
