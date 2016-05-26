@@ -23,6 +23,10 @@
 #include <string.h>
 #include <unistd.h>
 
+#ifndef MSG_NOSIGNAL
+#define MSG_NOSIGNAL 0
+#endif /* MSG_NOSIGNAL */
+
 namespace {
 
     static const size_t MAXIMUM_READ_SIZE = 65536;
@@ -103,6 +107,16 @@ namespace SystemAbstractions {
             );
             return false;
         }
+#ifdef SO_NOSIGPIPE
+        int opt = 1;
+        if (setsockopt(platform->sock, SOL_SOCKET, SO_NOSIGPIPE, &opt, sizeof(opt)) < 0) {
+            diagnosticsSender.SendDiagnosticInformationFormatted(
+                SystemAbstractions::DiagnosticsReceiver::Levels::WARNING,
+                "error in setsockopt(SO_NOSIGPIPE): %s",
+                strerror(errno)
+            );
+        }
+#endif /* SO_NOSIGPIPE */
         if (platform->processor.joinable()) {
             diagnosticsSender.SendDiagnosticInformationString(
                 SystemAbstractions::DiagnosticsReceiver::Levels::WARNING,
