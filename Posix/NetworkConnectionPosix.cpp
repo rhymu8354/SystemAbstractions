@@ -302,6 +302,10 @@ namespace SystemAbstractions {
         );
     }
 
+    bool NetworkConnectionImpl::IsConnected() const {
+        return (platform->sock >= 0);
+    }
+
     void NetworkConnectionImpl::SendMessage(const std::vector< uint8_t >& message) {
         std::unique_lock< std::recursive_mutex > processingLock(platform->processingMutex);
         platform->outputQueue.insert(platform->outputQueue.end(), message.begin(), message.end());

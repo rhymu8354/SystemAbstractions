@@ -77,6 +77,11 @@ namespace SystemAbstractions {
         /**
          * @todo Needs documentation
          */
+        bool IsConnected() const;
+
+        /**
+         * @todo Needs documentation
+         */
         void SendMessage(const std::vector< uint8_t >& message);
 
         /**

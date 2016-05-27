@@ -68,6 +68,10 @@ namespace SystemAbstractions {
         return _impl->peerPort;
     }
 
+    bool NetworkConnection::IsConnected() const {
+        return _impl->IsConnected();
+    }
+
     void NetworkConnection::SendMessage(const std::vector< uint8_t >& message) {
         _impl->SendMessage(message);
     }
