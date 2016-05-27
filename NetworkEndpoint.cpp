@@ -53,6 +53,10 @@ namespace SystemAbstractions {
         return _impl->Listen();
     }
 
+    uint16_t NetworkEndpoint::GetPortNumber() const {
+        return _impl->port;
+    }
+
     void NetworkEndpoint::Close() {
         _impl->Close();
     }

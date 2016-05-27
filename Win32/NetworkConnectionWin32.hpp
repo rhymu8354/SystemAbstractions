@@ -69,7 +69,7 @@ namespace SystemAbstractions {
          */
         static bool Bind(
             SOCKET& sock,
-            uint16_t port,
+            uint16_t& port,
             SystemAbstractions::DiagnosticsSender& diagnosticsSender
         );
     };

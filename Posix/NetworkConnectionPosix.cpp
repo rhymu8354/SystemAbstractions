@@ -38,7 +38,7 @@ namespace SystemAbstractions {
 
     bool NetworkConnectionPlatform::Bind(
         int& sock,
-        uint16_t port,
+        uint16_t& port,
         SystemAbstractions::DiagnosticsSender& diagnosticsSender
     ) {
         struct sockaddr_in socketAddress;
@@ -64,6 +64,19 @@ namespace SystemAbstractions {
             sock = -1;
             return false;
         }
+        socklen_t socketAddressLength = sizeof(socketAddress);
+        if (getsockname(sock, (struct sockaddr*)&socketAddress, &socketAddressLength) == 0) {
+            port = ntohs(socketAddress.sin_port);
+        } else {
+            diagnosticsSender.SendDiagnosticInformationFormatted(
+                SystemAbstractions::DiagnosticsReceiver::Levels::ERROR,
+                "error in getsockname: %s",
+                strerror(errno)
+            );
+            (void)close(sock);
+            sock = -1;
+            return false;
+        }
         return true;
     }
 
@@ -79,7 +92,8 @@ namespace SystemAbstractions {
 
     bool NetworkConnectionImpl::Connect() {
         Close(true);
-        if (!NetworkConnectionPlatform::Bind(platform->sock, 0, diagnosticsSender)) {
+        uint16_t port = 0;
+        if (!NetworkConnectionPlatform::Bind(platform->sock, port, diagnosticsSender)) {
             return false;
         }
         struct sockaddr_in socketAddress;

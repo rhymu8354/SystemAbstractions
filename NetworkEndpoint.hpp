@@ -90,6 +90,11 @@ namespace SystemAbstractions {
         /**
          * @todo Needs documentation
          */
+        uint16_t GetPortNumber() const;
+
+        /**
+         * @todo Needs documentation
+         */
         void Close();
 
         // Disable copy constructor and assignment operator.
