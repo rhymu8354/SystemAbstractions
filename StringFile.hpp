@@ -11,7 +11,10 @@
 
 #include "IFile.hpp"
 
+#include <stdint.h>
+#include <stdlib.h>
 #include <string>
+#include <vector>
 
 namespace SystemAbstractions {
 
@@ -22,12 +25,20 @@ namespace SystemAbstractions {
         // Public methods
     public:
         /**
-         * This is the instance constructor.
+         * This is an instance constructor.
          *
          * @param[in] initialValue
          *     This is the initial contents of the file.
          */
         StringFile(std::string initialValue = "");
+
+        /**
+         * This is an instance constructor.
+         *
+         * @param[in] initialValue
+         *     This is the initial contents of the file.
+         */
+        StringFile(std::vector< uint8_t > initialValue);
 
         /**
          * This is the instance destructor.
@@ -40,9 +51,19 @@ namespace SystemAbstractions {
         operator std::string() const;
 
         /**
+         * This is the typecast to std::vector< uint8_t > operator.
+         */
+        operator std::vector< uint8_t >() const;
+
+        /**
          * This is the assignment from std::string operator.
          */
         StringFile& operator =(const std::string &b);
+
+        /**
+         * This is the assignment from std::vector< uint8_t > operator.
+         */
+        StringFile& operator =(const std::vector< uint8_t > &b);
 
         // IFile
     public:
@@ -62,12 +83,12 @@ namespace SystemAbstractions {
         /**
          * This is the contents of the file.
          */
-        std::string _value;
+        std::vector< uint8_t > _value;
 
         /**
          * This is the current position in the file.
          */
-        std::string::size_type _position;
+        size_t _position;
     };
 
 }
