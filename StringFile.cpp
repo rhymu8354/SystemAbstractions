@@ -10,7 +10,6 @@
 
 #include <algorithm>
 #include <string>
-#include <string.h>
 
 namespace SystemAbstractions {
 
@@ -21,7 +20,7 @@ namespace SystemAbstractions {
     }
 
     StringFile::StringFile(std::vector< uint8_t > initialValue)
-        : _value(initialValue)
+        : _value(initialValue.begin(), initialValue.end())
         , _position(0)
     {
     }
@@ -34,7 +33,7 @@ namespace SystemAbstractions {
     }
 
     StringFile::operator std::vector< uint8_t >() const {
-        return _value;
+        return std::vector< uint8_t >(_value.begin(), _value.end());
     }
 
     StringFile& StringFile::operator =(const std::string &b) {
@@ -44,9 +43,14 @@ namespace SystemAbstractions {
     }
 
     StringFile& StringFile::operator =(const std::vector< uint8_t > &b) {
-        _value = b;
+        _value.assign(b.begin(), b.end());
         _position = 0;
         return *this;
+    }
+
+    void StringFile::Remove(size_t numBytes) {
+        _value.erase(_value.begin(), _value.begin() + numBytes);
+        _position = std::max(numBytes, _position) - numBytes;
     }
 
     uint64_t StringFile::GetSize() const {
@@ -78,8 +82,8 @@ namespace SystemAbstractions {
 
     size_t StringFile::Peek(void* buffer, size_t numBytes) const {
         const size_t amountCopied = std::min(numBytes, _value.size() - _position);
-        if (amountCopied > 0) {
-            (void)memcpy(buffer, &_value[_position], amountCopied);
+        for (size_t i = 0; i < amountCopied; ++i) {
+            ((uint8_t*)buffer)[i] = _value[_position + i];
         }
         return amountCopied;
     }
@@ -96,10 +100,10 @@ namespace SystemAbstractions {
 
     size_t StringFile::Read(void* buffer, size_t numBytes) {
         const size_t amountCopied = std::min(numBytes, _value.size() - _position);
-        if (amountCopied > 0) {
-            (void)memcpy(buffer, &_value[_position], amountCopied);
-            _position += amountCopied;
+        for (size_t i = 0; i < amountCopied; ++i) {
+            ((uint8_t*)buffer)[i] = _value[_position + i];
         }
+        _position += amountCopied;
         return amountCopied;
     }
 
@@ -113,7 +117,9 @@ namespace SystemAbstractions {
         if (_position + numBytes > _value.size()) {
             _value.resize(_position + numBytes);
         }
-        (void)memcpy(&_value[_position], &buffer[offset], numBytes);
+        for (size_t i = 0; i < numBytes; ++i) {
+            _value[_position + i], buffer[offset + i];
+        }
         _position += numBytes;
         return numBytes;
     }
@@ -125,7 +131,9 @@ namespace SystemAbstractions {
         if (_position + numBytes > _value.size()) {
             _value.resize(_position + numBytes);
         }
-        (void)memcpy(&_value[_position], buffer, numBytes);
+        for (size_t i = 0; i < numBytes; ++i) {
+            _value[_position + i], ((const uint8_t*)buffer)[i];
+        }
         _position += numBytes;
         return numBytes;
     }

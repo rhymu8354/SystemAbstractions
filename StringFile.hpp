@@ -11,6 +11,7 @@
 
 #include "IFile.hpp"
 
+#include <deque>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string>
@@ -65,6 +66,11 @@ namespace SystemAbstractions {
          */
         StringFile& operator =(const std::vector< uint8_t > &b);
 
+        /**
+         * @todo Needs documentation
+         */
+        void Remove(size_t numBytes);
+
         // IFile
     public:
         virtual uint64_t GetSize() const override;
@@ -83,7 +89,7 @@ namespace SystemAbstractions {
         /**
          * This is the contents of the file.
          */
-        std::vector< uint8_t > _value;
+        std::deque< uint8_t > _value;
 
         /**
          * This is the current position in the file.
