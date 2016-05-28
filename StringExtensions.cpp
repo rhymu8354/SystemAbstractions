@@ -45,4 +45,22 @@ namespace SystemAbstractions {
         return std::string(&buffer[0]);
     }
 
+    std::string Trim(const std::string& s) {
+        size_t i = 0;
+        while (
+            (i < s.length())
+            && (s[i] <= 32)
+        ) {
+            ++i;
+        }
+        size_t j = s.length();
+        while (
+            (j > 0)
+            && (s[j - 1] <= 32)
+        ) {
+            --j;
+        }
+        return s.substr(i, j - i);
+    }
+
 }

@@ -42,6 +42,18 @@ namespace SystemAbstractions {
      */
     std::string wcstombs(const std::wstring& src);
 
+    /**
+     * This method makes a copy of a string and removes any whitespace
+     * from the front and back of the copy.
+     *
+     * @param[in] s
+     *     This is the string to trim.
+     *
+     * @return
+     *     The trimmed string is returned.
+     */
+    std::string Trim(const std::string& s);
+
 }
 
 #endif /* SYSTEM_ABSTRACTIONS_STRING_EXTENSIONS_HPP */
