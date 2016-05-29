@@ -52,7 +52,7 @@ namespace SystemAbstractions {
 
     bool NetworkEndpointImpl::ListenForConnections() {
         Close();
-        if (!NetworkConnectionPlatform::Bind(platform->sock, port, diagnosticsSender)) {
+        if (!NetworkConnectionPlatform::Bind(platform->sock, address, port, diagnosticsSender)) {
             return false;
         }
         if (platform->listener.joinable()) {

@@ -38,12 +38,14 @@ namespace SystemAbstractions {
 
     bool NetworkConnectionPlatform::Bind(
         int& sock,
+        uint32_t address,
         uint16_t& port,
         SystemAbstractions::DiagnosticsSender& diagnosticsSender
     ) {
         struct sockaddr_in socketAddress;
         (void)memset(&socketAddress, 0, sizeof(socketAddress));
         socketAddress.sin_family = AF_INET;
+        socketAddress.sin_addr.s_addr = htonl(address);
         socketAddress.sin_port = htons(port);
         sock = socket(socketAddress.sin_family, SOCK_STREAM, 0);
         if (sock < 0) {
@@ -93,7 +95,7 @@ namespace SystemAbstractions {
     bool NetworkConnectionImpl::Connect() {
         Close(true);
         uint16_t port = 0;
-        if (!NetworkConnectionPlatform::Bind(platform->sock, port, diagnosticsSender)) {
+        if (!NetworkConnectionPlatform::Bind(platform->sock, 0, port, diagnosticsSender)) {
             return false;
         }
         struct sockaddr_in socketAddress;

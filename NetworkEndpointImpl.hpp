@@ -35,6 +35,11 @@ namespace SystemAbstractions {
         /**
          * @todo Needs documentation
          */
+        uint32_t address = 0;
+
+        /**
+         * @todo Needs documentation
+         */
         uint16_t port = 0;
 
         /**

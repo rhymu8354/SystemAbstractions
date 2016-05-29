@@ -60,6 +60,7 @@ namespace SystemAbstractions {
          */
         static bool Bind(
             int& sock,
+            uint32_t address,
             uint16_t& port,
             DiagnosticsSender& diagnosticsSender
         );

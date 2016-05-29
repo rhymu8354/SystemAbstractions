@@ -46,11 +46,17 @@ namespace SystemAbstractions {
 
     bool NetworkEndpoint::ListenForConnections(
         Owner* owner,
+        uint32_t address,
         uint16_t port
     ) {
         _impl->owner = owner;
+        _impl->address = address;
         _impl->port = port;
         return _impl->ListenForConnections();
+    }
+
+    uint32_t NetworkEndpoint::GetAddress() const {
+        return _impl->address;
     }
 
     uint16_t NetworkEndpoint::GetPortNumber() const {
