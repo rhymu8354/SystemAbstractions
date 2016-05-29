@@ -82,7 +82,7 @@ namespace SystemAbstractions {
          *     An indication of whether or not the method was
          *     successful is returned.
          */
-        bool Listen(
+        bool ListenForConnections(
             Owner* owner,
             uint16_t port
         );

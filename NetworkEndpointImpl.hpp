@@ -55,12 +55,12 @@ namespace SystemAbstractions {
         /**
          * @todo Needs documentation
          */
-        bool Listen();
+        bool ListenForConnections();
 
         /**
          * @todo Needs documentation
          */
-        void Listener();
+        void ConnectionListener();
 
         /**
          * @todo Needs documentation

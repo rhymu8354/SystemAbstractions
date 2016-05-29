@@ -44,13 +44,13 @@ namespace SystemAbstractions {
         _impl->diagnosticsSender.UnsubscribeFromDiagnostics(subscriber);
     }
 
-    bool NetworkEndpoint::Listen(
+    bool NetworkEndpoint::ListenForConnections(
         Owner* owner,
         uint16_t port
     ) {
         _impl->owner = owner;
         _impl->port = port;
-        return _impl->Listen();
+        return _impl->ListenForConnections();
     }
 
     uint16_t NetworkEndpoint::GetPortNumber() const {

@@ -50,7 +50,7 @@ namespace SystemAbstractions {
         }
     }
 
-    bool NetworkEndpointImpl::Listen() {
+    bool NetworkEndpointImpl::ListenForConnections() {
         Close();
         if (!NetworkConnectionPlatform::Bind(platform->sock, port, diagnosticsSender)) {
             return false;
@@ -107,11 +107,11 @@ namespace SystemAbstractions {
             "endpoint opened for port %" PRIu16,
             port
         );
-        platform->listener = std::move(std::thread(&NetworkEndpointImpl::Listener, this));
+        platform->listener = std::move(std::thread(&NetworkEndpointImpl::ConnectionListener, this));
         return true;
     }
 
-    void NetworkEndpointImpl::Listener() {
+    void NetworkEndpointImpl::ConnectionListener() {
         diagnosticsSender.SendDiagnosticInformationString(
             0,
             "Listener thread started"
