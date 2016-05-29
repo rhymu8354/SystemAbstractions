@@ -29,7 +29,7 @@ namespace SystemAbstractions {
     }
 
     StringFile::operator std::string() const {
-        return std::string((const char*)&_value[0], _value.size());
+        return std::string(_value.begin(), _value.end());
     }
 
     StringFile::operator std::vector< uint8_t >() const {
@@ -118,7 +118,7 @@ namespace SystemAbstractions {
             _value.resize(_position + numBytes);
         }
         for (size_t i = 0; i < numBytes; ++i) {
-            _value[_position + i], buffer[offset + i];
+            _value[_position + i] = buffer[offset + i];
         }
         _position += numBytes;
         return numBytes;
@@ -132,7 +132,7 @@ namespace SystemAbstractions {
             _value.resize(_position + numBytes);
         }
         for (size_t i = 0; i < numBytes; ++i) {
-            _value[_position + i], ((const uint8_t*)buffer)[i];
+            _value[_position + i] = ((const uint8_t*)buffer)[i];
         }
         _position += numBytes;
         return numBytes;
