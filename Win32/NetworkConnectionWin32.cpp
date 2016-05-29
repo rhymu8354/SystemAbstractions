@@ -186,32 +186,15 @@ namespace SystemAbstractions {
         while (!platform->processorStop) {
             if (wait) {
                 processingLock.unlock();
-                const auto eventIndex = WaitForMultipleObjects(2, handles, FALSE, INFINITE);
+                (void)WaitForMultipleObjects(2, handles, FALSE, INFINITE);
                 processingLock.lock();
-                diagnosticsSender.SendDiagnosticInformationFormatted(
-                    0,
-                    "processor awakened by event, index %d",
-                    (int)eventIndex
-                );
             }
             wait = true;
             buffer.resize(MAXIMUM_READ_SIZE);
             const int amountReceived = recv(platform->sock, (char*)&buffer[0], (int)buffer.size(), 0);
             if (amountReceived == SOCKET_ERROR) {
                 const auto wsaLastError = WSAGetLastError();
-                if (wsaLastError == WSAEWOULDBLOCK) {
-                    diagnosticsSender.SendDiagnosticInformationString(
-                        0,
-                        "read not ready"
-                    );
-                } else {
-                    if (wsaLastError != WSAECONNRESET) {
-                        diagnosticsSender.SendDiagnosticInformationFormatted(
-                            0,
-                            "read error %d",
-                            wsaLastError
-                        );
-                    }
+                if (wsaLastError != WSAEWOULDBLOCK) {
                     Close(false);
                     owner->NetworkConnectionBroken();
                     break;
@@ -220,21 +203,12 @@ namespace SystemAbstractions {
                 buffer.resize((size_t)amountReceived);
                 owner->NetworkConnectionMessageReceived(buffer);
             } else {
-                diagnosticsSender.SendDiagnosticInformationString(
-                    0,
-                    "zero bytes read"
-                );
                 Close(false);
                 owner->NetworkConnectionBroken();
                 break;
             }
             const auto outputQueueLength = platform->outputQueue.size();
             if (outputQueueLength > 0) {
-                diagnosticsSender.SendDiagnosticInformationFormatted(
-                    0,
-                    "output queue length: %u",
-                    (unsigned int)outputQueueLength
-                );
                 const auto writeSize = (int)std::min(outputQueueLength, MAXIMUM_WRITE_SIZE);
                 buffer.assign(
                     platform->outputQueue.begin(),
@@ -243,34 +217,12 @@ namespace SystemAbstractions {
                 const int amountSent = send(platform->sock, (const char*)&buffer[0], writeSize, 0);
                 if (amountSent == SOCKET_ERROR) {
                     const auto wsaLastError = WSAGetLastError();
-                    if (wsaLastError == WSAEWOULDBLOCK) {
-                        diagnosticsSender.SendDiagnosticInformationString(
-                            0,
-                            "write not ready"
-                        );
-                    } else {
-                        if (wsaLastError != WSAECONNRESET) {
-                            diagnosticsSender.SendDiagnosticInformationFormatted(
-                                0,
-                                "write error %d",
-                                wsaLastError
-                            );
-                        }
+                    if (wsaLastError != WSAEWOULDBLOCK) {
                         Close(false);
                         owner->NetworkConnectionBroken();
                         break;
                     }
                 } else if (amountSent > 0) {
-                    diagnosticsSender.SendDiagnosticInformationFormatted(
-                        0,
-                        "Sent %d bytes to %" PRIu8 ".%" PRIu8 ".%" PRIu8 ".%" PRIu8 ":%" PRIu16,
-                        amountSent,
-                        (uint8_t)((peerAddress >> 24) & 0xFF),
-                        (uint8_t)((peerAddress >> 16) & 0xFF),
-                        (uint8_t)((peerAddress >> 8) & 0xFF),
-                        (uint8_t)(peerAddress & 0xFF),
-                        peerPort
-                    );
                     (void)platform->outputQueue.erase(platform->outputQueue.begin(), platform->outputQueue.begin() + amountSent);
                     if (
                         (amountSent == writeSize)
@@ -279,10 +231,6 @@ namespace SystemAbstractions {
                         wait = false;
                     }
                 } else {
-                    diagnosticsSender.SendDiagnosticInformationString(
-                        0,
-                        "zero bytes written"
-                    );
                     Close(false);
                     owner->NetworkConnectionBroken();
                     break;
