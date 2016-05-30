@@ -75,4 +75,8 @@ namespace SystemAbstractions {
         _impl->Close(true);
     }
 
+    std::vector< uint32_t > NetworkEndpoint::GetInterfaceAddresses() {
+        return NetworkEndpointImpl::GetInterfaceAddresses();
+    }
+
 }

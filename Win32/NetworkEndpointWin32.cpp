@@ -19,7 +19,9 @@
 #include <WinSock2.h>
 #include <Windows.h>
 #include <WS2tcpip.h>
+#include <IPHlpApi.h>
 #pragma comment(lib, "ws2_32")
+#pragma comment(lib, "IPHlpApi")
 #undef ERROR
 #undef SendMessage
 #undef min
@@ -377,6 +379,52 @@ namespace SystemAbstractions {
             (void)closesocket(platform->sock);
             platform->sock = INVALID_SOCKET;
         }
+    }
+
+    std::vector< uint32_t > NetworkEndpointImpl::GetInterfaceAddresses() {
+        // Start up WinSock library.
+        bool wsaStarted = false;
+        WSADATA wsaData;
+        if (!WSAStartup(MAKEWORD(2, 0), &wsaData)) {
+            wsaStarted = true;
+        }
+
+        // Get addresses of all network adapters.
+        //
+        // Recommendation of 15KB pre-allocated buffer from:
+        // https://msdn.microsoft.com/en-us/library/aa365915%28v=vs.85%29.aspx
+        std::vector< uint8_t > buffer(15 * 1024);
+        ULONG bufferSize = (ULONG)buffer.size();
+        ULONG result = GetAdaptersAddresses(AF_INET, 0, NULL, (PIP_ADAPTER_ADDRESSES)&buffer[0], &bufferSize);
+        if (result == ERROR_BUFFER_OVERFLOW) {
+            buffer.resize(bufferSize);
+            result = GetAdaptersAddresses(AF_INET, 0, NULL, (PIP_ADAPTER_ADDRESSES)&buffer[0], &bufferSize);
+        }
+        std::vector< uint32_t > addresses;
+        if (result == ERROR_SUCCESS) {
+            for (
+                PIP_ADAPTER_ADDRESSES adapter = (PIP_ADAPTER_ADDRESSES)&buffer[0];
+                adapter != NULL;
+                adapter = adapter->Next
+            ) {
+                for (
+                    PIP_ADAPTER_UNICAST_ADDRESS unicastAddress = adapter->FirstUnicastAddress;
+                    unicastAddress != NULL;
+                    unicastAddress = unicastAddress->Next
+                ) {
+                    struct sockaddr_in* ipAddress = (struct sockaddr_in*)unicastAddress->Address.lpSockaddr;
+                    addresses.push_back(ntohl(ipAddress->sin_addr.S_un.S_addr));
+                }
+            }
+        }
+
+        // Clean up WinSock library.
+        if (wsaStarted) {
+            (void)WSACleanup();
+        }
+
+        // Return address list.
+        return addresses;
     }
 
 }

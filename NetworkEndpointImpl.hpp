@@ -15,6 +15,7 @@
 
 #include <memory>
 #include <stdint.h>
+#include <vector>
 
 namespace SystemAbstractions {
 
@@ -90,6 +91,11 @@ namespace SystemAbstractions {
          * @todo Needs documentation
          */
         void Close(bool stopProcessing);
+
+        /**
+         * @todo Needs documentation
+         */
+        static std::vector< uint32_t > GetInterfaceAddresses();
     };
 
 }

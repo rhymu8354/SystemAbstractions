@@ -17,6 +17,7 @@
 #include <arpa/inet.h>
 #include <assert.h>
 #include <errno.h>
+#include <ifaddrs.h>
 #include <inttypes.h>
 #include <memory>
 #include <stdint.h>
@@ -326,6 +327,29 @@ namespace SystemAbstractions {
             (void)close(platform->sock);
             platform->sock = -1;
         }
+    }
+
+    std::vector< uint32_t > NetworkEndpointImpl::GetInterfaceAddresses() {
+        std::vector< uint32_t > addresses;
+        struct ifaddrs* ifaddrHead;
+        if (getifaddrs(&ifaddrHead) < 0) {
+            return addresses;
+        }
+        for (
+            struct ifaddrs* ifaddr = ifaddrHead;
+            ifaddr != NULL;
+            ifaddr = ifaddr->ifa_next
+        ) {
+            if (
+                (ifaddr->ifa_addr != NULL)
+                && (ifaddr->ifa_addr->sa_family == AF_INET)
+            ) {
+                struct sockaddr_in* ipAddress = (struct sockaddr_in*)ifaddr->ifa_addr;
+                addresses.push_back(ntohl(ipAddress->sin_addr.s_addr));
+            }
+        }
+        freeifaddrs(ifaddrHead);
+        return addresses;
     }
 
 }

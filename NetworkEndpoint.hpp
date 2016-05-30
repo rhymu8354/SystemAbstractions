@@ -143,6 +143,11 @@ namespace SystemAbstractions {
          */
         void Close();
 
+        /**
+         * @todo Needs documentation
+         */
+        static std::vector< uint32_t > GetInterfaceAddresses();
+
         // Disable copy constructor and assignment operator.
         NetworkEndpoint(const NetworkEndpoint&) = delete;
         NetworkEndpoint& operator=(const NetworkEndpoint&) = delete;
