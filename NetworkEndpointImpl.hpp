@@ -35,12 +35,22 @@ namespace SystemAbstractions {
         /**
          * @todo Needs documentation
          */
-        uint32_t address = 0;
+        uint32_t localAddress = 0;
+
+        /**
+         * @todo Needs documentation
+         */
+        uint32_t groupAddress = 0;
 
         /**
          * @todo Needs documentation
          */
         uint16_t port = 0;
+
+        /**
+         * @todo Needs documentation
+         */
+        NetworkEndpoint::Mode mode = NetworkEndpoint::Mode::Unset;
 
         /**
          * @todo Needs documentation
@@ -60,17 +70,26 @@ namespace SystemAbstractions {
         /**
          * @todo Needs documentation
          */
-        bool ListenForConnections();
+        bool Open();
 
         /**
          * @todo Needs documentation
          */
-        void ConnectionListener();
+        void Processor();
 
         /**
          * @todo Needs documentation
          */
-        void Close();
+        void SendPacket(
+            uint32_t address,
+            uint16_t port,
+            const std::vector< uint8_t >& body
+        );
+
+        /**
+         * @todo Needs documentation
+         */
+        void Close(bool stopProcessing);
     };
 
 }

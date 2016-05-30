@@ -19,6 +19,7 @@
 #include <errno.h>
 #include <inttypes.h>
 #include <memory>
+#include <stdint.h>
 #include <string.h>
 #include <sys/select.h>
 #include <sys/socket.h>
@@ -26,6 +27,16 @@
 #include <sys/types.h>
 #include <string.h>
 #include <unistd.h>
+
+#ifndef MSG_NOSIGNAL
+#define MSG_NOSIGNAL 0
+#endif /* MSG_NOSIGNAL */
+
+namespace {
+
+    static const size_t MAXIMUM_READ_SIZE = 65536;
+
+}
 
 namespace SystemAbstractions {
 
@@ -37,92 +48,274 @@ namespace SystemAbstractions {
 
 
     NetworkEndpointImpl::~NetworkEndpointImpl() {
-        Close();
+        Close(true);
     }
 
-    bool NetworkEndpointImpl::ListenForConnections() {
-        Close();
-        if (!NetworkConnectionPlatform::Bind(platform->sock, address, port, diagnosticsSender)) {
-            return false;
-        }
-        if (platform->listener.joinable()) {
-            diagnosticsSender.SendDiagnosticInformationString(
-                SystemAbstractions::DiagnosticsReceiver::Levels::WARNING,
-                "already listening"
-            );
-            return true;
-        }
-        if (!platform->listenerStopSignal.Initialize()) {
+    bool NetworkEndpointImpl::Open() {
+        // Close endpoint if it was previously open.
+        Close(true);
+
+        // Obtain socket.
+        platform->sock = socket(
+            AF_INET,
+            (mode == NetworkEndpoint::Mode::Connection) ? SOCK_STREAM : SOCK_DGRAM,
+            0
+        );
+        if (platform->sock < 0) {
             diagnosticsSender.SendDiagnosticInformationFormatted(
                 SystemAbstractions::DiagnosticsReceiver::Levels::ERROR,
-                "error creating listener stop event (%s)",
-                platform->listenerStopSignal.GetLastError().c_str()
-            );
-            return false;
-        }
-        platform->listenerStopSignal.Clear();
-        if (listen(platform->sock, SOMAXCONN) != 0) {
-            diagnosticsSender.SendDiagnosticInformationFormatted(
-                SystemAbstractions::DiagnosticsReceiver::Levels::ERROR,
-                "error in listen: %s",
+                "error creating socket: %s",
                 strerror(errno)
             );
             return false;
+        }
+
+        // If in multicast sender mode, use local address as
+        // interface socket option.  Otherwise, bind a local address
+        // to the socket, and either configure group membership if in
+        // multicast receive mode or obtain locally bound port otherwise.
+        if (mode == NetworkEndpoint::Mode::MulticastSend) {
+            struct in_addr multicastInterface;
+            multicastInterface.s_addr = htonl(localAddress);
+            if (setsockopt(platform->sock, IPPROTO_IP, IP_MULTICAST_IF, (const char*)&multicastInterface, sizeof(multicastInterface)) < 0) {
+                diagnosticsSender.SendDiagnosticInformationFormatted(
+                    SystemAbstractions::DiagnosticsReceiver::Levels::ERROR,
+                    "error setting socket option IP_MULTICAST_IF: %s",
+                    strerror(errno)
+                );
+                Close(false);
+                return false;
+            }
+        } else {
+            struct sockaddr_in socketAddress;
+            (void)memset(&socketAddress, 0, sizeof(socketAddress));
+            socketAddress.sin_family = AF_INET;
+            if (mode == NetworkEndpoint::Mode::MulticastReceive) {
+                int option = 1;
+                if (setsockopt(platform->sock, SOL_SOCKET, SO_REUSEADDR, (const char*)&option, sizeof(option)) < 0) {
+                    diagnosticsSender.SendDiagnosticInformationFormatted(
+                        SystemAbstractions::DiagnosticsReceiver::Levels::ERROR,
+                        "error setting socket option SO_REUSEADDR: %s",
+                        strerror(errno)
+                    );
+                    Close(false);
+                    return false;
+                }
+                socketAddress.sin_addr.s_addr = INADDR_ANY;
+            } else {
+                socketAddress.sin_addr.s_addr = htonl(localAddress);
+            }
+            socketAddress.sin_port = htons(port);
+            if (bind(platform->sock, (struct sockaddr*)&socketAddress, sizeof(socketAddress)) != 0) {
+                diagnosticsSender.SendDiagnosticInformationFormatted(
+                    SystemAbstractions::DiagnosticsReceiver::Levels::ERROR,
+                    "error in bind: %s",
+                    strerror(errno)
+                );
+                Close(false);
+                return false;
+            }
+            if (mode == NetworkEndpoint::Mode::MulticastReceive) {
+                struct ip_mreq multicastGroup;
+                multicastGroup.imr_multiaddr.s_addr = htonl(groupAddress);
+                multicastGroup.imr_interface.s_addr = htonl(localAddress);
+                if (setsockopt(platform->sock, IPPROTO_IP, IP_ADD_MEMBERSHIP, (const char*)&multicastGroup, sizeof(multicastGroup)) < 0) {
+                    diagnosticsSender.SendDiagnosticInformationFormatted(
+                        SystemAbstractions::DiagnosticsReceiver::Levels::ERROR,
+                        "error setting socket option IP_ADD_MEMBERSHIP: %s",
+                        strerror(errno)
+                    );
+                    Close(false);
+                    return false;
+                }
+            } else {
+                socklen_t socketAddressLength = sizeof(socketAddress);
+                if (getsockname(platform->sock, (struct sockaddr*)&socketAddress, &socketAddressLength) == 0) {
+                    port = ntohs(socketAddress.sin_port);
+                } else {
+                    diagnosticsSender.SendDiagnosticInformationFormatted(
+                        SystemAbstractions::DiagnosticsReceiver::Levels::ERROR,
+                        "error in getsockname: %s",
+                        strerror(errno)
+                    );
+                    Close(false);
+                    return false;
+                }
+            }
+        }
+
+        // Prepare events used in processing.
+        if (!platform->processorStateChangeSignal.Initialize()) {
+            diagnosticsSender.SendDiagnosticInformationFormatted(
+                SystemAbstractions::DiagnosticsReceiver::Levels::ERROR,
+                "error creating processor state change event (%s)",
+                platform->processorStateChangeSignal.GetLastError().c_str()
+            );
+            return false;
+        }
+        platform->processorStateChangeSignal.Clear();
+
+        // If accepting connections, tell socket to start accepting.
+        if (mode == NetworkEndpoint::Mode::Connection) {
+            if (listen(platform->sock, SOMAXCONN) != 0) {
+                diagnosticsSender.SendDiagnosticInformationFormatted(
+                    SystemAbstractions::DiagnosticsReceiver::Levels::ERROR,
+                    "error in listen: %s",
+                    strerror(errno)
+                );
+                return false;
+            }
         }
         diagnosticsSender.SendDiagnosticInformationFormatted(
             0,
             "endpoint opened for port %" PRIu16,
             port
         );
-        platform->listener = std::move(std::thread(&NetworkEndpointImpl::ConnectionListener, this));
+        platform->processor = std::move(std::thread(&NetworkEndpointImpl::Processor, this));
         return true;
     }
 
-    void NetworkEndpointImpl::ConnectionListener() {
-        diagnosticsSender.SendDiagnosticInformationString(
-            0,
-            "Listener thread started"
-        );
-        const int listenerStopSelectHandle = platform->listenerStopSignal.GetSelectHandle();
-        const int nfds = std::max(listenerStopSelectHandle, platform->sock) + 1;
-        fd_set readfds;
-        for (;;) {
-            FD_ZERO(&readfds);
-            FD_SET(platform->sock, &readfds);
-            FD_SET(listenerStopSelectHandle, &readfds);
-            (void)select(nfds, &readfds, NULL, NULL, NULL);
-            if (FD_ISSET(listenerStopSelectHandle, &readfds) != 0) {
-                break;
+    void NetworkEndpointImpl::Processor() {
+        const int processorStateChangeSelectHandle = platform->processorStateChangeSignal.GetSelectHandle();
+        const int nfds = std::max(processorStateChangeSelectHandle, platform->sock) + 1;
+        fd_set readfds, writefds;
+        std::vector< uint8_t > buffer;
+        std::unique_lock< std::recursive_mutex > processingLock(platform->processingMutex);
+        bool wait = true;
+        while (!platform->processorStop) {
+            if (wait) {
+                FD_ZERO(&readfds);
+                FD_ZERO(&writefds);
+                FD_SET(platform->sock, &readfds);
+                if (platform->outputQueue.size() > 0) {
+                    FD_SET(platform->sock, &writefds);
+                }
+                FD_SET(processorStateChangeSelectHandle, &readfds);
+                processingLock.unlock();
+                (void)select(nfds, &readfds, &writefds, NULL, NULL);
+                processingLock.lock();
+                if (FD_ISSET(processorStateChangeSelectHandle, &readfds) != 0) {
+                    platform->processorStateChangeSignal.Clear();
+                }
             }
+            wait = true;
+            buffer.resize(MAXIMUM_READ_SIZE);
             struct sockaddr_in socketAddress;
             socklen_t socketAddressSize = (socklen_t)sizeof(socketAddress);
-            const int client = accept(platform->sock, (struct sockaddr*)&socketAddress, &socketAddressSize);
-            if (client < 0) {
-                diagnosticsSender.SendDiagnosticInformationFormatted(
-                    SystemAbstractions::DiagnosticsReceiver::Levels::WARNING,
-                    "error in accept: %s",
-                    strerror(errno)
+            if (FD_ISSET(platform->sock, &readfds)) {
+                if (mode == NetworkEndpoint::Mode::Connection) {
+                    const int client = accept(platform->sock, (struct sockaddr*)&socketAddress, &socketAddressSize);
+                    if (client < 0) {
+                        diagnosticsSender.SendDiagnosticInformationFormatted(
+                            SystemAbstractions::DiagnosticsReceiver::Levels::WARNING,
+                            "error in accept: %s",
+                            strerror(errno)
+                        );
+                    } else {
+                        std::unique_ptr< NetworkConnectionImpl > connectionImpl(new NetworkConnectionImpl());
+                        connectionImpl->platform->sock = client;
+                        connectionImpl->peerAddress = ntohl(socketAddress.sin_addr.s_addr);
+                        connectionImpl->peerPort = ntohs(socketAddress.sin_port);
+                        owner->NetworkEndpointNewConnection(
+                            std::move(NetworkConnection(std::move(connectionImpl)))
+                        );
+                    }
+                } else if (
+                    (mode == NetworkEndpoint::Mode::Datagram)
+                    || (mode == NetworkEndpoint::Mode::MulticastReceive)
+                ) {
+                    const ssize_t amountReceived = recvfrom(
+                        platform->sock,
+                        &buffer[0],
+                        buffer.size(),
+                        MSG_NOSIGNAL | MSG_DONTWAIT,
+                        (struct sockaddr*)&socketAddress,
+                        &socketAddressSize
+                    );
+                    if (amountReceived < 0) {
+                        if (errno != EWOULDBLOCK) {
+                            diagnosticsSender.SendDiagnosticInformationFormatted(
+                                SystemAbstractions::DiagnosticsReceiver::Levels::ERROR,
+                                "error in recvfrom: %s",
+                                strerror(errno)
+                            );
+                            Close(false);
+                            break;
+                        }
+                    } else if (amountReceived > 0) {
+                        buffer.resize((size_t)amountReceived);
+                        owner->NetworkEndpointPacketReceived(
+                            ntohl(socketAddress.sin_addr.s_addr),
+                            ntohs(socketAddress.sin_port),
+                            buffer
+                        );
+                    }
+                }
+            }
+            if (!platform->outputQueue.empty()) {
+                NetworkEndpointPlatform::Packet& packet = platform->outputQueue.front();
+                (void)memset(&socketAddress, 0, sizeof(socketAddress));
+                socketAddress.sin_family = AF_INET;
+                socketAddress.sin_addr.s_addr = htonl(packet.address);
+                socketAddress.sin_port = htons(packet.port);
+                const ssize_t amountSent = sendto(
+                    platform->sock,
+                    &packet.body[0],
+                    packet.body.size(),
+                    MSG_NOSIGNAL | MSG_DONTWAIT,
+                    (const sockaddr*)&socketAddress,
+                    sizeof(socketAddress)
                 );
-            } else {
-                std::unique_ptr< NetworkConnectionImpl > connectionImpl(new NetworkConnectionImpl());
-                connectionImpl->platform->sock = client;
-                connectionImpl->peerAddress = ntohl(socketAddress.sin_addr.s_addr);
-                connectionImpl->peerPort = ntohs(socketAddress.sin_port);
-                owner->NetworkEndpointNewConnection(
-                    std::move(NetworkConnection(std::move(connectionImpl)))
-                );
+                if (amountSent < 0) {
+                    if (errno != EWOULDBLOCK) {
+                        diagnosticsSender.SendDiagnosticInformationFormatted(
+                            SystemAbstractions::DiagnosticsReceiver::Levels::ERROR,
+                            "error in recvfrom: %s",
+                            strerror(errno)
+                        );
+                        Close(false);
+                        break;
+                    }
+                } else {
+                    if ((size_t)amountSent != packet.body.size()) {
+                        diagnosticsSender.SendDiagnosticInformationFormatted(
+                            SystemAbstractions::DiagnosticsReceiver::Levels::ERROR,
+                            "send truncated (%d < %d)",
+                            (int)amountSent,
+                            (int)packet.body.size()
+                        );
+                    }
+                    platform->outputQueue.pop_front();
+                    if (!platform->outputQueue.empty()) {
+                        wait = false;
+                    }
+                }
             }
         }
-        diagnosticsSender.SendDiagnosticInformationString(
-            0,
-            "Listener thread stopping"
-        );
     }
 
-    void NetworkEndpointImpl::Close() {
-        if (platform->listener.joinable()) {
-            platform->listenerStopSignal.Set();
-            platform->listener.join();
+    void NetworkEndpointImpl::SendPacket(
+        uint32_t address,
+        uint16_t port,
+        const std::vector< uint8_t >& body
+    ) {
+        std::unique_lock< std::recursive_mutex > processingLock(platform->processingMutex);
+        NetworkEndpointPlatform::Packet packet;
+        packet.address = address;
+        packet.port = port;
+        packet.body = body;
+        platform->outputQueue.emplace_back(std::move(packet));
+        platform->processorStateChangeSignal.Set();
+    }
+
+    void NetworkEndpointImpl::Close(bool stopProcessing) {
+        if (
+            stopProcessing
+            && platform->processor.joinable()
+        ) {
+            platform->processorStop = true;
+            platform->processorStateChangeSignal.Set();
+            platform->processor.join();
         }
         if (platform->sock >= 0) {
             diagnosticsSender.SendDiagnosticInformationFormatted(
@@ -130,7 +323,6 @@ namespace SystemAbstractions {
                 "closing endpoint for port %" PRIu16,
                 port
             );
-            (void)shutdown(platform->sock, SHUT_RDWR);
             (void)close(platform->sock);
             platform->sock = -1;
         }

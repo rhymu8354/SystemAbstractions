@@ -15,7 +15,6 @@
 #include <deque>
 #include <mutex>
 #include <stdint.h>
-#include <WinSock2.h>
 
 namespace SystemAbstractions {
 
@@ -63,16 +62,6 @@ namespace SystemAbstractions {
          * @todo Needs documentation
          */
         std::deque< uint8_t > outputQueue;
-
-        /**
-         * @todo Needs documentation
-         */
-        static bool Bind(
-            SOCKET& sock,
-            uint32_t address,
-            uint16_t& port,
-            SystemAbstractions::DiagnosticsSender& diagnosticsSender
-        );
     };
 
 }

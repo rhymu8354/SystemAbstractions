@@ -7,17 +7,33 @@
  * Copyright (c) 2016 by Richard Walters
  */
 
-#include "../NetworkConnectionImpl.hpp"
-#include "NetworkConnectionWin32.hpp"
-
-#include <algorithm>
-#include <inttypes.h>
+/**
+ * WinSock2.h should always be included first because if Windows.h is
+ * included before it, WinSock.h gets included which conflicts
+ * with WinSock2.h.
+ *
+ * Windows.h should always be included next because other Windows header
+ * files, such as KnownFolders.h, don't always define things properly if
+ * you don't include Windows.h beforehand.
+ */
 #include <WinSock2.h>
 #include <Windows.h>
+#include <WS2tcpip.h>
 #pragma comment(lib, "ws2_32")
 #undef ERROR
 #undef SendMessage
 #undef min
+#undef max
+
+#include "../NetworkConnectionImpl.hpp"
+#include "NetworkConnectionWin32.hpp"
+
+#include <algorithm>
+#include <deque>
+#include <inttypes.h>
+#include <mutex>
+#include <stdint.h>
+#include <thread>
 
 namespace {
 
@@ -27,52 +43,6 @@ namespace {
 }
 
 namespace SystemAbstractions {
-
-    bool NetworkConnectionPlatform::Bind(
-        SOCKET& sock,
-        uint32_t address,
-        uint16_t& port,
-        SystemAbstractions::DiagnosticsSender& diagnosticsSender
-    ) {
-        struct sockaddr_in socketAddress;
-        (void)memset(&socketAddress, 0, sizeof(socketAddress));
-        socketAddress.sin_family = AF_INET;
-        socketAddress.sin_addr.S_un.S_addr = htonl(address);
-        socketAddress.sin_port = htons(port);
-        sock = socket(socketAddress.sin_family, SOCK_STREAM, 0);
-        if (sock == INVALID_SOCKET) {
-            diagnosticsSender.SendDiagnosticInformationFormatted(
-                SystemAbstractions::DiagnosticsReceiver::Levels::ERROR,
-                "error creating socket (%d)",
-                WSAGetLastError()
-            );
-            return false;
-        }
-        if (bind(sock, (struct sockaddr*)&socketAddress, sizeof(socketAddress)) != 0) {
-            diagnosticsSender.SendDiagnosticInformationFormatted(
-                SystemAbstractions::DiagnosticsReceiver::Levels::ERROR,
-                "error in bind (%d)",
-                WSAGetLastError()
-            );
-            (void)closesocket(sock);
-            sock = INVALID_SOCKET;
-            return false;
-        }
-        int socketAddressLength = sizeof(socketAddress);
-        if (getsockname(sock, (struct sockaddr*)&socketAddress, &socketAddressLength) == 0) {
-            port = ntohs(socketAddress.sin_port);
-        } else {
-            diagnosticsSender.SendDiagnosticInformationFormatted(
-                SystemAbstractions::DiagnosticsReceiver::Levels::ERROR,
-                "error in getsockname (%d)",
-                WSAGetLastError()
-            );
-            (void)closesocket(sock);
-            sock = INVALID_SOCKET;
-            return false;
-        }
-        return true;
-    }
 
     NetworkConnectionImpl::NetworkConnectionImpl()
         : platform(new NetworkConnectionPlatform())
@@ -99,11 +69,27 @@ namespace SystemAbstractions {
 
     bool NetworkConnectionImpl::Connect() {
         Close(true);
-        uint16_t port = 0;
-        if (!NetworkConnectionPlatform::Bind(platform->sock, 0, port, diagnosticsSender)) {
+        struct sockaddr_in socketAddress;
+        (void)memset(&socketAddress, 0, sizeof(socketAddress));
+        socketAddress.sin_family = AF_INET;
+        platform->sock = socket(socketAddress.sin_family, SOCK_STREAM, 0);
+        if (platform->sock == INVALID_SOCKET) {
+            diagnosticsSender.SendDiagnosticInformationFormatted(
+                SystemAbstractions::DiagnosticsReceiver::Levels::ERROR,
+                "error creating socket (%d)",
+                WSAGetLastError()
+            );
             return false;
         }
-        struct sockaddr_in socketAddress;
+        if (bind(platform->sock, (struct sockaddr*)&socketAddress, sizeof(socketAddress)) != 0) {
+            diagnosticsSender.SendDiagnosticInformationFormatted(
+                SystemAbstractions::DiagnosticsReceiver::Levels::ERROR,
+                "error in bind (%d)",
+                WSAGetLastError()
+            );
+            Close(false);
+            return false;
+        }
         (void)memset(&socketAddress, 0, sizeof(socketAddress));
         socketAddress.sin_family = AF_INET;
         socketAddress.sin_addr.S_un.S_addr = htonl(peerAddress);
@@ -171,18 +157,8 @@ namespace SystemAbstractions {
     }
 
     void NetworkConnectionImpl::Processor() {
-        diagnosticsSender.SendDiagnosticInformationFormatted(
-            0,
-            "Processing started for connection with %" PRIu8 ".%" PRIu8 ".%" PRIu8 ".%" PRIu8 ":%" PRIu16,
-            (uint8_t)((peerAddress >> 24) & 0xFF),
-            (uint8_t)((peerAddress >> 16) & 0xFF),
-            (uint8_t)((peerAddress >> 8) & 0xFF),
-            (uint8_t)(peerAddress & 0xFF),
-            peerPort
-        );
         const HANDLE handles[2] = { platform->processorStateChangeEvent, platform->socketEvent };
         std::vector< uint8_t > buffer;
-        DWORD eventIndex = 0;
         std::unique_lock< std::recursive_mutex > processingLock(platform->processingMutex);
         bool wait = true;
         while (!platform->processorStop) {
@@ -239,15 +215,6 @@ namespace SystemAbstractions {
                 }
             }
         }
-        diagnosticsSender.SendDiagnosticInformationFormatted(
-            0,
-            "Processing stopped for connection with %" PRIu8 ".%" PRIu8 ".%" PRIu8 ".%" PRIu8 ":%" PRIu16,
-            (uint8_t)((peerAddress >> 24) & 0xFF),
-            (uint8_t)((peerAddress >> 16) & 0xFF),
-            (uint8_t)((peerAddress >> 8) & 0xFF),
-            (uint8_t)(peerAddress & 0xFF),
-            peerPort
-        );
     }
 
     bool NetworkConnectionImpl::IsConnected() const {

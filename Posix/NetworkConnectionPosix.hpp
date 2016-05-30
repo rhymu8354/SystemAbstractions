@@ -54,16 +54,6 @@ namespace SystemAbstractions {
          * @todo Needs documentation
          */
         std::deque< uint8_t > outputQueue;
-
-        /**
-         * @todo Needs documentation
-         */
-        static bool Bind(
-            int& sock,
-            uint32_t address,
-            uint16_t& port,
-            DiagnosticsSender& diagnosticsSender
-        );
     };
 
 }

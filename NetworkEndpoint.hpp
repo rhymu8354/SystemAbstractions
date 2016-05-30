@@ -14,6 +14,7 @@
 
 #include <memory>
 #include <stdint.h>
+#include <vector>
 
 namespace SystemAbstractions {
 
@@ -31,7 +32,30 @@ namespace SystemAbstractions {
          */
         class Owner {
         public:
+            /**
+             * @todo Needs documentation
+             */
             virtual void NetworkEndpointNewConnection(NetworkConnection&& newConnection) {}
+
+            /**
+             * @todo Needs documentation
+             */
+            virtual void NetworkEndpointPacketReceived(
+                uint32_t address,
+                uint16_t port,
+                const std::vector< uint8_t >& body
+            ) {}
+        };
+
+        /**
+         * @todo Needs documentation
+         */
+        enum class Mode {
+            Unset,
+            Datagram,
+            Connection,
+            MulticastSend,
+            MulticastReceive,
         };
 
         // Public methods
@@ -67,40 +91,52 @@ namespace SystemAbstractions {
         void UnsubscribeFromDiagnostics(DiagnosticsReceiver* subscriber);
 
         /**
-         * This method starts connection listening on the endpoint,
-         * listening for incoming connections.
+         * This method starts message or connection processing on the endpoint,
+         * depending on the given mode.
          *
          * @param[in] owner
          *     This is a reference to the owner which should receive
          *     any callbacks from the object.
          *
-         * @param[in] address
-         *     This is the address to use on the network for
-         *     accepting incoming connections.
+         * @param[in] mode
+         *     This selects the kind of processing to perform with
+         *     the endpoint.
+         *
+         * @param[in] localAddress
+         *     This is the address to use on the network for the endpoint.
+         *
+         * @param[in] groupAddress
+         *     This is the address to select for multicasting, if a multicast
+         *     mode is selected.
          *
          * @param[in] port
-         *     This is the port number to use on the network for
-         *     accepting incoming connections.
+         *     This is the port number to use on the network.
          *
          * @return
          *     An indication of whether or not the method was
          *     successful is returned.
          */
-        bool ListenForConnections(
+        bool Open(
             Owner* owner,
-            uint32_t address,
+            Mode mode,
+            uint32_t localAddress,
+            uint32_t groupAddress,
             uint16_t port
         );
 
         /**
          * @todo Needs documentation
          */
-        uint32_t GetAddress() const;
+        uint16_t GetBoundPort() const;
 
         /**
          * @todo Needs documentation
          */
-        uint16_t GetPortNumber() const;
+        void SendPacket(
+            uint32_t address,
+            uint16_t port,
+            const std::vector< uint8_t >& body
+        );
 
         /**
          * @todo Needs documentation

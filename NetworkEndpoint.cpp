@@ -44,27 +44,35 @@ namespace SystemAbstractions {
         _impl->diagnosticsSender.UnsubscribeFromDiagnostics(subscriber);
     }
 
-    bool NetworkEndpoint::ListenForConnections(
-        Owner* owner,
+    void NetworkEndpoint::SendPacket(
         uint32_t address,
+        uint16_t port,
+        const std::vector< uint8_t >& body
+    ) {
+        _impl->SendPacket(address, port, body);
+    }
+
+    bool NetworkEndpoint::Open(
+        Owner* owner,
+        Mode mode,
+        uint32_t localAddress,
+        uint32_t groupAddress,
         uint16_t port
     ) {
         _impl->owner = owner;
-        _impl->address = address;
+        _impl->mode = mode;
+        _impl->localAddress = localAddress;
+        _impl->groupAddress = groupAddress;
         _impl->port = port;
-        return _impl->ListenForConnections();
+        return _impl->Open();
     }
 
-    uint32_t NetworkEndpoint::GetAddress() const {
-        return _impl->address;
-    }
-
-    uint16_t NetworkEndpoint::GetPortNumber() const {
+    uint16_t NetworkEndpoint::GetBoundPort() const {
         return _impl->port;
     }
 
     void NetworkEndpoint::Close() {
-        _impl->Close();
+        _impl->Close(true);
     }
 
 }

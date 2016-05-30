@@ -12,9 +12,11 @@
 
 #include "../NetworkEndpoint.hpp"
 
+#include <list>
+#include <mutex>
 #include <stdint.h>
 #include <thread>
-#include <WinSock2.h>
+#include <vector>
 
 namespace SystemAbstractions {
 
@@ -23,6 +25,15 @@ namespace SystemAbstractions {
      * NetworkEndpointPlatform class.
      */
     struct NetworkEndpointPlatform {
+        /**
+         * @todo Needs documentation
+         */
+        struct Packet {
+            uint32_t address;
+            uint16_t port;
+            std::vector< uint8_t > body;
+        };
+
         /**
          * @todo Needs documentation
          */
@@ -36,17 +47,32 @@ namespace SystemAbstractions {
         /**
          * @todo Needs documentation
          */
-        std::thread listener;
+        std::thread processor;
 
         /**
          * @todo Needs documentation
          */
-        HANDLE incomingClientEvent = NULL;
+        HANDLE socketEvent = NULL;
 
         /**
          * @todo Needs documentation
          */
-        HANDLE listenerStopEvent = NULL;
+        HANDLE processorStateChangeEvent = NULL;
+
+        /**
+         * @todo Needs documentation
+         */
+        bool processorStop = false;
+
+        /**
+         * @todo Needs documentation
+         */
+        std::recursive_mutex processingMutex;
+
+        /**
+         * @todo Needs documentation
+         */
+        std::list< Packet > outputQueue;
     };
 
 }

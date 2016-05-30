@@ -13,8 +13,11 @@
 #include "../NetworkEndpoint.hpp"
 #include "PipeSignal.hpp"
 
+#include <list>
+#include <mutex>
 #include <stdint.h>
 #include <thread>
+#include <vector>
 
 namespace SystemAbstractions {
 
@@ -26,17 +29,41 @@ namespace SystemAbstractions {
         /**
          * @todo Needs documentation
          */
+        struct Packet {
+            uint32_t address;
+            uint16_t port;
+            std::vector< uint8_t > body;
+        };
+
+        /**
+         * @todo Needs documentation
+         */
         int sock = -1;
 
         /**
          * @todo Needs documentation
          */
-        std::thread listener;
+        std::thread processor;
 
         /**
          * @todo Needs documentation
          */
-        PipeSignal listenerStopSignal;
+        PipeSignal processorStateChangeSignal;
+
+        /**
+         * @todo Needs documentation
+         */
+        bool processorStop = false;
+
+        /**
+         * @todo Needs documentation
+         */
+        std::recursive_mutex processingMutex;
+
+        /**
+         * @todo Needs documentation
+         */
+        std::list< Packet > outputQueue;
     };
 
 }
