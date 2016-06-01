@@ -254,6 +254,7 @@ namespace SystemAbstractions {
         if (dir != NULL) {
             struct dirent entry;
             struct dirent* entryBack;
+            std::vector< char > link(PATH_MAX);
             while (true) {
                 if (readdir_r(dir, &entry, &entryBack)) {
                     break;
@@ -274,6 +275,13 @@ namespace SystemAbstractions {
                 newFilePath += entry.d_name;
                 if (entry.d_type == DT_DIR) {
                     if (!CopyDirectory(filePath, newFilePath)) {
+                        return false;
+                    }
+                } else if (entry.d_type == DT_LNK) {
+                    if (readlink(filePath.c_str(), &link[0], link.size()) < 0) {
+                        return false;
+                    }
+                    if (symlink(&link[0], newFilePath.c_str()) < 0) {
                         return false;
                     }
                 } else {
