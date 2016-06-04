@@ -136,17 +136,19 @@ namespace SystemAbstractions {
                 return false;
             }
             if (mode == NetworkEndpoint::Mode::MulticastReceive) {
-                struct ip_mreq multicastGroup;
-                multicastGroup.imr_multiaddr.S_un.S_addr = htonl(groupAddress);
-                multicastGroup.imr_interface.S_un.S_addr = htonl(localAddress);
-                if (setsockopt(platform->sock, IPPROTO_IP, IP_ADD_MEMBERSHIP, (const char*)&multicastGroup, sizeof(multicastGroup)) == SOCKET_ERROR) {
-                    diagnosticsSender.SendDiagnosticInformationFormatted(
-                        SystemAbstractions::DiagnosticsReceiver::Levels::ERROR,
-                        "error setting socket option IP_ADD_MEMBERSHIP (%d)",
-                        WSAGetLastError()
-                    );
-                    Close(false);
-                    return false;
+                for (auto localAddress: NetworkEndpoint::GetInterfaceAddresses()) {
+                    struct ip_mreq multicastGroup;
+                    multicastGroup.imr_multiaddr.S_un.S_addr = htonl(groupAddress);
+                    multicastGroup.imr_interface.S_un.S_addr = htonl(localAddress);
+                    if (setsockopt(platform->sock, IPPROTO_IP, IP_ADD_MEMBERSHIP, (const char*)&multicastGroup, sizeof(multicastGroup)) == SOCKET_ERROR) {
+                        diagnosticsSender.SendDiagnosticInformationFormatted(
+                            SystemAbstractions::DiagnosticsReceiver::Levels::ERROR,
+                            "error setting socket option IP_ADD_MEMBERSHIP (%d)",
+                            WSAGetLastError()
+                        );
+                        Close(false);
+                        return false;
+                    }
                 }
             } else {
                 int socketAddressLength = sizeof(socketAddress);

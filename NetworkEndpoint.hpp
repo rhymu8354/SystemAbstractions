@@ -104,13 +104,23 @@ namespace SystemAbstractions {
          *
          * @param[in] localAddress
          *     This is the address to use on the network for the endpoint.
+         *     It is only required for multicast send mode.  It is not
+         *     used at all for multicast receive mode, since in this mode
+         *     the socket requests membership in the multicast group on
+         *     all interfaces.  For datagram and connection modes, if an
+         *     address is specified, it limits the traffic to a single
+         *     interface.
          *
          * @param[in] groupAddress
          *     This is the address to select for multicasting, if a multicast
          *     mode is selected.
          *
          * @param[in] port
-         *     This is the port number to use on the network.
+         *     This is the port number to use on the network.  For multicast
+         *     modes, it is required and is the multicast port number.
+         *     For datagram and connection modes, it is optional, and if set,
+         *     specifies the local port number to bind; otherwise an
+         *     arbitrary ephemeral port is bound.
          *
          * @return
          *     An indication of whether or not the method was
