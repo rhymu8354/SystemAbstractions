@@ -168,7 +168,7 @@ namespace SystemAbstractions {
 
         // Prepare events used in processing.
         if (platform->processorStateChangeEvent == NULL) {
-            platform->processorStateChangeEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+            platform->processorStateChangeEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
             if (platform->processorStateChangeEvent == NULL) {
                 diagnosticsSender.SendDiagnosticInformationFormatted(
                     SystemAbstractions::DiagnosticsReceiver::Levels::ERROR,
