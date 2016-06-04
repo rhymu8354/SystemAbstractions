@@ -259,11 +259,14 @@ namespace SystemAbstractions {
             if (mode == NetworkEndpoint::Mode::Connection) {
                 const SOCKET client = accept(platform->sock, (struct sockaddr*)&socketAddress, &socketAddressSize);
                 if (client == INVALID_SOCKET) {
-                    diagnosticsSender.SendDiagnosticInformationFormatted(
-                        SystemAbstractions::DiagnosticsReceiver::Levels::WARNING,
-                        "error in accept (%d)",
-                        WSAGetLastError()
-                    );
+                    const auto wsaLastError = WSAGetLastError();
+                    if (wsaLastError != WSAEWOULDBLOCK) {
+                        diagnosticsSender.SendDiagnosticInformationFormatted(
+                            SystemAbstractions::DiagnosticsReceiver::Levels::WARNING,
+                            "error in accept (%d)",
+                            WSAGetLastError()
+                        );
+                    }
                 } else {
                     std::unique_ptr< NetworkConnectionImpl > connectionImpl(new NetworkConnectionImpl());
                     connectionImpl->platform->sock = client;

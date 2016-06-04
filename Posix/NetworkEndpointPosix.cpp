@@ -209,11 +209,13 @@ namespace SystemAbstractions {
                 if (mode == NetworkEndpoint::Mode::Connection) {
                     const int client = accept(platform->sock, (struct sockaddr*)&socketAddress, &socketAddressSize);
                     if (client < 0) {
-                        diagnosticsSender.SendDiagnosticInformationFormatted(
-                            SystemAbstractions::DiagnosticsReceiver::Levels::WARNING,
-                            "error in accept: %s",
-                            strerror(errno)
-                        );
+                        if (errno != EWOULDBLOCK) {
+                            diagnosticsSender.SendDiagnosticInformationFormatted(
+                                SystemAbstractions::DiagnosticsReceiver::Levels::WARNING,
+                                "error in accept: %s",
+                                strerror(errno)
+                            );
+                        }
                     } else {
                         std::unique_ptr< NetworkConnectionImpl > connectionImpl(new NetworkConnectionImpl());
                         connectionImpl->platform->sock = client;
