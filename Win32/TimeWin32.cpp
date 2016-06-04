@@ -35,7 +35,7 @@ namespace SystemAbstractions {
 
     double Time::GetTime() {
         if (_impl->scale == 0.0) {
-            static LARGE_INTEGER freq;
+            LARGE_INTEGER freq;
             (void)QueryPerformanceFrequency(&freq);
             _impl->scale = 1.0 / (double)freq.QuadPart;
         }
