@@ -72,6 +72,9 @@
     <ClInclude Include="Time.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TargetInfo.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="StringFile.cpp">
@@ -117,6 +120,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Win32\TimeWin32.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Win32\TargetInfoWin32.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
