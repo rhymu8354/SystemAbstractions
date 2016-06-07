@@ -10,6 +10,7 @@
  */
 
 #include <memory>
+#include <time.h>
 
 namespace SystemAbstractions {
 
@@ -33,6 +34,16 @@ namespace SystemAbstractions {
          * @todo Needs documentation
          */
         double GetTime();
+
+        /**
+         * @todo Needs documentation
+         */
+        static struct tm localtime(time_t time);
+
+        /**
+         * @todo Needs documentation
+         */
+        static struct tm gmtime(time_t time);
 
         // Private properties
     private:

@@ -44,4 +44,16 @@ namespace SystemAbstractions {
         return (double)now.QuadPart * _impl->scale;
     }
 
+    struct tm Time::localtime(time_t time) {
+        struct tm timeStruct;
+        (void)localtime_s(&timeStruct, &time);
+        return timeStruct;
+    }
+
+    struct tm Time::gmtime(time_t time) {
+        struct tm timeStruct;
+        (void)gmtime_s(&timeStruct, &time);
+        return timeStruct;
+    }
+
 }
