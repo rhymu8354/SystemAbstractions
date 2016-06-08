@@ -55,22 +55,12 @@ namespace SystemAbstractions {
          *     This is an existing set of properties to encapsulate
          *     into a new network connection object.
          */
-        NetworkConnection(std::unique_ptr< struct NetworkConnectionImpl >&& impl);
-
-        /**
-         * This is the instance move constructor.
-         */
-        NetworkConnection(NetworkConnection&& other);
+        NetworkConnection(std::shared_ptr< struct NetworkConnectionImpl > impl);
 
         /**
          * This is the instance destructor.
          */
         ~NetworkConnection();
-
-        /**
-         * This is the move assignment operator.
-         */
-        NetworkConnection& operator=(NetworkConnection&& other);
 
         /**
          * @todo Needs documentation
@@ -126,13 +116,9 @@ namespace SystemAbstractions {
          */
         void Close();
 
-        // Disable copy constructor and assignment operator.
-        NetworkConnection(const NetworkConnection&) = delete;
-        NetworkConnection& operator=(const NetworkConnection&) = delete;
-
         // Private properties
     private:
-        std::unique_ptr< struct NetworkConnectionImpl > _impl;
+        std::shared_ptr< struct NetworkConnectionImpl > _impl;
     };
 
 }

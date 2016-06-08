@@ -10,7 +10,6 @@
 #include "NetworkConnection.hpp"
 #include "NetworkConnectionImpl.hpp"
 
-#include <assert.h>
 #include <inttypes.h>
 
 namespace SystemAbstractions {
@@ -21,23 +20,12 @@ namespace SystemAbstractions {
     }
 
 
-    NetworkConnection::NetworkConnection(NetworkConnection&& other)
-        : _impl(std::move(other._impl))
-    {
-    }
-
-    NetworkConnection::NetworkConnection(std::unique_ptr< NetworkConnectionImpl >&& impl)
-        : _impl(std::move(impl))
+    NetworkConnection::NetworkConnection(std::shared_ptr< NetworkConnectionImpl > impl)
+        : _impl(impl)
     {
     }
 
     NetworkConnection::~NetworkConnection() {
-    }
-
-    NetworkConnection& NetworkConnection::operator=(NetworkConnection&& other) {
-        assert(this != &other);
-        _impl = std::move(other._impl);
-        return *this;
     }
 
     void NetworkConnection::SubscribeToDiagnostics(DiagnosticsReceiver* subscriber, size_t minLevel) {
