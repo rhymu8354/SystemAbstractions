@@ -35,7 +35,7 @@ namespace SystemAbstractions {
             /**
              * @todo Needs documentation
              */
-            virtual void NetworkEndpointNewConnection(NetworkConnection&& newConnection) {}
+            virtual void NetworkEndpointNewConnection(std::shared_ptr< NetworkConnection > newConnection) {}
 
             /**
              * @todo Needs documentation
