@@ -14,6 +14,9 @@
 #include <assert.h>
 #include <dlfcn.h>
 #include <string>
+#include <sys/param.h>
+#include <unistd.h>
+#include <vector>
 
 namespace SystemAbstractions {
 
@@ -48,6 +51,9 @@ namespace SystemAbstractions {
 
     bool DynamicLibrary::Load(const std::string& path, const std::string& name) {
         Unload();
+        std::vector< char > originalPath(MAXPATHLEN);
+        (void)getcwd(&originalPath[0], originalPath.size());
+        (void)chdir(path.c_str());
         const auto library = SystemAbstractions::sprintf(
             "%s/lib%s.%s",
             path.c_str(),
@@ -55,6 +61,7 @@ namespace SystemAbstractions {
             DynamicLibraryImpl::GetDynamicLibraryFileExtension().c_str()
         );
         _impl->libraryHandle = dlopen(library.c_str(), RTLD_LAZY);
+        (void)chdir(&originalPath[0]);
         return (_impl->libraryHandle != NULL);
     }
 
