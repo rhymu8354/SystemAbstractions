@@ -24,7 +24,7 @@ namespace SystemAbstractions {
     }
 
     std::string GetTargetVariant() {
-#if defined(_DEBUG)
+#if defined(_DEBUG) || (DEBUG != 0)
         return "Debug";
 #else
         return "Release";
