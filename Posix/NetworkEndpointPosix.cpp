@@ -174,6 +174,7 @@ namespace SystemAbstractions {
             "endpoint opened for port %" PRIu16,
             port
         );
+        platform->processorStop = false;
         platform->processor = std::move(std::thread(&NetworkEndpointImpl::Processor, this));
         return true;
     }
