@@ -167,17 +167,19 @@ namespace SystemAbstractions {
                 (void)WaitForMultipleObjects(2, handles, FALSE, INFINITE);
                 processingLock.lock();
             }
-            wait = true;
             buffer.resize(MAXIMUM_READ_SIZE);
             const int amountReceived = recv(platform->sock, (char*)&buffer[0], (int)buffer.size(), 0);
             if (amountReceived == SOCKET_ERROR) {
                 const auto wsaLastError = WSAGetLastError();
-                if (wsaLastError != WSAEWOULDBLOCK) {
+                if (wsaLastError == WSAEWOULDBLOCK) {
+                    wait = true;
+                } else {
                     Close(false);
                     owner->NetworkConnectionBroken();
                     break;
                 }
             } else if (amountReceived > 0) {
+                wait = false;
                 buffer.resize((size_t)amountReceived);
                 owner->NetworkConnectionMessageReceived(buffer);
             } else {
