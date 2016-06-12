@@ -38,12 +38,12 @@ namespace SystemAbstractions {
         /**
          * @todo Needs documentation
          */
-        static struct tm localtime(time_t time);
+        static struct tm localtime(time_t time = 0);
 
         /**
          * @todo Needs documentation
          */
-        static struct tm gmtime(time_t time);
+        static struct tm gmtime(time_t time = 0);
 
         // Private properties
     private:

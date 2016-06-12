@@ -12,12 +12,18 @@
 namespace SystemAbstractions {
 
     struct tm Time::localtime(time_t time) {
+        if (time == 0) {
+            (void)::time(&time);
+        }
         struct tm timeStruct;
         (void)localtime_r(&time, &timeStruct);
         return timeStruct;
     }
 
     struct tm Time::gmtime(time_t time) {
+        if (time == 0) {
+            (void)::time(&time);
+        }
         struct tm timeStruct;
         (void)gmtime_r(&time, &timeStruct);
         return timeStruct;
