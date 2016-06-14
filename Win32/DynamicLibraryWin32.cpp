@@ -57,7 +57,7 @@ namespace SystemAbstractions {
     bool DynamicLibrary::Load(const std::string& path, const std::string& name) {
         Unload();
         std::vector< char > originalPath(MAX_PATH);
-        (void)GetCurrentDirectoryA(originalPath.size(), &originalPath[0]);
+        (void)GetCurrentDirectoryA((DWORD)originalPath.size(), &originalPath[0]);
         (void)SetCurrentDirectoryA(path.c_str());
         const auto library = SystemAbstractions::sprintf("%s/%s.dll", path.c_str(), name.c_str());
         _impl->libraryHandle = LoadLibraryA(library.c_str());
