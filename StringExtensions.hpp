@@ -54,6 +54,11 @@ namespace SystemAbstractions {
      */
     std::string Trim(const std::string& s);
 
+    /**
+     * @todo Needs documentation
+     */
+    std::string Indent(std::string linesIn, size_t spaces);
+
 }
 
 #endif /* SYSTEM_ABSTRACTIONS_STRING_EXTENSIONS_HPP */

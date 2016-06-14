@@ -63,4 +63,24 @@ namespace SystemAbstractions {
         return s.substr(i, j - i);
     }
 
+    std::string Indent(std::string linesIn, size_t spaces) {
+        std::string linesOut;
+        while (!linesIn.empty()) {
+            std::string line;
+            auto delimiter = linesIn.find("\r\n");
+            if (delimiter == std::string::npos) {
+                line = linesIn;
+                linesIn.clear();
+            } else {
+                line = linesIn.substr(0, delimiter + 2);
+                linesIn = linesIn.substr(delimiter + 2);
+            }
+            if (!linesOut.empty()) {
+                linesOut.append(spaces, ' ');
+            }
+            linesOut += line;
+        }
+        return linesOut;
+    }
+
 }
