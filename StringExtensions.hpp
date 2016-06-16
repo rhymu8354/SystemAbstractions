@@ -11,6 +11,7 @@
 
 #include <stdarg.h>
 #include <string>
+#include <vector>
 
 namespace SystemAbstractions {
 
@@ -58,6 +59,16 @@ namespace SystemAbstractions {
      * @todo Needs documentation
      */
     std::string Indent(std::string linesIn, size_t spaces);
+
+    /**
+     * @todo Needs documentation
+     */
+    std::string ParseElement(const std::string&s, size_t begin, size_t end);
+
+    /**
+     * @todo Needs documentation
+     */
+    std::vector< std::string > Split(const std::string& s);
 
 }
 

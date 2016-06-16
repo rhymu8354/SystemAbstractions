@@ -83,4 +83,65 @@ namespace SystemAbstractions {
         return linesOut;
     }
 
+    std::string ParseElement(const std::string&s, size_t begin, size_t end) {
+        bool inString = false;
+        int level = 1;
+        size_t j = begin;
+        while (
+            (j < end)
+            && (level > 0)
+        ) {
+            if (inString) {
+                if (s[j] == '"') {
+                    inString = false;
+                }
+            } else {
+                if (
+                    (level == 1)
+                    && (s[j] == ',')
+                ) {
+                    break;
+                } else if (s[j] == '"') {
+                    inString = true;
+                } else if (
+                    (s[j] == '[')
+                    || (s[j] == '{')
+                    || (s[j] == '(')
+                    || (s[j] == '<')
+                ) {
+                    ++level;
+                } else if (
+                    (s[j] == ']')
+                    || (s[j] == '}')
+                    || (s[j] == ')')
+                    || (s[j] == '>')
+                ) {
+                    --level;
+                }
+            }
+            ++j;
+        }
+        return s.substr(begin, j - begin);
+    }
+
+    std::vector< std::string > Split(const std::string& s) {
+        size_t i = 1;
+        std::vector< std::string > values;
+        const size_t end = s.length() - 1;
+        while (i < s.length() - 1) {
+            const std::string element = ParseElement(s, i, end);
+            const std::string value(Trim(element));
+            if (!value.empty()) {
+                values.emplace_back(std::move(value));
+            }
+            const size_t j = i + element.length();
+            if (s[j] == ',') {
+                i = j + 1;
+            } else {
+                i = j;
+            }
+        }
+        return values;
+    }
+
 }
