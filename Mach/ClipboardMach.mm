@@ -42,7 +42,10 @@ namespace SystemAbstractions {
     std::string Clipboard::PasteString() {
         NSPasteboard* pasteboard = [NSPasteboard generalPasteboard];
         NSArray* items = [pasteboard readObjectsForClasses: @[[NSString class]] options: [NSDictionary dictionary]];
-        if (items == nil) {
+        if (
+            (items == nil)
+            || (items.count <= 0)
+        ) {
             return "";
         }
         return [items[0] UTF8String];
