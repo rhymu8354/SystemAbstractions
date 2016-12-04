@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		BB12AEFB1DF4A56D00ED359A /* Clipboard.hpp in Headers */ = {isa = PBXBuildFile; fileRef = BB12AEFA1DF4A56D00ED359A /* Clipboard.hpp */; };
+		BB12AEFF1DF4A95300ED359A /* ClipboardMach.mm in Sources */ = {isa = PBXBuildFile; fileRef = BB12AEFE1DF4A95300ED359A /* ClipboardMach.mm */; };
 		BB2E69B11C66964300EFD7DD /* IFile.hpp in Headers */ = {isa = PBXBuildFile; fileRef = BB2E69AE1C66964300EFD7DD /* IFile.hpp */; };
 		BB2E69B31C66964300EFD7DD /* StringFile.hpp in Headers */ = {isa = PBXBuildFile; fileRef = BB2E69B01C66964300EFD7DD /* StringFile.hpp */; };
 		BB41CB321CF4DDD600CB9791 /* DiagnosticsContext.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BB41CB1D1CF4DDD600CB9791 /* DiagnosticsContext.cpp */; };
@@ -53,6 +55,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		BB12AEFA1DF4A56D00ED359A /* Clipboard.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Clipboard.hpp; sourceTree = "<group>"; };
+		BB12AEFE1DF4A95300ED359A /* ClipboardMach.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = ClipboardMach.mm; path = Mach/ClipboardMach.mm; sourceTree = "<group>"; };
 		BB2E69AE1C66964300EFD7DD /* IFile.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = IFile.hpp; sourceTree = "<group>"; };
 		BB2E69B01C66964300EFD7DD /* StringFile.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = StringFile.hpp; sourceTree = "<group>"; };
 		BB41CB1D1CF4DDD600CB9791 /* DiagnosticsContext.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DiagnosticsContext.cpp; sourceTree = "<group>"; };
@@ -113,6 +117,7 @@
 		BB41CB491CF4DDF800CB9791 /* Mach */ = {
 			isa = PBXGroup;
 			children = (
+				BB12AEFE1DF4A95300ED359A /* ClipboardMach.mm */,
 				BB41CB631CF7889300CB9791 /* DirectoryMonitorMach.cpp */,
 				BB41CBF81CF7B24C00CB9791 /* DynamicLibraryMach.cpp */,
 				BB41CB471CF4DDF200CB9791 /* FileMach.cpp */,
@@ -144,6 +149,7 @@
 		BB8470A91A0AE3D8000B45D6 = {
 			isa = PBXGroup;
 			children = (
+				BB12AEFA1DF4A56D00ED359A /* Clipboard.hpp */,
 				BB41CB1D1CF4DDD600CB9791 /* DiagnosticsContext.cpp */,
 				BB41CB1E1CF4DDD600CB9791 /* DiagnosticsContext.hpp */,
 				BB41CB1F1CF4DDD600CB9791 /* DiagnosticsReceiver.hpp */,
@@ -210,6 +216,7 @@
 				BB41CB451CF4DDD600CB9791 /* StringExtensions.hpp in Headers */,
 				BB41CB571CF4DE1100CB9791 /* FilePosix.hpp in Headers */,
 				BB41CB421CF4DDD600CB9791 /* NetworkEndpoint.hpp in Headers */,
+				BB12AEFB1DF4A56D00ED359A /* Clipboard.hpp in Headers */,
 				BB41CB461CF4DDD600CB9791 /* Subprocess.hpp in Headers */,
 				BB41CB331CF4DDD600CB9791 /* DiagnosticsContext.hpp in Headers */,
 				BB41CB401CF4DDD600CB9791 /* NetworkConnectionImpl.hpp in Headers */,
@@ -278,6 +285,7 @@
 				BBB4A5ED1D07631F0076D4BC /* TargetInfoMach.cpp in Sources */,
 				BB41CB641CF7889300CB9791 /* DirectoryMonitorMach.cpp in Sources */,
 				BB41CB3B1CF4DDD600CB9791 /* File.cpp in Sources */,
+				BB12AEFF1DF4A95300ED359A /* ClipboardMach.mm in Sources */,
 				BB41CB561CF4DE1100CB9791 /* FilePosix.cpp in Sources */,
 				BB41CB481CF4DDF200CB9791 /* FileMach.cpp in Sources */,
 				BB41CB441CF4DDD600CB9791 /* StringExtensions.cpp in Sources */,
