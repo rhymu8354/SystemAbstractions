@@ -27,6 +27,7 @@
     <ClCompile Include="NetworkEndpoint.cpp" />
     <ClCompile Include="StringExtensions.cpp" />
     <ClCompile Include="StringFile.cpp" />
+    <ClCompile Include="Win32\ClipboardWin32.cpp" />
     <ClCompile Include="Win32\DirectoryMonitorWin32.cpp" />
     <ClCompile Include="Win32\DynamicLibraryWin32.cpp" />
     <ClCompile Include="Win32\FileWin32.cpp" />
@@ -37,6 +38,7 @@
     <ClCompile Include="Win32\TimeWin32.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Clipboard.hpp" />
     <ClInclude Include="DiagnosticsContext.hpp" />
     <ClInclude Include="DiagnosticsReceiver.hpp" />
     <ClInclude Include="DiagnosticsSender.hpp" />
