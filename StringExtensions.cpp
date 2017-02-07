@@ -83,17 +83,24 @@ namespace SystemAbstractions {
         return linesOut;
     }
 
-    std::string ParseElement(const std::string&s, size_t begin, size_t end) {
+    std::string ParseElement(const std::string& s, size_t begin, size_t end) {
         bool inString = false;
         int level = 1;
         size_t j = begin;
+        bool escape = false;
         while (
             (j < end)
             && (level > 0)
         ) {
             if (inString) {
-                if (s[j] == '"') {
-                    inString = false;
+                if (escape) {
+                    escape = false;
+                } else {
+                    if (s[j] == '\\') {
+                        escape = true;
+                    } else if (s[j] == '"') {
+                        inString = false;
+                    }
                 }
             } else {
                 if (
@@ -122,6 +129,34 @@ namespace SystemAbstractions {
             ++j;
         }
         return s.substr(begin, j - begin);
+    }
+
+    std::string Escape(const std::string& s, char escapeCharacter, const std::set< char >& charactersToEscape) {
+        std::string output;
+        for (size_t i = 0; i < s.length(); ++i) {
+            if (charactersToEscape.find(s[i]) != charactersToEscape.end()) {
+                output += escapeCharacter;
+            }
+            output += s[i];
+        }
+        return output;
+    }
+
+    std::string Unescape(const std::string& s, char escapeCharacter) {
+        std::string output;
+        bool escape = false;
+        for (size_t i = 0; i < s.length(); ++i) {
+            if (
+                !escape
+                && (s[i] == escapeCharacter)
+            ) {
+                escape = true;
+            } else {
+                output += s[i];
+                escape = false;
+            }
+        }
+        return output;
     }
 
     std::vector< std::string > Split(const std::string& s) {

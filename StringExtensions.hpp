@@ -9,6 +9,7 @@
  * Copyright (c) 2014-2016 by Richard Walters
  */
 
+#include <set>
 #include <stdarg.h>
 #include <string>
 #include <vector>
@@ -63,7 +64,17 @@ namespace SystemAbstractions {
     /**
      * @todo Needs documentation
      */
-    std::string ParseElement(const std::string&s, size_t begin, size_t end);
+    std::string ParseElement(const std::string& s, size_t begin, size_t end);
+
+    /**
+     * @todo Needs documentation
+     */
+    std::string Escape(const std::string& s, char escapeCharacter, const std::set< char >& charactersToEscape);
+
+    /**
+     * @todo Needs documentation
+     */
+    std::string Unescape(const std::string& s, char escapeCharacter);
 
     /**
      * @todo Needs documentation
