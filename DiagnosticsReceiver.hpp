@@ -28,6 +28,24 @@ namespace SystemAbstractions {
 
         // Public methods
     public:
+        /**
+         * This is the destructor.
+         */
+        virtual ~DiagnosticsReceiver() {}
+
+        /**
+         * This method is called when diagnostic information is published.
+         *
+         * @param[in] senderName
+         *     This identifies the origin of the diagnostic information.
+         *
+         * @param[in] level
+         *     This is used to filter out less-important information.
+         *     The level is higher the more important the information is.
+         *
+         * @param[in] message
+         *     This is the content of the message.
+         */
         virtual void ReceiveDiagnosticInformation(
             std::string senderName,
             size_t level,
