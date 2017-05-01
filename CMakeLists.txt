@@ -41,4 +41,9 @@ endif(DEFINED TargetFolders)
 
 add_library(${This} STATIC ${Sources} ${Headers})
 
+if(APPLE)
+    find_library(CF CoreFoundation)
+    target_link_libraries(${This} ${CF})
+endif(APPLE)
+
 target_include_directories(${This} INTERFACE ..)
