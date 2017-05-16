@@ -125,7 +125,7 @@ namespace SystemAbstractions {
             _impl->dirHandle = -1;
             return false;
         }
-        _impl->worker = std::move(std::thread(&DirectoryMonitorImpl::Run, _impl.get()));
+        _impl->worker = std::thread(&DirectoryMonitorImpl::Run, _impl.get());
         return true;
     }
     

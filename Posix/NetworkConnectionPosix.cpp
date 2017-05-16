@@ -120,7 +120,7 @@ namespace SystemAbstractions {
             return false;
         }
         platform->processorStateChangeSignal.Clear();
-        platform->processor = std::move(std::thread(&NetworkConnectionImpl::Processor, this));
+        platform->processor = std::thread(&NetworkConnectionImpl::Processor, this);
         return true;
     }
 

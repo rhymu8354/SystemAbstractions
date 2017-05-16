@@ -175,7 +175,7 @@ namespace SystemAbstractions {
             port
         );
         platform->processorStop = false;
-        platform->processor = std::move(std::thread(&NetworkEndpointImpl::Processor, this));
+        platform->processor = std::thread(&NetworkEndpointImpl::Processor, this);
         return true;
     }
 

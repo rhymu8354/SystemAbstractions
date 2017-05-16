@@ -187,7 +187,7 @@ namespace SystemAbstractions {
         }
         _impl->pipe = pipeEnds[0];
         (void)close(pipeEnds[1]);
-        _impl->worker = std::move(std::thread(&SubprocessImpl::MonitorChild, _impl.get()));
+        _impl->worker = std::thread(&SubprocessImpl::MonitorChild, _impl.get());
         return true;
     }
 
