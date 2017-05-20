@@ -45,5 +45,11 @@ if(APPLE)
     find_library(CF CoreFoundation)
     target_link_libraries(${This} ${CF})
 endif(APPLE)
+if(UNIX)
+    target_link_libraries(${This}
+        pthread
+        dl
+    )
+endif(UNIX)
 
 target_include_directories(${This} INTERFACE ..)
