@@ -251,6 +251,7 @@ namespace SystemAbstractions {
         virtual size_t Read(void* buffer, size_t numBytes) override;
         virtual size_t Write(const Buffer& buffer, size_t numBytes = 0, size_t offset = 0) override;
         virtual size_t Write(const void* buffer, size_t numBytes) override;
+        virtual std::shared_ptr< IFile > Clone() override;
 
         // Private methods
     private:

@@ -138,4 +138,9 @@ namespace SystemAbstractions {
         return numBytes;
     }
 
+    std::shared_ptr< IFile > StringFile::Clone() {
+        auto clone = std::make_shared< StringFile >(*this);
+        return clone;
+    }
+
 }

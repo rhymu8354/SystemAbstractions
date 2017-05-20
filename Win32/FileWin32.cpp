@@ -365,6 +365,26 @@ namespace SystemAbstractions {
         return (size_t)amountWritten;
     }
 
+    std::shared_ptr< IFile > File::Clone() {
+        auto clone = std::make_shared< File >(_path);
+        if (_impl->handle != INVALID_HANDLE_VALUE) {
+            if (
+                !DuplicateHandle(
+                    GetCurrentProcess(),
+                    _impl->handle,
+                    GetCurrentProcess(),
+                    &clone->_impl->handle,
+                    0,
+                    FALSE,
+                    DUPLICATE_SAME_ACCESS
+                )
+            ) {
+                return nullptr;
+            }
+        }
+        return clone;
+    }
+
     bool File::CreatePath(std::string path) {
         const size_t delimiter = path.find_last_of("/\\");
         if (delimiter == std::string::npos) {

@@ -9,6 +9,7 @@
  * Copyright (c) 2013-2016 by Richard Walters
  */
 
+#include <memory>
 #include <stddef.h>
 #include <stdint.h>
 #include <string>
@@ -171,6 +172,18 @@ namespace SystemAbstractions {
          *     The number of bytes actually written is returned.
          */
         virtual size_t Write(const void* buffer, size_t numBytes) = 0;
+
+        /**
+         * This method creates a new file object which operates on
+         * the same file but has its own current file position.
+         *
+         * @return
+         *     The newly created file object is returned.
+         *
+         * @retval nullptr
+         *     This is returned if the file could not be cloned.
+         */
+        virtual std::shared_ptr< IFile > Clone() = 0;
     };
 
 }
