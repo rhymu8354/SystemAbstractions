@@ -40,6 +40,9 @@ if(DEFINED TargetFolders)
 endif(DEFINED TargetFolders)
 
 add_library(${This} STATIC ${Sources} ${Headers})
+set_target_properties(${This} PROPERTIES
+    FOLDER Libraries
+)
 
 if(APPLE)
     find_library(CF CoreFoundation)
