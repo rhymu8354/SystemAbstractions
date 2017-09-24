@@ -325,7 +325,7 @@ namespace SystemAbstractions {
                     if (errorCode != WSAEWOULDBLOCK) {
                         diagnosticsSender.SendDiagnosticInformationFormatted(
                             SystemAbstractions::DiagnosticsReceiver::Levels::ERROR,
-                            "error in recvfrom (%d)",
+                            "error in sendto (%d)",
                             WSAGetLastError()
                         );
                         Close(false);
