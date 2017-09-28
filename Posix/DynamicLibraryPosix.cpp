@@ -60,7 +60,7 @@ namespace SystemAbstractions {
             name.c_str(),
             DynamicLibraryImpl::GetDynamicLibraryFileExtension().c_str()
         );
-        _impl->libraryHandle = dlopen(library.c_str(), RTLD_LAZY);
+        _impl->libraryHandle = dlopen(library.c_str(), RTLD_NOW);
         (void)chdir(&originalPath[0]);
         return (_impl->libraryHandle != NULL);
     }
