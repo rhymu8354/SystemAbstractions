@@ -64,6 +64,18 @@ namespace SystemAbstractions {
          */
         void* GetProcedure(const std::string& name);
 
+        /**
+         * This method returns a human-readable string describing
+         * the last error that occurred calling another
+         * method on the object.
+         *
+         * @return
+         *     A human-readable string describing the last error
+         *     that occurred calling another method of the
+         *     object is returned.
+         */
+        std::string GetLastError();
+
         // Disable copy constructor and assignment operator.
         DynamicLibrary(const DynamicLibrary&) = delete;
         DynamicLibrary& operator=(const DynamicLibrary&) = delete;

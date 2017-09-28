@@ -76,4 +76,8 @@ namespace SystemAbstractions {
         return dlsym(_impl->libraryHandle, name.c_str());
     }
 
+    std::string DynamicLibrary::GetLastError() {
+        return dlerror();
+    }
+
 }

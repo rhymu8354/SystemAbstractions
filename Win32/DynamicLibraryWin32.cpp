@@ -76,4 +76,8 @@ namespace SystemAbstractions {
         return GetProcAddress(_impl->libraryHandle, name.c_str());
     }
 
+    std::string DynamicLibrary::GetLastError() {
+        return SystemAbstractions::sprintf("%lu", (unsigned long)::GetLastError());
+    }
+
 }
