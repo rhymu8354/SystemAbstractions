@@ -239,6 +239,16 @@ namespace SystemAbstractions {
             const std::string& newDirectory
         );
 
+        /**
+         * This method returns a list of directories that are considered
+         * the root directories in the filesystem.  For example, in
+         * Windows the list contains drive letters.
+         *
+         * @return
+         *     The list of root directories in the filesystem is returned.
+         */
+        static std::vector< std::string > GetDirectoryRoots();
+
         // IFile
     public:
         virtual uint64_t GetSize() const override;

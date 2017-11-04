@@ -19,6 +19,7 @@
 
 #include <io.h>
 #include <KnownFolders.h>
+#include <memory>
 #include <ShlObj.h>
 #include <Shlwapi.h>
 #include <stddef.h>
@@ -298,6 +299,45 @@ namespace SystemAbstractions {
             FindClose(searchHandle);
         }
         return true;
+    }
+
+    std::vector< std::string > File::GetDirectoryRoots() {
+        const auto driveStringsBufferSize = (size_t)GetLogicalDriveStringsA(0, nullptr);
+        std::shared_ptr< char > driveStringsBuffer(
+            new char[driveStringsBufferSize],
+            [](char* p){ delete[] p; }
+        );
+        if (GetLogicalDriveStringsA((DWORD)driveStringsBufferSize, driveStringsBuffer.get()) > 0) {
+            std::vector< std::string > roots;
+            size_t i = 0;
+            for (;;) {
+                size_t j = i;
+                while (driveStringsBuffer.get()[j] != 0) {
+                    ++j;
+                }
+                if (i == j) {
+                    break;
+                }
+                size_t k = j;
+                while (
+                    (k > i)
+                    && (
+                        (driveStringsBuffer.get()[k - 1] == '/')
+                        || (driveStringsBuffer.get()[k - 1] == '\\')
+                    )
+                ) {
+                    --k;
+                }
+                roots.emplace_back(
+                    driveStringsBuffer.get() + i,
+                    driveStringsBuffer.get() + k
+                );
+                i = j + 1;
+            }
+            return roots;
+        } else {
+            return {};
+        }
     }
 
     uint64_t File::GetSize() const {

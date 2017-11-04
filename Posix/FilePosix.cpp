@@ -296,6 +296,10 @@ namespace SystemAbstractions {
         return true;
     }
 
+    std::vector< std::string > File::GetDirectoryRoots() {
+        return {"/"};
+    }
+
     uint64_t File::GetSize() const {
         if (_impl->handle == NULL) {
             return 0;
