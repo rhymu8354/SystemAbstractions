@@ -79,7 +79,10 @@ namespace SystemAbstractions {
     /**
      * @todo Needs documentation
      */
-    std::vector< std::string > Split(const std::string& s);
+    std::vector< std::string > Split(
+        const std::string& s,
+        char d
+    );
 
 }
 

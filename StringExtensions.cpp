@@ -159,21 +159,20 @@ namespace SystemAbstractions {
         return output;
     }
 
-    std::vector< std::string > Split(const std::string& s) {
-        size_t i = 1;
+    std::vector< std::string > Split(
+        const std::string& s,
+        char d
+    ) {
         std::vector< std::string > values;
-        const size_t end = s.length() - 1;
-        while (i < s.length() - 1) {
-            const std::string element = ParseElement(s, i, end);
-            const std::string value(Trim(element));
-            if (!value.empty()) {
-                values.emplace_back(std::move(value));
-            }
-            const size_t j = i + element.length();
-            if (s[j] == ',') {
-                i = j + 1;
+        auto remainder = Trim(s);
+        while (!remainder.empty()) {
+            auto delimiter = remainder.find_first_of(d);
+            if (delimiter == std::string::npos) {
+                values.push_back(remainder);
+                remainder.clear();
             } else {
-                i = j;
+                values.push_back(Trim(remainder.substr(0, delimiter)));
+                remainder = Trim(remainder.substr(delimiter + 1));
             }
         }
         return values;
