@@ -343,6 +343,9 @@ namespace SystemAbstractions {
             ifaddr != NULL;
             ifaddr = ifaddr->ifa_next
         ) {
+            if ((ifaddr->ifa_flags & IFF_UP) == 0) {
+                continue;
+            }
             if (
                 (ifaddr->ifa_addr != NULL)
                 && (ifaddr->ifa_addr->sa_family == AF_INET)

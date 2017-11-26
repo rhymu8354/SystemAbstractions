@@ -143,8 +143,12 @@ namespace SystemAbstractions {
                     if (setsockopt(platform->sock, IPPROTO_IP, IP_ADD_MEMBERSHIP, (const char*)&multicastGroup, sizeof(multicastGroup)) == SOCKET_ERROR) {
                         diagnosticsSender.SendDiagnosticInformationFormatted(
                             SystemAbstractions::DiagnosticsReceiver::Levels::ERROR,
-                            "error setting socket option IP_ADD_MEMBERSHIP (%d)",
-                            WSAGetLastError()
+                            "error setting socket option IP_ADD_MEMBERSHIP (%d) for local interface %" PRIu8 ".%" PRIu8 ".%" PRIu8 ".%" PRIu8,
+                            WSAGetLastError(),
+                            (uint8_t)((localAddress >> 24) & 0xFF),
+                            (uint8_t)((localAddress >> 16) & 0xFF),
+                            (uint8_t)((localAddress >> 8) & 0xFF),
+                            (uint8_t)(localAddress & 0xFF)
                         );
                         Close(false);
                         return false;
@@ -410,6 +414,9 @@ namespace SystemAbstractions {
                 adapter != NULL;
                 adapter = adapter->Next
             ) {
+                if (adapter->OperStatus != IfOperStatusUp) {
+                    continue;
+                }
                 for (
                     PIP_ADAPTER_UNICAST_ADDRESS unicastAddress = adapter->FirstUnicastAddress;
                     unicastAddress != NULL;
