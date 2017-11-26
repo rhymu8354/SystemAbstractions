@@ -275,7 +275,7 @@ namespace SystemAbstractions {
                     if (errno != EWOULDBLOCK) {
                         diagnosticsSender.SendDiagnosticInformationFormatted(
                             SystemAbstractions::DiagnosticsReceiver::Levels::ERROR,
-                            "error in recvfrom: %s",
+                            "error in sendto: %s",
                             strerror(errno)
                         );
                         Close(false);
