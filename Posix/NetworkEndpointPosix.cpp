@@ -20,6 +20,7 @@
 #include <ifaddrs.h>
 #include <inttypes.h>
 #include <memory>
+#include <net/if.h>
 #include <stdint.h>
 #include <string.h>
 #include <sys/select.h>
