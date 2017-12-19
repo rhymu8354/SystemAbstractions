@@ -78,7 +78,7 @@ namespace SystemAbstractions {
 
     bool File::Open() {
         Close();
-        _impl->handle = fopen(_path.c_str(), "r+b");
+        _impl->handle = fopen(_path.c_str(), "rb");
         return (_impl->handle != NULL);
     }
 
