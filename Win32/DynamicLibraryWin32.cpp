@@ -31,12 +31,12 @@ namespace SystemAbstractions {
     }
 
 
-    DynamicLibrary::DynamicLibrary(DynamicLibrary&& other)
+    DynamicLibrary::DynamicLibrary(DynamicLibrary&& other) noexcept
         : _impl(std::move(other._impl))
     {
     }
 
-    DynamicLibrary::DynamicLibrary(std::unique_ptr< DynamicLibraryImpl >&& impl)
+    DynamicLibrary::DynamicLibrary(std::unique_ptr< DynamicLibraryImpl >&& impl) noexcept
         : _impl(std::move(impl))
     {
     }
@@ -48,8 +48,7 @@ namespace SystemAbstractions {
         Unload();
     }
 
-    DynamicLibrary& DynamicLibrary::operator=(DynamicLibrary&& other) {
-        assert(this != &other);
+    DynamicLibrary& DynamicLibrary::operator=(DynamicLibrary&& other) noexcept {
         _impl = std::move(other._impl);
         return *this;
     }

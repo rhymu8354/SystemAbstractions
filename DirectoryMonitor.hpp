@@ -48,12 +48,12 @@ namespace SystemAbstractions {
          *     This is an existing set of properties to encapsulate
          *     into a new network connection object.
          */
-        DirectoryMonitor(std::unique_ptr< struct DirectoryMonitorImpl >&& impl);
+        DirectoryMonitor(std::unique_ptr< struct DirectoryMonitorImpl >&& impl) noexcept;
 
         /**
          * This is the instance move constructor.
          */
-        DirectoryMonitor(DirectoryMonitor&& other);
+        DirectoryMonitor(DirectoryMonitor&& other) noexcept;
 
         /**
          * This is the instance destructor.
@@ -63,7 +63,7 @@ namespace SystemAbstractions {
         /**
          * This is the move assignment operator.
          */
-        DirectoryMonitor& operator=(DirectoryMonitor&& other);
+        DirectoryMonitor& operator=(DirectoryMonitor&& other) noexcept;
 
         /**
          * @todo Needs documentation

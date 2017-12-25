@@ -32,12 +32,12 @@ namespace SystemAbstractions {
          *     This is an existing set of properties to encapsulate
          *     into a new object.
          */
-        DynamicLibrary(std::unique_ptr< struct DynamicLibraryImpl >&& impl);
+        DynamicLibrary(std::unique_ptr< struct DynamicLibraryImpl >&& impl) noexcept;
 
         /**
          * This is the instance move constructor.
          */
-        DynamicLibrary(DynamicLibrary&& other);
+        DynamicLibrary(DynamicLibrary&& other) noexcept;
 
         /**
          * This is the instance destructor.
@@ -47,7 +47,7 @@ namespace SystemAbstractions {
         /**
          * This is the move assignment operator.
          */
-        DynamicLibrary& operator=(DynamicLibrary&& other);
+        DynamicLibrary& operator=(DynamicLibrary&& other) noexcept;
 
         /**
          * @todo Needs documentation

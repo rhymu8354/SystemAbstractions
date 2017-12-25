@@ -123,12 +123,12 @@ namespace SystemAbstractions {
     }
 
 
-    Subprocess::Subprocess(Subprocess&& other)
+    Subprocess::Subprocess(Subprocess&& other) noexcept
         : _impl(std::move(other._impl))
     {
     }
 
-    Subprocess::Subprocess(std::unique_ptr< SubprocessImpl >&& impl)
+    Subprocess::Subprocess(std::unique_ptr< SubprocessImpl >&& impl) noexcept
         : _impl(std::move(impl))
     {
     }
@@ -143,7 +143,7 @@ namespace SystemAbstractions {
         }
     }
 
-    Subprocess& Subprocess::operator=(Subprocess&& other) {
+    Subprocess& Subprocess::operator=(Subprocess&& other) noexcept {
         assert(this != &other);
         _impl = std::move(other._impl);
         return *this;

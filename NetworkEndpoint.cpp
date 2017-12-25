@@ -22,7 +22,7 @@ namespace SystemAbstractions {
     }
 
 
-    NetworkEndpoint::NetworkEndpoint(NetworkEndpoint&& other)
+    NetworkEndpoint::NetworkEndpoint(NetworkEndpoint&& other) noexcept
         : _impl(std::move(other._impl))
     {
     }
@@ -30,8 +30,7 @@ namespace SystemAbstractions {
     NetworkEndpoint::~NetworkEndpoint() {
     }
 
-    NetworkEndpoint& NetworkEndpoint::operator=(NetworkEndpoint&& other) {
-        assert(this != &other);
+    NetworkEndpoint& NetworkEndpoint::operator=(NetworkEndpoint&& other) noexcept {
         _impl = std::move(other._impl);
         return *this;
     }

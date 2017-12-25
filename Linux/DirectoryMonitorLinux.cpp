@@ -88,12 +88,12 @@ namespace SystemAbstractions {
     }
 
 
-    DirectoryMonitor::DirectoryMonitor(DirectoryMonitor&& other)
+    DirectoryMonitor::DirectoryMonitor(DirectoryMonitor&& other) noexcept
         : _impl(std::move(other._impl))
     {
     }
 
-    DirectoryMonitor::DirectoryMonitor(std::unique_ptr< DirectoryMonitorImpl >&& impl)
+    DirectoryMonitor::DirectoryMonitor(std::unique_ptr< DirectoryMonitorImpl >&& impl) noexcept
         : _impl(std::move(impl))
     {
     }
@@ -102,7 +102,7 @@ namespace SystemAbstractions {
         Stop();
     }
 
-    DirectoryMonitor& DirectoryMonitor::operator=(DirectoryMonitor&& other) {
+    DirectoryMonitor& DirectoryMonitor::operator=(DirectoryMonitor&& other) noexcept {
         assert(this != &other);
         _impl = std::move(other._impl);
         return *this;

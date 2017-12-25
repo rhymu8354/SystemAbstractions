@@ -68,7 +68,7 @@ namespace SystemAbstractions {
         /**
          * This is the instance move constructor.
          */
-        NetworkEndpoint(NetworkEndpoint&& other);
+        NetworkEndpoint(NetworkEndpoint&& other) noexcept;
 
         /**
          * This is the instance destructor.
@@ -78,7 +78,7 @@ namespace SystemAbstractions {
         /**
          * This is the move assignment operator.
          */
-        NetworkEndpoint& operator=(NetworkEndpoint&& other);
+        NetworkEndpoint& operator=(NetworkEndpoint&& other) noexcept;
 
         /**
          * @todo Needs documentation

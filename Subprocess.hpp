@@ -53,12 +53,12 @@ namespace SystemAbstractions {
          *     This is an existing set of properties to encapsulate
          *     into a new object.
          */
-        Subprocess(std::unique_ptr< struct SubprocessImpl >&& impl);
+        Subprocess(std::unique_ptr< struct SubprocessImpl >&& impl) noexcept;
 
         /**
          * This is the instance move constructor.
          */
-        Subprocess(Subprocess&& other);
+        Subprocess(Subprocess&& other) noexcept;
 
         /**
          * This is the instance destructor.
@@ -68,7 +68,7 @@ namespace SystemAbstractions {
         /**
          * This is the move assignment operator.
          */
-        Subprocess& operator=(Subprocess&& other);
+        Subprocess& operator=(Subprocess&& other) noexcept;
 
         /**
          * @todo Needs documentation
