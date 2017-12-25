@@ -363,7 +363,7 @@ namespace SystemAbstractions {
         packet.address = address;
         packet.port = port;
         packet.body = body;
-        platform->outputQueue.emplace_back(std::move(packet));
+        platform->outputQueue.push_back(std::move(packet));
         (void)SetEvent(platform->processorStateChangeEvent);
     }
 
