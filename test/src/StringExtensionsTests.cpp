@@ -36,3 +36,68 @@ TEST(StringExtensionsTests, sprintfReturnsSomethingComparableToCppString) {
 TEST(StringExtensionsTests, wcstombs) {
     ASSERT_EQ("Hello, World!", SystemAbstractions::wcstombs(L"Hello, World!"));
 }
+
+TEST(StringExtensionsTests, Trim) {
+    ASSERT_EQ("Hello, World!", SystemAbstractions::Trim("  \t  \t\t  Hello, World! \r  \n \r\n \t \t\t  "));
+}
+
+TEST(StringExtensionsTests, Indent) {
+    ASSERT_EQ(
+        "Hello, World!\r\n"
+        "  This is line 2\r\n"
+        "  This is line 3\r\n",
+        SystemAbstractions::Indent(
+            "Hello, World!\r\n"
+            "This is line 2\r\n"
+            "This is line 3\r\n",
+            2
+        )
+    );
+    ASSERT_EQ(
+        (
+            "Struct {\r\n"
+            "  field 1\r\n"
+            "  field 2\r\n"
+            "}"
+        ),
+        "Struct {"
+        + SystemAbstractions::Indent(
+            "\r\nfield 1"
+            "\r\nfield 2",
+            2
+        )
+        + "\r\n}"
+    );
+}
+
+TEST(StringExtensionsTests, ParseElement) {
+    const std::string line = "Value = {abc {x} = def} NextValue = 42";
+    ASSERT_EQ(
+        "abc {x} = def}",
+        SystemAbstractions::ParseElement(line, 9, line.length())
+    );
+}
+
+TEST(StringExtensionsTests, Escape) {
+    const std::string line = "Hello, W^orld!";
+    ASSERT_EQ(
+        "Hello,^ W^^orld^!",
+        SystemAbstractions::Escape(line, '^', {' ', '!', '^'})
+    );
+}
+
+TEST(StringExtensionsTests, Unescape) {
+    const std::string line = "Hello,^ W^^orld^!";
+    ASSERT_EQ(
+        "Hello, W^orld!",
+        SystemAbstractions::Unescape(line, '^')
+    );
+}
+
+TEST(StringExtensionsTests, Split) {
+    const std::string line = "Hello, World!";
+    ASSERT_EQ(
+        (std::vector< std::string >{"Hello,", "World!"}),
+        SystemAbstractions::Split(line, ' ')
+    );
+}
