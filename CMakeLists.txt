@@ -77,3 +77,5 @@ if(UNIX)
 endif(UNIX)
 
 target_include_directories(${This} PUBLIC include)
+
+add_subdirectory(test)
