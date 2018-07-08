@@ -9,8 +9,8 @@
 
 #include <Windows.h>
 
-#include "../DynamicLibrary.hpp"
-#include "../StringExtensions.hpp"
+#include <SystemAbstractions/DynamicLibrary.hpp>
+#include <SystemAbstractions/StringExtensions.hpp>
 
 #include <assert.h>
 #include <vector>

@@ -1,43 +1,64 @@
+# CMakeLists.txt for SystemAbstractions
+#
+# © 2018 by Richard Walters
+
 cmake_minimum_required(VERSION 3.8)
-
 set(This SystemAbstractions)
-set(CMAKE_CXX_STANDARD 11)
 
-set(SourceExtensions *.c *.cpp *.cxx)
-set(HeaderExtensions *.h *.hpp *.hxx)
+set(Headers
+    include/SystemAbstractions/Clipboard.hpp
+    include/SystemAbstractions/DiagnosticsContext.hpp
+    include/SystemAbstractions/DiagnosticsReceiver.hpp
+    include/SystemAbstractions/DiagnosticsSender.hpp
+    include/SystemAbstractions/DiagnosticsStreamReporter.hpp
+    include/SystemAbstractions/DirectoryMonitor.hpp
+    include/SystemAbstractions/DynamicLibrary.hpp
+    include/SystemAbstractions/File.hpp
+    include/SystemAbstractions/IFile.hpp
+    include/SystemAbstractions/IFileCollection.hpp
+    include/SystemAbstractions/NetworkConnection.hpp
+    include/SystemAbstractions/NetworkConnectionImpl.hpp
+    include/SystemAbstractions/NetworkEndpoint.hpp
+    include/SystemAbstractions/NetworkEndpointImpl.hpp
+    include/SystemAbstractions/StringExtensions.hpp
+    include/SystemAbstractions/StringFile.hpp
+    include/SystemAbstractions/Subprocess.hpp
+    include/SystemAbstractions/TargetInfo.hpp
+    include/SystemAbstractions/Time.hpp
+)
 
-file(GLOB Sources ${SourceExtensions})
-file(GLOB Headers ${HeaderExtensions})
+set(Sources
+    src/DiagnosticsContext.cpp
+    src/DiagnosticsSender.cpp
+    src/DiagnosticsStreamReporter.cpp
+    src/File.cpp
+    src/NetworkConnection.cpp
+    src/NetworkEndpoint.cpp
+    src/StringExtensions.cpp
+    src/StringFile.cpp
+)
 
 if(MSVC)
+    list(APPEND Sources
+        src/Win32/ClipboardWin32.cpp
+        src/Win32/DirectoryMonitorWin32.cpp
+        src/Win32/DynamicLibraryWin32.cpp
+        src/Win32/FileWin32.cpp
+        src/Win32/NetworkConnectionWin32.cpp
+        src/Win32/NetworkEndpointWin32.cpp
+        src/Win32/NetworkEndpointWin32.hpp
+        src/Win32/SubprocessWin32.cpp
+        src/Win32/TargetInfoWin32.cpp
+        src/Win32/TimeWin32.cpp
+    )
     set(TargetFolders Win32)
     add_definitions(
         -DUNICODE -D_UNICODE
         -D_CRT_SECURE_NO_WARNINGS
     )
 elseif(APPLE)
-    set(TargetFolders Mach Posix)
-    list(APPEND SourceExtensions *.m *.mm)
 elseif(UNIX)
-    set(TargetFolders Linux Posix)
 endif()
-
-if(DEFINED TargetFolders)
-    foreach(TargetFolder ${TargetFolders})
-        foreach(SourceExtension ${SourceExtensions})
-            file(GLOB TargetSources
-                ${TargetFolder}/${SourceExtension}
-            )
-            list(APPEND Sources ${TargetSources})
-        endforeach(SourceExtension ${SourceExtensions})
-        foreach(HeaderExtension ${HeaderExtensions})
-            file(GLOB TargetHeaders
-                ${TargetFolder}/${HeaderExtension}
-            )
-            list(APPEND Headers ${TargetHeaders})
-        endforeach(HeaderExtension ${SourceExtensions})
-    endforeach(TargetFolder ${TargetFolders})
-endif(DEFINED TargetFolders)
 
 add_library(${This} STATIC ${Sources} ${Headers})
 set_target_properties(${This} PROPERTIES
@@ -55,4 +76,4 @@ if(UNIX)
     )
 endif(UNIX)
 
-target_include_directories(${This} INTERFACE ..)
+target_include_directories(${This} PUBLIC include)

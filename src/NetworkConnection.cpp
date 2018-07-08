@@ -7,8 +7,8 @@
  * Copyright (c) 2016 by Richard Walters
  */
 
-#include "NetworkConnection.hpp"
-#include "NetworkConnectionImpl.hpp"
+#include <SystemAbstractions/NetworkConnection.hpp>
+#include <SystemAbstractions/NetworkConnectionImpl.hpp>
 
 #include <inttypes.h>
 

@@ -14,8 +14,8 @@
  */
 #include <Windows.h>
 
-#include "../File.hpp"
-#include "../StringExtensions.hpp"
+#include <SystemAbstractions/File.hpp>
+#include <SystemAbstractions/StringExtensions.hpp>
 
 #include <io.h>
 #include <KnownFolders.h>

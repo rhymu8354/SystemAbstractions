@@ -7,7 +7,7 @@
  * Copyright (c) 2016 by Richard Walters
  */
 
-#include "../TargetInfo.hpp"
+#include <SystemAbstractions/TargetInfo.hpp>
 
 namespace SystemAbstractions {
 

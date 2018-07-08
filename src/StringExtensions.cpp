@@ -7,7 +7,7 @@
  * Copyright (c) 2014 by Richard Walters
  */
 
-#include "StringExtensions.hpp"
+#include <SystemAbstractions/StringExtensions.hpp>
 
 #include <stdarg.h>
 #include <stdlib.h>

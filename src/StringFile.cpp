@@ -6,7 +6,7 @@
  * Copyright (c) 2013-2016 by Richard Walters
  */
 
-#include "StringFile.hpp"
+#include <SystemAbstractions/StringFile.hpp>
 
 #include <algorithm>
 #include <string>

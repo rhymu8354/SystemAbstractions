@@ -7,7 +7,7 @@
  * Copyright (c) 2014-2016 by Richard Walters
  */
 
-#include "DiagnosticsStreamReporter.hpp"
+#include <SystemAbstractions/DiagnosticsStreamReporter.hpp>
 
 namespace SystemAbstractions {
 

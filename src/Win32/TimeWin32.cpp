@@ -14,7 +14,7 @@
  */
 #include <Windows.h>
 
-#include "../Time.hpp"
+#include <SystemAbstractions/Time.hpp>
 
 namespace SystemAbstractions {
 

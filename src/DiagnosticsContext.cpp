@@ -7,7 +7,7 @@
  * Copyright (c) 2014-2016 by Richard Walters
  */
 
-#include "DiagnosticsContext.hpp"
+#include <SystemAbstractions/DiagnosticsContext.hpp>
 
 namespace SystemAbstractions {
 

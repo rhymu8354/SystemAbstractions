@@ -10,7 +10,7 @@
  * Copyright (c) 2016 by Richard Walters
  */
 
-#include "../DiagnosticsSender.hpp"
+#include <SystemAbstractions/DiagnosticsSender.hpp>
 
 #include <deque>
 #include <mutex>

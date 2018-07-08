@@ -14,8 +14,8 @@
  */
 #include <Windows.h>
 
-#include "../Subprocess.hpp"
-#include "../StringExtensions.hpp"
+#include <SystemAbstractions/Subprocess.hpp>
+#include <SystemAbstractions/StringExtensions.hpp>
 
 #include <assert.h>
 #include <inttypes.h>

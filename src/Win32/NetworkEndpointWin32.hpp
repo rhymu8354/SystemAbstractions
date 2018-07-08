@@ -10,7 +10,7 @@
  * Copyright (c) 2016 by Richard Walters
  */
 
-#include "../NetworkEndpoint.hpp"
+#include <SystemAbstractions/NetworkEndpoint.hpp>
 
 #include <list>
 #include <mutex>

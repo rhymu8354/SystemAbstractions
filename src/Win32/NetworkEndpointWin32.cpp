@@ -27,9 +27,9 @@
 #undef min
 #undef max
 
-#include "../NetworkConnection.hpp"
-#include "../NetworkConnectionImpl.hpp"
-#include "../NetworkEndpointImpl.hpp"
+#include <SystemAbstractions/NetworkConnection.hpp>
+#include <SystemAbstractions/NetworkConnectionImpl.hpp>
+#include <SystemAbstractions/NetworkEndpointImpl.hpp>
 #include "NetworkConnectionWin32.hpp"
 #include "NetworkEndpointWin32.hpp"
 

@@ -14,7 +14,7 @@
  */
 #include <Windows.h>
 
-#include "../Clipboard.hpp"
+#include <SystemAbstractions/Clipboard.hpp>
 
 #include <atlbase.h>
 #include <tchar.h>

@@ -7,8 +7,8 @@
  * Copyright (c) 2016 by Richard Walters
  */
 
-#include "NetworkEndpoint.hpp"
-#include "NetworkEndpointImpl.hpp"
+#include <SystemAbstractions/NetworkEndpoint.hpp>
+#include <SystemAbstractions/NetworkEndpointImpl.hpp>
 
 #include <assert.h>
 #include <inttypes.h>

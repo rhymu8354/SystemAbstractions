@@ -14,7 +14,7 @@
  */
 #include <Windows.h>
 
-#include "../DirectoryMonitor.hpp"
+#include <SystemAbstractions/DirectoryMonitor.hpp>
 
 #include <assert.h>
 #include <thread>

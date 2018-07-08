@@ -7,8 +7,8 @@
  * Copyright (c) 2014-2016 by Richard Walters
  */
 
-#include "DiagnosticsSender.hpp"
-#include "StringExtensions.hpp"
+#include <SystemAbstractions/DiagnosticsSender.hpp>
+#include <SystemAbstractions/StringExtensions.hpp>
 
 #include <algorithm>
 #include <limits>
