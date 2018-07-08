@@ -32,3 +32,7 @@ TEST(StringExtensionsTests, sprintfReturnsSomethingComparableToCppString) {
     const std::string expectedOutput = "The answer is 42.";
     ASSERT_EQ(expectedOutput, SystemAbstractions::sprintf("The answer is %d.", 42));
 }
+
+TEST(StringExtensionsTests, wcstombs) {
+    ASSERT_EQ("Hello, World!", SystemAbstractions::wcstombs(L"Hello, World!"));
+}
