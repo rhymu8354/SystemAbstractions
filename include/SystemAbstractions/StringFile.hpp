@@ -11,9 +11,8 @@
 
 #include "IFile.hpp"
 
-#include <deque>
+#include <memory>
 #include <stdint.h>
-#include <stdlib.h>
 #include <string>
 #include <vector>
 
@@ -23,6 +22,14 @@ namespace SystemAbstractions {
      * This class represents a file stored in a string.
      */
     class StringFile: public IFile {
+        // Lifecycle management
+    public:
+        ~StringFile();
+        StringFile(const StringFile&) = delete;
+        StringFile(StringFile&&) = delete;
+        StringFile& operator=(const StringFile&) = delete;
+        StringFile& operator=(StringFile&&) = delete;
+
         // Public methods
     public:
         /**
@@ -40,11 +47,6 @@ namespace SystemAbstractions {
          *     This is the initial contents of the file.
          */
         StringFile(std::vector< uint8_t > initialValue);
-
-        /**
-         * This is the instance destructor.
-         */
-        ~StringFile();
 
         /**
          * This is the typecast to std::string operator.
@@ -95,14 +97,16 @@ namespace SystemAbstractions {
         // Private properties
     private:
         /**
-         * This is the contents of the file.
+         * This is the type of structure that contains the private
+         * properties of the instance.  It is defined in the implementation
+         * and declared here to ensure that it is scoped inside the class.
          */
-        std::deque< uint8_t > _value;
+        struct Impl;
 
         /**
-         * This is the current position in the file.
+         * This contains the private properties of the instance.
          */
-        size_t _position;
+        std::unique_ptr< struct Impl > impl_;
     };
 
 }

@@ -9,65 +9,81 @@
 #include <SystemAbstractions/StringFile.hpp>
 
 #include <algorithm>
+#include <deque>
 #include <string>
 
 namespace SystemAbstractions {
 
+    /**
+     * This contains the private properties of a StringFile instance.
+     */
+    struct StringFile::Impl {
+        /**
+         * This is the contents of the file.
+         */
+        std::deque< uint8_t > value;
+
+        /**
+         * This is the current position in the file.
+         */
+        size_t position = 0;
+    };
+
     StringFile::StringFile(std::string initialValue)
-        : _position(0)
+        : impl_(new Impl())
     {
-        _value.assign(initialValue.begin(), initialValue.end());
+        impl_->value.assign(initialValue.begin(), initialValue.end());
     }
 
     StringFile::StringFile(std::vector< uint8_t > initialValue)
-        : _value(initialValue.begin(), initialValue.end())
-        , _position(0)
+        : impl_(new Impl())
     {
+        impl_->value.assign(initialValue.begin(), initialValue.end());
     }
 
     StringFile::~StringFile() {
     }
 
     StringFile::operator std::string() const {
-        return std::string(_value.begin(), _value.end());
+        return std::string(impl_->value.begin(), impl_->value.end());
     }
 
     StringFile::operator std::vector< uint8_t >() const {
-        return std::vector< uint8_t >(_value.begin(), _value.end());
+        return std::vector< uint8_t >(impl_->value.begin(), impl_->value.end());
     }
 
     StringFile& StringFile::operator =(const std::string &b) {
-        _value.assign(b.begin(), b.end());
-        _position = 0;
+        impl_->value.assign(b.begin(), b.end());
+        impl_->position = 0;
         return *this;
     }
 
     StringFile& StringFile::operator =(const std::vector< uint8_t > &b) {
-        _value.assign(b.begin(), b.end());
-        _position = 0;
+        impl_->value.assign(b.begin(), b.end());
+        impl_->position = 0;
         return *this;
     }
 
     void StringFile::Remove(size_t numBytes) {
-        _value.erase(_value.begin(), _value.begin() + std::min(numBytes, _value.size()));
-        _position = std::max(numBytes, _position) - numBytes;
+        impl_->value.erase(impl_->value.begin(), impl_->value.begin() + std::min(numBytes, impl_->value.size()));
+        impl_->position = std::max(numBytes, impl_->position) - numBytes;
     }
 
     uint64_t StringFile::GetSize() const {
-        return (uint64_t)_value.size();
+        return (uint64_t)impl_->value.size();
     }
 
     bool StringFile::SetSize(uint64_t size) {
-        _value.resize((size_t)size);
+        impl_->value.resize((size_t)size);
         return true;
     }
 
     uint64_t StringFile::GetPosition() const {
-        return (uint64_t)_position;
+        return (uint64_t)impl_->position;
     }
 
     void StringFile::SetPosition(uint64_t position) {
-        _position = (size_t)position;
+        impl_->position = (size_t)position;
     }
 
     size_t StringFile::Peek(Buffer& buffer, size_t numBytes, size_t offset) const {
@@ -81,9 +97,9 @@ namespace SystemAbstractions {
     }
 
     size_t StringFile::Peek(void* buffer, size_t numBytes) const {
-        const size_t amountCopied = std::min(numBytes, _value.size() - std::min(_value.size(), _position));
+        const size_t amountCopied = std::min(numBytes, impl_->value.size() - std::min(impl_->value.size(), impl_->position));
         for (size_t i = 0; i < amountCopied; ++i) {
-            ((uint8_t*)buffer)[i] = _value[_position + i];
+            ((uint8_t*)buffer)[i] = impl_->value[impl_->position + i];
         }
         return amountCopied;
     }
@@ -99,11 +115,11 @@ namespace SystemAbstractions {
     }
 
     size_t StringFile::Read(void* buffer, size_t numBytes) {
-        const size_t amountCopied = std::min(numBytes, _value.size() - std::min(_value.size(), _position));
+        const size_t amountCopied = std::min(numBytes, impl_->value.size() - std::min(impl_->value.size(), impl_->position));
         for (size_t i = 0; i < amountCopied; ++i) {
-            ((uint8_t*)buffer)[i] = _value[_position + i];
+            ((uint8_t*)buffer)[i] = impl_->value[impl_->position + i];
         }
-        _position += amountCopied;
+        impl_->position += amountCopied;
         return amountCopied;
     }
 
@@ -114,13 +130,13 @@ namespace SystemAbstractions {
         if (numBytes == 0) {
             return 0;
         }
-        if (_position + numBytes > _value.size()) {
-            _value.resize(_position + numBytes);
+        if (impl_->position + numBytes > impl_->value.size()) {
+            impl_->value.resize(impl_->position + numBytes);
         }
         for (size_t i = 0; i < numBytes; ++i) {
-            _value[_position + i] = buffer[offset + i];
+            impl_->value[impl_->position + i] = buffer[offset + i];
         }
-        _position += numBytes;
+        impl_->position += numBytes;
         return numBytes;
     }
 
@@ -128,18 +144,19 @@ namespace SystemAbstractions {
         if (numBytes == 0) {
             return 0;
         }
-        if (_position + numBytes > _value.size()) {
-            _value.resize(_position + numBytes);
+        if (impl_->position + numBytes > impl_->value.size()) {
+            impl_->value.resize(impl_->position + numBytes);
         }
         for (size_t i = 0; i < numBytes; ++i) {
-            _value[_position + i] = ((const uint8_t*)buffer)[i];
+            impl_->value[impl_->position + i] = ((const uint8_t*)buffer)[i];
         }
-        _position += numBytes;
+        impl_->position += numBytes;
         return numBytes;
     }
 
     std::shared_ptr< IFile > StringFile::Clone() {
-        auto clone = std::make_shared< StringFile >(*this);
+        auto clone = std::make_shared< StringFile >();
+        *clone->impl_ = *impl_;
         return clone;
     }
 
