@@ -67,7 +67,14 @@ namespace SystemAbstractions {
         StringFile& operator =(const std::vector< uint8_t > &b);
 
         /**
-         * @todo Needs documentation
+         * This method removes the given number of bytes from the front
+         * of the string, and moves the file pointer back to either
+         * the front of the file, or back the same number of bytes removed,
+         * whichever is closer.
+         *
+         * @param[in] numBytes
+         *     This is the number of bytes to remove from the front
+         *     of the file.
          */
         void Remove(size_t numBytes);
 
