@@ -4,7 +4,7 @@
  * This module contains the implementation of fucntions
  * which extend the string library.
  *
- * Copyright (c) 2014 by Richard Walters
+ * Copyright © 2014-2018 by Richard Walters
  */
 
 #include <SystemAbstractions/StringExtensions.hpp>

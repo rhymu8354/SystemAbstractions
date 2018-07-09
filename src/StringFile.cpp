@@ -3,7 +3,7 @@
  *
  * This module contains the implementation of the StringFile class.
  *
- * Copyright (c) 2013-2016 by Richard Walters
+ * Copyright © 2013-2018 by Richard Walters
  */
 
 #include <SystemAbstractions/StringFile.hpp>

@@ -6,7 +6,7 @@
  *
  * This module declares functions which extend the string library.
  *
- * Copyright (c) 2014-2016 by Richard Walters
+ * Copyright © 2014-2018 by Richard Walters
  */
 
 #include <set>
