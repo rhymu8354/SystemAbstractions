@@ -49,7 +49,7 @@ namespace SystemAbstractions {
     }
 
     void StringFile::Remove(size_t numBytes) {
-        _value.erase(_value.begin(), _value.begin() + numBytes);
+        _value.erase(_value.begin(), _value.begin() + std::min(numBytes, _value.size()));
         _position = std::max(numBytes, _position) - numBytes;
     }
 
