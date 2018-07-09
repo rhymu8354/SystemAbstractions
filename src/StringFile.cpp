@@ -81,7 +81,7 @@ namespace SystemAbstractions {
     }
 
     size_t StringFile::Peek(void* buffer, size_t numBytes) const {
-        const size_t amountCopied = std::min(numBytes, _value.size() - _position);
+        const size_t amountCopied = std::min(numBytes, _value.size() - std::min(_value.size(), _position));
         for (size_t i = 0; i < amountCopied; ++i) {
             ((uint8_t*)buffer)[i] = _value[_position + i];
         }
@@ -99,7 +99,7 @@ namespace SystemAbstractions {
     }
 
     size_t StringFile::Read(void* buffer, size_t numBytes) {
-        const size_t amountCopied = std::min(numBytes, _value.size() - _position);
+        const size_t amountCopied = std::min(numBytes, _value.size() - std::min(_value.size(), _position));
         for (size_t i = 0; i < amountCopied; ++i) {
             ((uint8_t*)buffer)[i] = _value[_position + i];
         }
