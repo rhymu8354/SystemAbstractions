@@ -79,6 +79,31 @@ namespace SystemAbstractions {
     {
     }
 
+    bool File::Impl::CreatePath(std::string path) {
+        const size_t delimiter = path.find_last_of("/\\");
+        if (delimiter == std::string::npos) {
+            return false;
+        }
+        std::string oneLevelUp(path.substr(0, delimiter));
+        if (CreateDirectoryA(oneLevelUp.c_str(), NULL) != 0) {
+            return true;
+        }
+        const DWORD error = GetLastError();
+        if (error == ERROR_ALREADY_EXISTS) {
+            return true;
+        }
+        if (error != ERROR_PATH_NOT_FOUND) {
+            return false;
+        }
+        if (!CreatePath(oneLevelUp)) {
+            return false;
+        }
+        if (CreateDirectoryA(oneLevelUp.c_str(), NULL) == 0) {
+            return false;
+        }
+        return true;
+    }
+
     File::~File() {
         if (impl_ == nullptr) {
             return;
@@ -150,7 +175,7 @@ namespace SystemAbstractions {
             if (impl_->platform->handle == INVALID_HANDLE_VALUE) {
                 if (
                     createPathTried
-                    || !CreatePath(impl_->path)
+                    || !impl_->CreatePath(impl_->path)
                 ) {
                     return false;
                 }
@@ -313,7 +338,7 @@ namespace SystemAbstractions {
         ) {
             newDirectoryWithSeparator += '\\';
         }
-        if (!File::CreatePath(newDirectoryWithSeparator)) {
+        if (!File::Impl::CreatePath(newDirectoryWithSeparator)) {
             return false;
         }
         std::string listGlob(existingDirectoryWithSeparator);
@@ -470,31 +495,6 @@ namespace SystemAbstractions {
             }
         }
         return clone;
-    }
-
-    bool File::CreatePath(std::string path) {
-        const size_t delimiter = path.find_last_of("/\\");
-        if (delimiter == std::string::npos) {
-            return false;
-        }
-        std::string oneLevelUp(path.substr(0, delimiter));
-        if (CreateDirectoryA(oneLevelUp.c_str(), NULL) != 0) {
-            return true;
-        }
-        const DWORD error = GetLastError();
-        if (error == ERROR_ALREADY_EXISTS) {
-            return true;
-        }
-        if (error != ERROR_PATH_NOT_FOUND) {
-            return false;
-        }
-        if (!CreatePath(oneLevelUp)) {
-            return false;
-        }
-        if (CreateDirectoryA(oneLevelUp.c_str(), NULL) == 0) {
-            return false;
-        }
-        return true;
     }
 
 }

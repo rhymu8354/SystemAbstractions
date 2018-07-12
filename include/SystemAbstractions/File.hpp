@@ -266,10 +266,6 @@ namespace SystemAbstractions {
         virtual size_t Write(const void* buffer, size_t numBytes) override;
         virtual std::shared_ptr< IFile > Clone() override;
 
-        // Private methods
-    private:
-        static bool CreatePath(std::string path);
-
         // Private properties
     private:
         /**
