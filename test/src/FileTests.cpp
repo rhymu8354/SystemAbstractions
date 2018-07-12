@@ -8,6 +8,7 @@
  */
 
 #include <gtest/gtest.h>
+#include <set>
 #include <SystemAbstractions/File.hpp>
 
 /**
@@ -120,6 +121,36 @@ TEST_F(FileTests, BasicFileMethods) {
         SystemAbstractions::File fileCheck(testFilePath + "2");
         ASSERT_TRUE(fileCheck.IsExisting());
     }
+    file.Destroy();
+    ASSERT_FALSE(file.IsExisting());
+
+    // Check that we can copy a file.
+    file = std::move(SystemAbstractions::File(testFilePath));
+    ASSERT_TRUE(file.Create());
+    const std::string testString = "Hello, World\r\n";
+    ASSERT_EQ(testString.length(), file.Write(testString.data(), testString.length()));
+    {
+        SystemAbstractions::File file2(testFilePath + "2");
+        ASSERT_FALSE(file2.IsExisting());
+        ASSERT_TRUE(file.Copy(file2.GetPath()));
+        ASSERT_TRUE(file2.IsExisting());
+        ASSERT_TRUE(file2.Open());
+        SystemAbstractions::IFile::Buffer buffer(file2.GetSize());
+        ASSERT_EQ(buffer.size(), file2.Read(buffer));
+        ASSERT_EQ(testString, std::string(buffer.begin(), buffer.end()));
+        std::vector< std::string > list;
+        SystemAbstractions::File::ListDirectory(testAreaPath, list);
+        std::set< std::string > set(list.begin(), list.end());
+        for (const std::string& expectedElement: { "foo.txt", "foo.txt2" }) {
+            const auto element = set.find(testAreaPath + "/" + expectedElement);
+            ASSERT_FALSE(element == set.end()) << expectedElement;
+            (void)set.erase(element);
+        }
+        ASSERT_TRUE(set.empty());
+        file2.Destroy();
+        ASSERT_FALSE(file2.IsExisting());
+    }
+    file.Close();
     file.Destroy();
     ASSERT_FALSE(file.IsExisting());
 }
