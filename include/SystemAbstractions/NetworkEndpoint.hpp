@@ -9,7 +9,7 @@
  * Copyright (c) 2016 by Richard Walters
  */
 
-#include "DiagnosticsReceiver.hpp"
+#include "DiagnosticsSender.hpp"
 #include "NetworkConnection.hpp"
 
 #include <memory>
@@ -83,12 +83,12 @@ namespace SystemAbstractions {
         /**
          * @todo Needs documentation
          */
-        void SubscribeToDiagnostics(DiagnosticsReceiver* subscriber, size_t minLevel = 0);
+        DiagnosticsSender::SubscriptionToken SubscribeToDiagnostics(DiagnosticsSender::DiagnosticMessageDelegate delegate, size_t minLevel = 0);
 
         /**
          * @todo Needs documentation
          */
-        void UnsubscribeFromDiagnostics(DiagnosticsReceiver* subscriber);
+        void UnsubscribeFromDiagnostics(DiagnosticsSender::SubscriptionToken subscriptionToken);
 
         /**
          * This method starts message or connection processing on the endpoint,

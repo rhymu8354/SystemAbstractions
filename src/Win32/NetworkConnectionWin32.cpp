@@ -75,7 +75,7 @@ namespace SystemAbstractions {
         platform->sock = socket(socketAddress.sin_family, SOCK_STREAM, 0);
         if (platform->sock == INVALID_SOCKET) {
             diagnosticsSender.SendDiagnosticInformationFormatted(
-                SystemAbstractions::DiagnosticsReceiver::Levels::ERROR,
+                SystemAbstractions::DiagnosticsSender::Levels::ERROR,
                 "error creating socket (%d)",
                 WSAGetLastError()
             );
@@ -83,7 +83,7 @@ namespace SystemAbstractions {
         }
         if (bind(platform->sock, (struct sockaddr*)&socketAddress, sizeof(socketAddress)) != 0) {
             diagnosticsSender.SendDiagnosticInformationFormatted(
-                SystemAbstractions::DiagnosticsReceiver::Levels::ERROR,
+                SystemAbstractions::DiagnosticsSender::Levels::ERROR,
                 "error in bind (%d)",
                 WSAGetLastError()
             );
@@ -96,7 +96,7 @@ namespace SystemAbstractions {
         socketAddress.sin_port = htons(peerPort);
         if (connect(platform->sock, (const sockaddr*)&socketAddress, sizeof(socketAddress)) != 0) {
             diagnosticsSender.SendDiagnosticInformationFormatted(
-                SystemAbstractions::DiagnosticsReceiver::Levels::ERROR,
+                SystemAbstractions::DiagnosticsSender::Levels::ERROR,
                 "error in connect (%d)",
                 WSAGetLastError()
             );
@@ -109,14 +109,14 @@ namespace SystemAbstractions {
     bool NetworkConnectionImpl::Process() {
         if (platform->sock == INVALID_SOCKET) {
             diagnosticsSender.SendDiagnosticInformationString(
-                SystemAbstractions::DiagnosticsReceiver::Levels::ERROR,
+                SystemAbstractions::DiagnosticsSender::Levels::ERROR,
                 "not connected"
             );
             return false;
         }
         if (platform->processor.joinable()) {
             diagnosticsSender.SendDiagnosticInformationString(
-                SystemAbstractions::DiagnosticsReceiver::Levels::WARNING,
+                SystemAbstractions::DiagnosticsSender::Levels::WARNING,
                 "already processing"
             );
             return true;
@@ -126,7 +126,7 @@ namespace SystemAbstractions {
             platform->processorStateChangeEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
             if (platform->processorStateChangeEvent == NULL) {
                 diagnosticsSender.SendDiagnosticInformationFormatted(
-                    SystemAbstractions::DiagnosticsReceiver::Levels::ERROR,
+                    SystemAbstractions::DiagnosticsSender::Levels::ERROR,
                     "error creating processor state change event (%d)",
                     (int)GetLastError()
                 );
@@ -137,7 +137,7 @@ namespace SystemAbstractions {
             platform->socketEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
             if (platform->socketEvent == NULL) {
                 diagnosticsSender.SendDiagnosticInformationFormatted(
-                    SystemAbstractions::DiagnosticsReceiver::Levels::ERROR,
+                    SystemAbstractions::DiagnosticsSender::Levels::ERROR,
                     "error creating socket event (%d)",
                     (int)GetLastError()
                 );
@@ -146,7 +146,7 @@ namespace SystemAbstractions {
         }
         if (WSAEventSelect(platform->sock, platform->socketEvent, FD_READ | FD_WRITE | FD_CLOSE) != 0) {
             diagnosticsSender.SendDiagnosticInformationFormatted(
-                SystemAbstractions::DiagnosticsReceiver::Levels::ERROR,
+                SystemAbstractions::DiagnosticsSender::Levels::ERROR,
                 "error in WSAEventSelect for FD_READ (%d)",
                 WSAGetLastError()
             );

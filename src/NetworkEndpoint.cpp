@@ -35,12 +35,12 @@ namespace SystemAbstractions {
         return *this;
     }
 
-    void NetworkEndpoint::SubscribeToDiagnostics(DiagnosticsReceiver* subscriber, size_t minLevel) {
-        _impl->diagnosticsSender.SubscribeToDiagnostics(subscriber, minLevel);
+    DiagnosticsSender::SubscriptionToken NetworkEndpoint::SubscribeToDiagnostics(DiagnosticsSender::DiagnosticMessageDelegate delegate, size_t minLevel) {
+        return _impl->diagnosticsSender.SubscribeToDiagnostics(delegate, minLevel);
     }
 
-    void NetworkEndpoint::UnsubscribeFromDiagnostics(DiagnosticsReceiver* subscriber) {
-        _impl->diagnosticsSender.UnsubscribeFromDiagnostics(subscriber);
+    void NetworkEndpoint::UnsubscribeFromDiagnostics(DiagnosticsSender::SubscriptionToken subscriptionToken) {
+        _impl->diagnosticsSender.UnsubscribeFromDiagnostics(subscriptionToken);
     }
 
     void NetworkEndpoint::SendPacket(

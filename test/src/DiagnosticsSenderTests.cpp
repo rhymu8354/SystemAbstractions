@@ -81,41 +81,24 @@ struct ReceivedMessage {
 
 };
 
-/**
- * This is used to capture diagnostic messages sent
- * by the unit under test.
- */
-struct Subscriber
-    : public SystemAbstractions::DiagnosticsReceiver
-{
-    // Properties
-
-    /**
-     * These are the messages received by this subscriber.
-     */
-    std::vector< ReceivedMessage > receivedMessages;
-
-    // SystemAbstractions::DiagnosticsReceiver
-
-    virtual void ReceiveDiagnosticInformation(
-        std::string senderName,
-        size_t level,
-        std::string message
-    ) override {
-        receivedMessages.emplace_back(
-            senderName,
-            level,
-            message
-        );
-    }
-
-};
-
 TEST(DiagnosticsSenderTests, BasicSubscriptionAndTransmission) {
     SystemAbstractions::DiagnosticsSender sender("Joe");
     sender.SendDiagnosticInformationString(100, "Very important message nobody will hear; FeelsBadMan");
-    Subscriber subscriber;
-    sender.SubscribeToDiagnostics(&subscriber, 5);
+    std::vector< ReceivedMessage > receivedMessages;
+    const auto subscriptionToken = sender.SubscribeToDiagnostics(
+        [&receivedMessages](
+            std::string senderName,
+            size_t level,
+            std::string message
+        ){
+            receivedMessages.emplace_back(
+                senderName,
+                level,
+                message
+            );
+        },
+        5
+    );
     ASSERT_EQ(5, sender.GetMinLevel());
     sender.SendDiagnosticInformationString(10, "PogChamp");
     sender.SendDiagnosticInformationString(3, "Did you hear that?");
@@ -124,10 +107,10 @@ TEST(DiagnosticsSenderTests, BasicSubscriptionAndTransmission) {
     sender.SendDiagnosticInformationString(5, "Level 5, can you dig it?");
     sender.PopContext();
     sender.SendDiagnosticInformationString(6, "Level 6 FOR THE WIN");
-    sender.UnsubscribeFromDiagnostics(&subscriber);
+    sender.UnsubscribeFromDiagnostics(subscriptionToken);
     sender.SendDiagnosticInformationString(5, "Are you still there?");
     ASSERT_EQ(
-        subscriber.receivedMessages,
+        receivedMessages,
         (std::vector< ReceivedMessage >{
             { "Joe", 10, "PogChamp" },
             { "Joe", 5, "spam: Level 5, can you dig it?" },
@@ -138,11 +121,23 @@ TEST(DiagnosticsSenderTests, BasicSubscriptionAndTransmission) {
 
 TEST(DiagnosticsSenderTests, FormattedMessage) {
     SystemAbstractions::DiagnosticsSender sender("Joe");
-    Subscriber subscriber;
-    sender.SubscribeToDiagnostics(&subscriber);
+    std::vector< ReceivedMessage > receivedMessages;
+    (void)sender.SubscribeToDiagnostics(
+        [&receivedMessages](
+            std::string senderName,
+            size_t level,
+            std::string message
+        ){
+            receivedMessages.emplace_back(
+                senderName,
+                level,
+                message
+            );
+        }
+    );
     sender.SendDiagnosticInformationFormatted(0, "The answer is %d.", 42);
     ASSERT_EQ(
-        subscriber.receivedMessages,
+        receivedMessages,
         (std::vector< ReceivedMessage >{
             { "Joe", 0, "The answer is 42." },
         })

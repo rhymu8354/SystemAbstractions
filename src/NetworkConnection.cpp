@@ -28,12 +28,12 @@ namespace SystemAbstractions {
     NetworkConnection::~NetworkConnection() {
     }
 
-    void NetworkConnection::SubscribeToDiagnostics(DiagnosticsReceiver* subscriber, size_t minLevel) {
-        _impl->diagnosticsSender.SubscribeToDiagnostics(subscriber, minLevel);
+    DiagnosticsSender::SubscriptionToken NetworkConnection::SubscribeToDiagnostics(DiagnosticsSender::DiagnosticMessageDelegate delegate, size_t minLevel) {
+        return _impl->diagnosticsSender.SubscribeToDiagnostics(delegate, minLevel);
     }
 
-    void NetworkConnection::UnsubscribeFromDiagnostics(DiagnosticsReceiver* subscriber) {
-        _impl->diagnosticsSender.UnsubscribeFromDiagnostics(subscriber);
+    void NetworkConnection::UnsubscribeFromDiagnostics(DiagnosticsSender::SubscriptionToken subscriptionToken) {
+        _impl->diagnosticsSender.UnsubscribeFromDiagnostics(subscriptionToken);
     }
 
     bool NetworkConnection::Connect(uint32_t peerAddress, uint16_t peerPort) {

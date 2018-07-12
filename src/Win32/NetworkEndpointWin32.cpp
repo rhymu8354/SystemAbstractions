@@ -83,7 +83,7 @@ namespace SystemAbstractions {
         );
         if (platform->sock == INVALID_SOCKET) {
             diagnosticsSender.SendDiagnosticInformationFormatted(
-                SystemAbstractions::DiagnosticsReceiver::Levels::ERROR,
+                SystemAbstractions::DiagnosticsSender::Levels::ERROR,
                 "error creating socket (%d)",
                 WSAGetLastError()
             );
@@ -99,7 +99,7 @@ namespace SystemAbstractions {
             multicastInterface.S_un.S_addr = htonl(localAddress);
             if (setsockopt(platform->sock, IPPROTO_IP, IP_MULTICAST_IF, (const char*)&multicastInterface, sizeof(multicastInterface)) == SOCKET_ERROR) {
                 diagnosticsSender.SendDiagnosticInformationFormatted(
-                    SystemAbstractions::DiagnosticsReceiver::Levels::ERROR,
+                    SystemAbstractions::DiagnosticsSender::Levels::ERROR,
                     "error setting socket option IP_MULTICAST_IF (%d)",
                     WSAGetLastError()
                 );
@@ -114,7 +114,7 @@ namespace SystemAbstractions {
                 BOOL option = TRUE;
                 if (setsockopt(platform->sock, SOL_SOCKET, SO_REUSEADDR, (const char*)&option, sizeof(option)) == SOCKET_ERROR) {
                     diagnosticsSender.SendDiagnosticInformationFormatted(
-                        SystemAbstractions::DiagnosticsReceiver::Levels::ERROR,
+                        SystemAbstractions::DiagnosticsSender::Levels::ERROR,
                         "error setting socket option SO_REUSEADDR (%d)",
                         WSAGetLastError()
                     );
@@ -128,7 +128,7 @@ namespace SystemAbstractions {
             socketAddress.sin_port = htons(port);
             if (bind(platform->sock, (struct sockaddr*)&socketAddress, sizeof(socketAddress)) != 0) {
                 diagnosticsSender.SendDiagnosticInformationFormatted(
-                    SystemAbstractions::DiagnosticsReceiver::Levels::ERROR,
+                    SystemAbstractions::DiagnosticsSender::Levels::ERROR,
                     "error in bind (%d)",
                     WSAGetLastError()
                 );
@@ -142,7 +142,7 @@ namespace SystemAbstractions {
                     multicastGroup.imr_interface.S_un.S_addr = htonl(localAddress);
                     if (setsockopt(platform->sock, IPPROTO_IP, IP_ADD_MEMBERSHIP, (const char*)&multicastGroup, sizeof(multicastGroup)) == SOCKET_ERROR) {
                         diagnosticsSender.SendDiagnosticInformationFormatted(
-                            SystemAbstractions::DiagnosticsReceiver::Levels::ERROR,
+                            SystemAbstractions::DiagnosticsSender::Levels::ERROR,
                             "error setting socket option IP_ADD_MEMBERSHIP (%d) for local interface %" PRIu8 ".%" PRIu8 ".%" PRIu8 ".%" PRIu8,
                             WSAGetLastError(),
                             (uint8_t)((localAddress >> 24) & 0xFF),
@@ -160,7 +160,7 @@ namespace SystemAbstractions {
                     port = ntohs(socketAddress.sin_port);
                 } else {
                     diagnosticsSender.SendDiagnosticInformationFormatted(
-                        SystemAbstractions::DiagnosticsReceiver::Levels::ERROR,
+                        SystemAbstractions::DiagnosticsSender::Levels::ERROR,
                         "error in getsockname (%d)",
                         WSAGetLastError()
                     );
@@ -175,7 +175,7 @@ namespace SystemAbstractions {
             platform->processorStateChangeEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
             if (platform->processorStateChangeEvent == NULL) {
                 diagnosticsSender.SendDiagnosticInformationFormatted(
-                    SystemAbstractions::DiagnosticsReceiver::Levels::ERROR,
+                    SystemAbstractions::DiagnosticsSender::Levels::ERROR,
                     "error creating processor state change event (%d)",
                     (int)GetLastError()
                 );
@@ -190,7 +190,7 @@ namespace SystemAbstractions {
             platform->socketEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
             if (platform->socketEvent == NULL) {
                 diagnosticsSender.SendDiagnosticInformationFormatted(
-                    SystemAbstractions::DiagnosticsReceiver::Levels::ERROR,
+                    SystemAbstractions::DiagnosticsSender::Levels::ERROR,
                     "error creating incoming client event (%d)",
                     (int)GetLastError()
                 );
@@ -216,7 +216,7 @@ namespace SystemAbstractions {
         }
         if (WSAEventSelect(platform->sock, platform->socketEvent, socketEvents) != 0) {
             diagnosticsSender.SendDiagnosticInformationFormatted(
-                SystemAbstractions::DiagnosticsReceiver::Levels::ERROR,
+                SystemAbstractions::DiagnosticsSender::Levels::ERROR,
                 "error in WSAEventSelect (%d)",
                 WSAGetLastError()
             );
@@ -228,7 +228,7 @@ namespace SystemAbstractions {
         if (mode == NetworkEndpoint::Mode::Connection) {
             if (listen(platform->sock, SOMAXCONN) != 0) {
                 diagnosticsSender.SendDiagnosticInformationFormatted(
-                    SystemAbstractions::DiagnosticsReceiver::Levels::ERROR,
+                    SystemAbstractions::DiagnosticsSender::Levels::ERROR,
                     "error in listen (%d)",
                     WSAGetLastError()
                 );
@@ -266,7 +266,7 @@ namespace SystemAbstractions {
                     const auto wsaLastError = WSAGetLastError();
                     if (wsaLastError != WSAEWOULDBLOCK) {
                         diagnosticsSender.SendDiagnosticInformationFormatted(
-                            SystemAbstractions::DiagnosticsReceiver::Levels::WARNING,
+                            SystemAbstractions::DiagnosticsSender::Levels::WARNING,
                             "error in accept (%d)",
                             WSAGetLastError()
                         );
@@ -294,7 +294,7 @@ namespace SystemAbstractions {
                     const auto errorCode = WSAGetLastError();
                     if (errorCode != WSAEWOULDBLOCK) {
                         diagnosticsSender.SendDiagnosticInformationFormatted(
-                            SystemAbstractions::DiagnosticsReceiver::Levels::ERROR,
+                            SystemAbstractions::DiagnosticsSender::Levels::ERROR,
                             "error in recvfrom (%d)",
                             WSAGetLastError()
                         );
@@ -328,7 +328,7 @@ namespace SystemAbstractions {
                     const auto errorCode = WSAGetLastError();
                     if (errorCode != WSAEWOULDBLOCK) {
                         diagnosticsSender.SendDiagnosticInformationFormatted(
-                            SystemAbstractions::DiagnosticsReceiver::Levels::ERROR,
+                            SystemAbstractions::DiagnosticsSender::Levels::ERROR,
                             "error in sendto (%d)",
                             WSAGetLastError()
                         );
@@ -338,7 +338,7 @@ namespace SystemAbstractions {
                 } else {
                     if (amountSent != (int)packet.body.size()) {
                         diagnosticsSender.SendDiagnosticInformationFormatted(
-                            SystemAbstractions::DiagnosticsReceiver::Levels::ERROR,
+                            SystemAbstractions::DiagnosticsSender::Levels::ERROR,
                             "send truncated (%d < %d)",
                             amountSent,
                             (int)packet.body.size()
