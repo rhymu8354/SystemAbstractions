@@ -29,6 +29,33 @@
 #pragma comment(lib, "Shlwapi")
 #pragma comment(lib, "Shell32")
 
+namespace {
+
+    /**
+     * This function replaces all backslashes with forward slashes
+     * in the given string.
+     *
+     * @param[in] in
+     *     This is the string to fix.
+     *
+     * @return
+     *     A copy of the given string, with all backslashes replaced
+     *     with forward slashes, is returned.
+     */
+    std::string FixPathDelimiters(const std::string& in) {
+        std::string out;
+        for (auto c: in) {
+            if (c == '\\') {
+                out.push_back('/');
+            } else {
+                out.push_back(c);
+            }
+        }
+        return out;
+    }
+
+}
+
 namespace SystemAbstractions {
 
     /**
@@ -148,14 +175,14 @@ namespace SystemAbstractions {
     std::string File::GetExeImagePath() {
         std::vector< char > exeImagePath(MAX_PATH + 1);
         (void)GetModuleFileNameA(NULL, &exeImagePath[0], static_cast< DWORD >(exeImagePath.size()));
-        return std::string(&exeImagePath[0]);
+        return FixPathDelimiters(&exeImagePath[0]);
     }
 
     std::string File::GetExeParentDirectory() {
         std::vector< char > exeDirectory(MAX_PATH + 1);
         (void)GetModuleFileNameA(NULL, &exeDirectory[0], static_cast< DWORD >(exeDirectory.size()));
         (void)PathRemoveFileSpecA(&exeDirectory[0]);
-        return std::string(&exeDirectory[0]);
+        return FixPathDelimiters(&exeDirectory[0]);
     }
 
     std::string File::GetResourceFilePath(const std::string& name) {
@@ -207,7 +234,7 @@ namespace SystemAbstractions {
                 }
                 std::string filePath(directoryWithSeparator);
                 filePath += name;
-                list.push_back(filePath);
+                list.push_back(FixPathDelimiters(filePath));
             } while (FindNextFileA(searchHandle, &findFileData) == TRUE);
             FindClose(searchHandle);
         }
