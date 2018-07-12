@@ -213,3 +213,245 @@ TEST_F(FileTests, RepurposeFileObject) {
     file = testFilePath2;
     ASSERT_EQ(testFilePath2, file.GetPath());
 }
+
+TEST_F(FileTests, WriteAndReadBack) {
+    const std::string testFilePath = testAreaPath + "/foo.txt";
+    SystemAbstractions::File file(testFilePath);
+    ASSERT_TRUE(file.Create());
+    const std::string testString = "Hello, World!\r\n";
+    ASSERT_EQ(
+        testString.length(),
+        file.Write(testString.data(), testString.length())
+    );
+    file.SetPosition(0);
+    SystemAbstractions::IFile::Buffer buffer(testString.length());
+    ASSERT_EQ(
+        testString.length(),
+        file.Read(buffer)
+    );
+    ASSERT_EQ(
+        testString,
+        std::string(
+            buffer.begin(),
+            buffer.end()
+        )
+    );
+}
+
+TEST_F(FileTests, ReadBackWithSizeAndOffsets) {
+    const std::string testFilePath = testAreaPath + "/foo.txt";
+    SystemAbstractions::File file(testFilePath);
+    ASSERT_TRUE(file.Create());
+    const std::string testString = "Hello, World!\r\n";
+    (void)file.Write(testString.data(), testString.length());
+    file.SetPosition(7);
+    SystemAbstractions::IFile::Buffer buffer(9);
+    ASSERT_EQ(
+        5,
+        file.Read(buffer, 5, 3)
+    );
+    ASSERT_EQ(
+        (std::vector< uint8_t >{0, 0, 0, 'W', 'o', 'r', 'l', 'd', 0}),
+        buffer
+    );
+}
+
+TEST_F(FileTests, ReadAdvancesFilePointer) {
+    const std::string testFilePath = testAreaPath + "/foo.txt";
+    SystemAbstractions::File file(testFilePath);
+    ASSERT_TRUE(file.Create());
+    const std::string testString = "Hello, World!";
+    (void)file.Write(testString.data(), testString.length());
+    file.SetPosition(0);
+    SystemAbstractions::IFile::Buffer buffer(5);
+    ASSERT_EQ(
+        buffer.size(),
+        file.Read(buffer)
+    );
+    ASSERT_EQ(
+        "Hello",
+        std::string(
+            buffer.begin(),
+            buffer.end()
+        )
+    );
+    ASSERT_EQ(5, file.GetPosition());
+    ASSERT_EQ(
+        buffer.size(),
+        file.Read(buffer)
+    );
+    ASSERT_EQ(
+        ", Wor",
+        std::string(
+            buffer.begin(),
+            buffer.end()
+        )
+    );
+    ASSERT_EQ(10, file.GetPosition());
+    ASSERT_EQ(
+        3,
+        file.Read(buffer)
+    );
+    ASSERT_EQ(
+        "ld!or",
+        std::string(
+            buffer.begin(),
+            buffer.end()
+        )
+    );
+    ASSERT_EQ(13, file.GetPosition());
+}
+
+TEST_F(FileTests, PeakDoesNotAdvancesFilePointer) {
+    const std::string testFilePath = testAreaPath + "/foo.txt";
+    SystemAbstractions::File file(testFilePath);
+    ASSERT_TRUE(file.Create());
+    const std::string testString = "Hello, World!\r\n";
+    (void)file.Write(testString.data(), testString.length());
+    file.SetPosition(0);
+    SystemAbstractions::IFile::Buffer buffer(5);
+    ASSERT_EQ(
+        buffer.size(),
+        file.Read(buffer)
+    );
+    ASSERT_EQ(
+        "Hello",
+        std::string(
+            buffer.begin(),
+            buffer.end()
+        )
+    );
+    ASSERT_EQ(5, file.GetPosition());
+    ASSERT_EQ(
+        4,
+        file.Peek(buffer, 4)
+    );
+    ASSERT_EQ(
+        ", Woo",
+        std::string(
+            buffer.begin(),
+            buffer.end()
+        )
+    );
+    ASSERT_EQ(5, file.GetPosition());
+    ASSERT_EQ(
+        buffer.size(),
+        file.Read(buffer)
+    );
+    ASSERT_EQ(
+        ", Wor",
+        std::string(
+            buffer.begin(),
+            buffer.end()
+        )
+    );
+    ASSERT_EQ(10, file.GetPosition());
+}
+
+TEST_F(FileTests, GetSize) {
+    const std::string testFilePath = testAreaPath + "/foo.txt";
+    SystemAbstractions::File file(testFilePath);
+    ASSERT_TRUE(file.Create());
+    const std::string testString = "Hello, World!\r\n";
+    ASSERT_EQ(0, file.GetSize());
+    (void)file.Write(testString.data(), testString.length());
+    ASSERT_EQ(testString.length(), file.GetSize());
+}
+
+TEST_F(FileTests, SetSize) {
+    const std::string testFilePath = testAreaPath + "/foo.txt";
+    SystemAbstractions::File file(testFilePath);
+    ASSERT_TRUE(file.Create());
+    const std::string testString = "Hello, World!\r\n";
+    (void)file.Write(testString.data(), testString.length());
+    ASSERT_TRUE(file.SetSize(5));
+    ASSERT_EQ(5, file.GetSize());
+    SystemAbstractions::IFile::Buffer buffer(8);
+    ASSERT_EQ(
+        0,
+        file.Peek(buffer)
+    );
+    ASSERT_EQ(
+        0,
+        file.Read(buffer)
+    );
+    file.SetPosition(0);
+    ASSERT_EQ(
+        5,
+        file.Read(buffer)
+    );
+    ASSERT_EQ(
+        (std::vector< uint8_t >{'H', 'e', 'l', 'l', 'o', 0, 0, 0}),
+        buffer
+    );
+    ASSERT_TRUE(file.SetSize(20));
+    ASSERT_EQ(20, file.GetSize());
+    buffer.resize(20);
+    file.SetPosition(0);
+    ASSERT_EQ(
+        20,
+        file.Read(buffer)
+    );
+    ASSERT_EQ(
+        (std::vector< uint8_t >{'H', 'e', 'l', 'l', 'o', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}),
+        buffer
+    );
+}
+
+TEST_F(FileTests, Clone) {
+    const std::string testFilePath = testAreaPath + "/foo.txt";
+    SystemAbstractions::File file(testFilePath);
+    ASSERT_TRUE(file.Create());
+    const std::string testString = "Hello, World!\r\n";
+    (void)file.Write(testString.data(), testString.length());
+    file.SetPosition(0);
+    const auto clone = file.Clone();
+    file.SetPosition(5);
+    (void)file.Write("FeelsBadMan", 11);
+    SystemAbstractions::IFile::Buffer buffer(testString.length());
+    ASSERT_EQ(0, clone->GetPosition());
+    ASSERT_EQ(
+        testString.length(),
+        clone->Read(buffer)
+    );
+    ASSERT_EQ(
+        "HelloFeelsBadMa",
+        std::string(
+            buffer.begin(),
+            buffer.end()
+        )
+    );
+}
+
+TEST_F(FileTests, WriteBeyondEndAndIntoMiddle) {
+    const std::string testFilePath = testAreaPath + "/foo.txt";
+    SystemAbstractions::File file(testFilePath);
+    ASSERT_TRUE(file.Create());
+    const std::string testString = "Hello, World!\r\n";
+    (void)file.Write(testString.data(), 5);
+    file.SetPosition(7);
+    (void)file.Write(testString.data() + 7, 8);
+    ASSERT_EQ(testString.length(), file.GetSize());
+    SystemAbstractions::IFile::Buffer buffer(testString.length());
+    file.SetPosition(0);
+    ASSERT_EQ(
+        testString.length(),
+        file.Read(buffer)
+    );
+    ASSERT_EQ(
+        (std::vector< uint8_t >{'H', 'e', 'l', 'l', 'o', 0, 0, 'W', 'o', 'r', 'l', 'd', '!', '\r', '\n'}),
+        buffer
+    );
+    file.SetPosition(5);
+    (void)file.Write(testString.data() + 5, 2);
+    ASSERT_EQ(testString.length(), file.GetSize());
+    file.SetPosition(0);
+    ASSERT_EQ(
+        testString.length(),
+        file.Read(buffer)
+    );
+    ASSERT_EQ(
+        (std::vector< uint8_t >{'H', 'e', 'l', 'l', 'o', ',', ' ', 'W', 'o', 'r', 'l', 'd', '!', '\r', '\n'}),
+        buffer
+    );
+}
