@@ -6,7 +6,7 @@
  *
  * This module declares the SystemAbstractions::File class.
  *
- * Copyright (c) 2013-2016 by Richard Walters
+ * © 2013-2018 by Richard Walters
  */
 
 #include "IFile.hpp"
@@ -273,14 +273,24 @@ namespace SystemAbstractions {
         // Private properties
     private:
         /**
-         * This is the path to the file in the file system.
+         * This is the type of structure that contains the private
+         * properties of the instance.  It is defined in the implementation
+         * and declared here to ensure that it is scoped inside the class.
          */
-        std::string _path;
+        struct Impl;
 
         /**
-         * This contains any platform-specific state for the object.
+         * This is the type of structure that contains the platform-specific
+         * private properties of the instance.  It is defined in the
+         * platform-specific part of the implementation and declared here to
+         * ensure that it is scoped inside the class.
          */
-        std::unique_ptr< struct FileImpl > _impl;
+        struct Platform;
+
+        /**
+         * This contains the private properties of the instance.
+         */
+        std::unique_ptr< struct Impl > impl_;
     };
 
 }

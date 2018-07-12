@@ -32,6 +32,7 @@ set(Sources
     src/DiagnosticsSender.cpp
     src/DiagnosticsStreamReporter.cpp
     src/File.cpp
+    src/FileImpl.hpp
     src/NetworkConnection.cpp
     src/NetworkEndpoint.cpp
     src/StringExtensions.cpp

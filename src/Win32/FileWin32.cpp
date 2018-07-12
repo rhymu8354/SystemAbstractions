@@ -4,7 +4,7 @@
  * This module contains the Win32 specific part of the 
  * implementation of the SystemAbstractions::File class.
  *
- * Copyright (c) 2013-2016 by Richard Walters
+ * © 2013-2018 by Richard Walters
  */
 
 /**
@@ -13,6 +13,8 @@
  * you don't include Windows.h first.
  */
 #include <Windows.h>
+
+#include "../FileImpl.hpp"
 
 #include <SystemAbstractions/File.hpp>
 #include <SystemAbstractions/StringExtensions.hpp>
@@ -61,19 +63,24 @@ namespace SystemAbstractions {
     /**
      * This is the Win32-specific state for the File class.
      */
-    struct FileImpl {
+    struct File::Platform {
+        /**
+         * This is the operating-system handle to the file.
+         */
         HANDLE handle;
     };
 
-    File::File(std::string path)
-        : _path(path)
-        , _impl(new FileImpl())
+    File::Impl::~Impl() = default;
+    File::Impl::Impl(Impl&&) = default;
+    File::Impl& File::Impl::operator =(Impl&&) = default;
+
+    File::Impl::Impl()
+        : platform(new Platform())
     {
-        _impl->handle = INVALID_HANDLE_VALUE;
     }
 
     File::~File() {
-        if (_impl == nullptr) {
+        if (impl_ == nullptr) {
             return;
         }
         Close();
@@ -82,8 +89,15 @@ namespace SystemAbstractions {
     File::File(File&& other) = default;
     File& File::operator=(File&& other) = default;
 
+    File::File(std::string path)
+        : impl_(new Impl())
+    {
+        impl_->path = path;
+        impl_->platform->handle = INVALID_HANDLE_VALUE;
+    }
+
     bool File::IsExisting() {
-        const DWORD attr = GetFileAttributesA(_path.c_str());
+        const DWORD attr = GetFileAttributesA(impl_->path.c_str());
         if (attr == INVALID_FILE_ATTRIBUTES) {
             return false;
         }
@@ -91,7 +105,7 @@ namespace SystemAbstractions {
     }
 
     bool File::IsDirectory() {
-        const DWORD attr = GetFileAttributesA(_path.c_str());
+        const DWORD attr = GetFileAttributesA(impl_->path.c_str());
         if (
             (attr == INVALID_FILE_ATTRIBUTES)
             || ((attr & FILE_ATTRIBUTE_DIRECTORY) == 0)
@@ -103,8 +117,8 @@ namespace SystemAbstractions {
 
     bool File::Open() {
         Close();
-        _impl->handle = CreateFileA(
-            _path.c_str(),
+        impl_->platform->handle = CreateFileA(
+            impl_->path.c_str(),
             GENERIC_READ,
             FILE_SHARE_READ,
             NULL,
@@ -112,20 +126,20 @@ namespace SystemAbstractions {
             FILE_ATTRIBUTE_NORMAL,
             NULL
         );
-        return (_impl->handle != INVALID_HANDLE_VALUE);
+        return (impl_->platform->handle != INVALID_HANDLE_VALUE);
     }
 
     void File::Close() {
-        (void)CloseHandle(_impl->handle);
-        _impl->handle = INVALID_HANDLE_VALUE;
+        (void)CloseHandle(impl_->platform->handle);
+        impl_->platform->handle = INVALID_HANDLE_VALUE;
     }
 
     bool File::Create() {
         Close();
         bool createPathTried = false;
-        while (_impl->handle == INVALID_HANDLE_VALUE) {
-            _impl->handle = CreateFileA(
-                _path.c_str(),
+        while (impl_->platform->handle == INVALID_HANDLE_VALUE) {
+            impl_->platform->handle = CreateFileA(
+                impl_->path.c_str(),
                 GENERIC_READ | GENERIC_WRITE,
                 FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
                 NULL,
@@ -133,10 +147,10 @@ namespace SystemAbstractions {
                 FILE_ATTRIBUTE_NORMAL,
                 NULL
             );
-            if (_impl->handle == INVALID_HANDLE_VALUE) {
+            if (impl_->platform->handle == INVALID_HANDLE_VALUE) {
                 if (
                     createPathTried
-                    || !CreatePath(_path)
+                    || !CreatePath(impl_->path)
                 ) {
                     return false;
                 }
@@ -148,24 +162,24 @@ namespace SystemAbstractions {
 
     void File::Destroy() {
         Close();
-        (void)DeleteFileA(_path.c_str());
+        (void)DeleteFileA(impl_->path.c_str());
     }
 
     bool File::Move(const std::string& newPath) {
-        if (MoveFileA(_path.c_str(), newPath.c_str()) == 0) {
+        if (MoveFileA(impl_->path.c_str(), newPath.c_str()) == 0) {
             return false;
         }
-        _path = newPath;
+        impl_->path = newPath;
         return true;
     }
 
     bool File::Copy(const std::string& destination) {
-        return (CopyFileA(_path.c_str(), destination.c_str(), FALSE) != FALSE);
+        return (CopyFileA(impl_->path.c_str(), destination.c_str(), FALSE) != FALSE);
     }
 
     time_t File::GetLastModifiedTime() const {
         struct stat s;
-        if (stat(_path.c_str(), &s) == 0) {
+        if (stat(impl_->path.c_str(), &s) == 0) {
             return s.st_mtime;
         } else {
             return 0;
@@ -375,7 +389,7 @@ namespace SystemAbstractions {
 
     uint64_t File::GetSize() const {
         LARGE_INTEGER size;
-        if (GetFileSizeEx(_impl->handle, &size) == 0) {
+        if (GetFileSizeEx(impl_->platform->handle, &size) == 0) {
             return 0;
         }
         return (uint64_t)size.QuadPart;
@@ -384,7 +398,7 @@ namespace SystemAbstractions {
     bool File::SetSize(uint64_t size) {
         const uint64_t position = GetPosition();
         SetPosition(size);
-        const bool success = (SetEndOfFile(_impl->handle) != 0);
+        const bool success = (SetEndOfFile(impl_->platform->handle) != 0);
         SetPosition(position);
         return success;
     }
@@ -393,7 +407,7 @@ namespace SystemAbstractions {
         LARGE_INTEGER distanceToMove;
         distanceToMove.QuadPart = 0;
         LARGE_INTEGER newPosition;
-        if (SetFilePointerEx(_impl->handle, distanceToMove, &newPosition, FILE_CURRENT) == 0) {
+        if (SetFilePointerEx(impl_->platform->handle, distanceToMove, &newPosition, FILE_CURRENT) == 0) {
             return 0;
         }
         return (uint64_t)newPosition.QuadPart;
@@ -403,19 +417,19 @@ namespace SystemAbstractions {
         LARGE_INTEGER distanceToMove;
         distanceToMove.QuadPart = position;
         LARGE_INTEGER newPosition;
-        (void)SetFilePointerEx(_impl->handle, distanceToMove, &newPosition, FILE_BEGIN);
+        (void)SetFilePointerEx(impl_->platform->handle, distanceToMove, &newPosition, FILE_BEGIN);
     }
 
     size_t File::Peek(void* buffer, size_t numBytes) const {
         const uint64_t position = GetPosition();
         DWORD amountRead;
-        if (ReadFile(_impl->handle, buffer, (DWORD)numBytes, &amountRead, NULL) == 0) {
+        if (ReadFile(impl_->platform->handle, buffer, (DWORD)numBytes, &amountRead, NULL) == 0) {
             return 0;
         }
         LARGE_INTEGER distanceToMove;
         distanceToMove.QuadPart = position;
         LARGE_INTEGER newPosition;
-        (void)SetFilePointerEx(_impl->handle, distanceToMove, &newPosition, FILE_BEGIN);
+        (void)SetFilePointerEx(impl_->platform->handle, distanceToMove, &newPosition, FILE_BEGIN);
         return (size_t)amountRead;
     }
 
@@ -424,7 +438,7 @@ namespace SystemAbstractions {
             return 0;
         }
         DWORD amountRead;
-        if (ReadFile(_impl->handle, buffer, (DWORD)numBytes, &amountRead, NULL) == 0) {
+        if (ReadFile(impl_->platform->handle, buffer, (DWORD)numBytes, &amountRead, NULL) == 0) {
             return 0;
         }
         return (size_t)amountRead;
@@ -432,21 +446,21 @@ namespace SystemAbstractions {
 
     size_t File::Write(const void* buffer, size_t numBytes) {
         DWORD amountWritten;
-        if (WriteFile(_impl->handle, buffer, (DWORD)numBytes, &amountWritten, NULL) == 0) {
+        if (WriteFile(impl_->platform->handle, buffer, (DWORD)numBytes, &amountWritten, NULL) == 0) {
             return 0;
         }
         return (size_t)amountWritten;
     }
 
     std::shared_ptr< IFile > File::Clone() {
-        auto clone = std::make_shared< File >(_path);
-        if (_impl->handle != INVALID_HANDLE_VALUE) {
+        auto clone = std::make_shared< File >(impl_->path);
+        if (impl_->platform->handle != INVALID_HANDLE_VALUE) {
             if (
                 !DuplicateHandle(
                     GetCurrentProcess(),
-                    _impl->handle,
+                    impl_->platform->handle,
                     GetCurrentProcess(),
-                    &clone->_impl->handle,
+                    &clone->impl_->platform->handle,
                     0,
                     FALSE,
                     DUPLICATE_SAME_ACCESS
