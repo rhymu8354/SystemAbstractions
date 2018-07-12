@@ -46,6 +46,9 @@ namespace SystemAbstractions {
     }
 
     File::~File() {
+        if (_impl == nullptr) {
+            return;
+        }
         Close();
     }
 
