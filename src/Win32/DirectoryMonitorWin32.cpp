@@ -25,7 +25,7 @@ namespace SystemAbstractions {
      * This structure contains the private methods and properties of
      * the DirectoryMonitor class.
      */
-    struct DirectoryMonitorImpl {
+    struct DirectoryMonitor::Impl {
         // Properties
 
         /**
@@ -66,27 +66,27 @@ namespace SystemAbstractions {
     };
 
     DirectoryMonitor::~DirectoryMonitor() {
-        if (_impl != nullptr) {
+        if (impl_ != nullptr) {
             Stop();
-            if (_impl->stopEvent != NULL) {
-                (void)CloseHandle(_impl->stopEvent);
+            if (impl_->stopEvent != NULL) {
+                (void)CloseHandle(impl_->stopEvent);
             }
         }
     }
 
     DirectoryMonitor::DirectoryMonitor(DirectoryMonitor&& other) noexcept
-        : _impl(std::move(other._impl))
+        : impl_(std::move(other.impl_))
     {
     }
 
     DirectoryMonitor& DirectoryMonitor::operator=(DirectoryMonitor&& other) noexcept {
         assert(this != &other);
-        _impl = std::move(other._impl);
+        impl_ = std::move(other.impl_);
         return *this;
     }
 
     DirectoryMonitor::DirectoryMonitor()
-        : _impl(new DirectoryMonitorImpl())
+        : impl_(new Impl())
     {
     }
 
@@ -95,39 +95,39 @@ namespace SystemAbstractions {
         const std::string& path
     ) {
         Stop();
-        if (_impl->stopEvent == NULL) {
-            _impl->stopEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-            if (_impl->stopEvent == NULL) {
+        if (impl_->stopEvent == NULL) {
+            impl_->stopEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+            if (impl_->stopEvent == NULL) {
                 return false;
             }
         } else {
-            (void)ResetEvent(_impl->stopEvent);
+            (void)ResetEvent(impl_->stopEvent);
         }
-        _impl->callback = callback;
-        _impl->changeEvent = FindFirstChangeNotificationA(
+        impl_->callback = callback;
+        impl_->changeEvent = FindFirstChangeNotificationA(
             path.c_str(),
             FALSE,
             FILE_NOTIFY_CHANGE_FILE_NAME
             | FILE_NOTIFY_CHANGE_DIR_NAME
             | FILE_NOTIFY_CHANGE_LAST_WRITE
         );
-        if (_impl->changeEvent == INVALID_HANDLE_VALUE) {
+        if (impl_->changeEvent == INVALID_HANDLE_VALUE) {
             return false;
         }
-        _impl->worker = std::move(std::thread(&DirectoryMonitorImpl::Run, _impl.get()));
+        impl_->worker = std::thread(&Impl::Run, impl_.get());
         return true;
     }
 
     void DirectoryMonitor::Stop() {
-        if (_impl == nullptr) {
+        if (impl_ == nullptr) {
             return;
         }
-        if (!_impl->worker.joinable()) {
+        if (!impl_->worker.joinable()) {
             return;
         }
-        (void)SetEvent(_impl->stopEvent);
-        _impl->worker.join();
-        (void)FindCloseChangeNotification(_impl->changeEvent);
+        (void)SetEvent(impl_->stopEvent);
+        impl_->worker.join();
+        (void)FindCloseChangeNotification(impl_->changeEvent);
     }
 
 }

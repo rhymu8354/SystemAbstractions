@@ -45,7 +45,21 @@ namespace SystemAbstractions {
         DirectoryMonitor();
 
         /**
-         * @todo Needs documentation
+         * This begins the monitoring of the given directory.  If any file
+         * in the directory is added, changed, or removed, the given
+         * callback function will be called.
+         *
+         * @param[in] callback
+         *     This is the function to call whenever there are any changes
+         *     detected to any files in the given directory.
+         *
+         * @param[in] path
+         *     This is the path to the directory to monitor.
+         *
+         * @return
+         *     An indication of whether or not the directory monitor
+         *     was able to successfully start monitoring the given
+         *     directory is returned.
          */
         bool Start(
             Callback callback,
@@ -53,13 +67,23 @@ namespace SystemAbstractions {
         );
 
         /**
-         * @todo Needs documentation
+         * This ends any ongoing monitoring being done.
          */
         void Stop();
 
         // Private properties
     private:
-        std::unique_ptr< struct DirectoryMonitorImpl > _impl;
+        /**
+         * This is the type of structure that contains the private
+         * properties of the instance.  It is defined in the implementation
+         * and declared here to ensure that it is scoped inside the class.
+         */
+        struct Impl;
+
+        /**
+         * This contains the private properties of the instance.
+         */
+        std::unique_ptr< struct Impl > impl_;
     };
 
 }
