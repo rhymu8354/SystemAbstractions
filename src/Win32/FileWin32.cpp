@@ -68,6 +68,12 @@ namespace SystemAbstractions {
          * This is the operating-system handle to the file.
          */
         HANDLE handle;
+
+        /**
+         * This flag indicates whether or not the file was
+         * opened with write access.
+         */
+        bool writeAccess = false;
     };
 
     File::Impl::~Impl() = default;
@@ -151,6 +157,7 @@ namespace SystemAbstractions {
             FILE_ATTRIBUTE_NORMAL,
             NULL
         );
+        impl_->platform->writeAccess = false;
         return (impl_->platform->handle != INVALID_HANDLE_VALUE);
     }
 
@@ -181,6 +188,7 @@ namespace SystemAbstractions {
                 }
                 createPathTried = true;
             }
+            impl_->platform->writeAccess = true;
         }
         return true;
     }
@@ -479,18 +487,30 @@ namespace SystemAbstractions {
 
     std::shared_ptr< IFile > File::Clone() {
         auto clone = std::make_shared< File >(impl_->path);
+        clone->impl_->platform->writeAccess = impl_->platform->writeAccess;
         if (impl_->platform->handle != INVALID_HANDLE_VALUE) {
-            if (
-                !DuplicateHandle(
-                    GetCurrentProcess(),
-                    impl_->platform->handle,
-                    GetCurrentProcess(),
-                    &clone->impl_->platform->handle,
-                    0,
-                    FALSE,
-                    DUPLICATE_SAME_ACCESS
-                )
-            ) {
+            if (clone->impl_->platform->writeAccess) {
+                clone->impl_->platform->handle = CreateFileA(
+                    clone->impl_->path.c_str(),
+                    GENERIC_READ | GENERIC_WRITE,
+                    FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
+                    NULL,
+                    OPEN_ALWAYS,
+                    FILE_ATTRIBUTE_NORMAL,
+                    NULL
+                );
+            } else {
+                clone->impl_->platform->handle = CreateFileA(
+                    clone->impl_->path.c_str(),
+                    GENERIC_READ,
+                    FILE_SHARE_READ,
+                    NULL,
+                    OPEN_EXISTING,
+                    FILE_ATTRIBUTE_NORMAL,
+                    NULL
+                );
+            }
+            if (clone->impl_->platform->handle == INVALID_HANDLE_VALUE) {
                 return nullptr;
             }
         }
