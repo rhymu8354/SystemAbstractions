@@ -52,6 +52,9 @@ namespace SystemAbstractions {
         Close();
     }
 
+    File::File(File&& other) = default;
+    File& File::operator=(File&& other) = default;
+
     bool File::IsExisting() {
         const DWORD attr = GetFileAttributesA(_path.c_str());
         if (attr == INVALID_FILE_ATTRIBUTES) {

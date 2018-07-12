@@ -22,6 +22,14 @@ namespace SystemAbstractions {
      * native operating system.
      */
     class File: public IFile {
+        // Lifecycle Management
+    public:
+        ~File();
+        File(const File&) = delete;
+        File(File&& other);
+        File& operator=(const File&) = delete;
+        File& operator=(File&& other);
+
         // Public methods
     public:
         /**
@@ -31,11 +39,6 @@ namespace SystemAbstractions {
          *     This is the path to the file in the file system.
          */
         File(std::string path);
-
-        /**
-         * This is the instance destructor.
-         */
-        ~File();
 
         /**
          * This method is used to check if the file exists in the
