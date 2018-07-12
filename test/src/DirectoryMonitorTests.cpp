@@ -148,3 +148,70 @@ TEST_F(DirectoryMonitorTests, DirectoryMonitoring) {
         ASSERT_FALSE(dmOwner.changeDetected);
     }
 }
+
+TEST_F(DirectoryMonitorTests, MoveDirectoryMonitor) {
+    // Start monitoring here.
+    ASSERT_TRUE(dm.Start(&dmOwner, innerPath));
+    ASSERT_FALSE(dmOwner.changeDetected);
+
+    // Move the monitor
+    SystemAbstractions::DirectoryMonitor newDm(std::move(dm));
+    dm.Stop();
+    dm = std::move(newDm);
+    newDm.Stop();
+
+    // Create a file in the monitored area.
+    std::string testFilePath = innerPath + "/fred.txt";
+    {
+        std::fstream file(testFilePath, std::ios_base::out | std::ios_base::ate);
+        ASSERT_FALSE(file.fail());
+        file.close();
+        ASSERT_TRUE(dmOwner.changeDetected);
+        dmOwner.changeDetected = false;
+    }
+
+    // Edit the file in the monitored area.
+    {
+        std::fstream file(testFilePath, std::ios_base::out | std::ios_base::ate);
+        ASSERT_FALSE(file.fail());
+        file << "Hello, World\r\n";
+        ASSERT_FALSE(file.fail());
+        file.close();
+        ASSERT_TRUE(dmOwner.changeDetected);
+        dmOwner.changeDetected = false;
+    }
+
+    // Delete the file in the monitored area.
+    {
+        SystemAbstractions::File file(testFilePath);
+        file.Destroy();
+        ASSERT_TRUE(dmOwner.changeDetected);
+        dmOwner.changeDetected = false;
+    }
+
+    // Create a file outside the monitored area.
+    testFilePath = outerPath + "/fred.txt";
+    {
+        std::fstream file(testFilePath, std::ios_base::out | std::ios_base::ate);
+        ASSERT_FALSE(file.fail());
+        file.close();
+        ASSERT_FALSE(dmOwner.changeDetected);
+    }
+
+    // Edit the file outside the monitored area.
+    {
+        std::fstream file(testFilePath, std::ios_base::out | std::ios_base::ate);
+        ASSERT_FALSE(file.fail());
+        file << "Hello, World\r\n";
+        ASSERT_FALSE(file.fail());
+        file.close();
+        ASSERT_FALSE(dmOwner.changeDetected);
+    }
+
+    // Delete the file outside the monitored area.
+    {
+        SystemAbstractions::File file(testFilePath);
+        file.Destroy();
+        ASSERT_FALSE(dmOwner.changeDetected);
+    }
+}

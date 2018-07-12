@@ -81,9 +81,11 @@ namespace SystemAbstractions {
     }
 
     DirectoryMonitor::~DirectoryMonitor() {
-        Stop();
-        if (_impl->stopEvent != NULL) {
-            (void)CloseHandle(_impl->stopEvent);
+        if (_impl != nullptr) {
+            Stop();
+            if (_impl->stopEvent != NULL) {
+                (void)CloseHandle(_impl->stopEvent);
+            }
         }
     }
 
@@ -122,6 +124,9 @@ namespace SystemAbstractions {
     }
 
     void DirectoryMonitor::Stop() {
+        if (_impl == nullptr) {
+            return;
+        }
         if (!_impl->worker.joinable()) {
             return;
         }
