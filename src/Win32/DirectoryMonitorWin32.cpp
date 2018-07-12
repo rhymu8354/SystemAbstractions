@@ -29,7 +29,8 @@ namespace SystemAbstractions {
         // Properties
 
         /**
-         * @todo Needs documentation
+         * This is the thread which is waiting for notifications from
+         * the operating system about changes to the monitored directory.
          */
         std::thread worker;
 
@@ -40,19 +41,22 @@ namespace SystemAbstractions {
         DirectoryMonitor::Callback callback;
 
         /**
-         * @todo Needs documentation
+         * This is the event which is set up to be signaled by
+         * the operating system whenever the monitored directory is changed.
          */
         HANDLE changeEvent = INVALID_HANDLE_VALUE;
 
         /**
-         * @todo Needs documentation
+         * This is signaled whenever the user stops the directory monitoring.
          */
         HANDLE stopEvent = NULL;
 
         // Methods
 
         /**
-         * @todo Needs documentation
+         * This method is called as the body of the worker thread.  It responds
+         * to signals from the user and the operating system.  If the operating
+         * system signals a directory change, the thread calls the user's callback.
          */
         void Run() {
             HANDLE handles[2] = { stopEvent, changeEvent };
