@@ -34,9 +34,10 @@ namespace SystemAbstractions {
         std::thread worker;
 
         /**
-         * @todo Needs documentation
+         * This is provided by the owner of the object and
+         * called whenever a change is detected to the monitored directory.
          */
-        DirectoryMonitor::Owner* owner;
+        DirectoryMonitor::Callback callback;
 
         /**
          * @todo Needs documentation
@@ -56,7 +57,7 @@ namespace SystemAbstractions {
         void Run() {
             HANDLE handles[2] = { stopEvent, changeEvent };
             while (WaitForMultipleObjects(2, handles, FALSE, INFINITE) != 0) {
-                owner->DirectoryMonitorChangeDetected();
+                callback();
                 if (FindNextChangeNotification(changeEvent) == FALSE) {
                     break;
                 }
@@ -96,7 +97,7 @@ namespace SystemAbstractions {
     }
 
     bool DirectoryMonitor::Start(
-        Owner* owner,
+        Callback callback,
         const std::string& path
     ) {
         Stop();
@@ -108,7 +109,7 @@ namespace SystemAbstractions {
         } else {
             (void)ResetEvent(_impl->stopEvent);
         }
-        _impl->owner = owner;
+        _impl->callback = callback;
         _impl->changeEvent = FindFirstChangeNotificationA(
             path.c_str(),
             FALSE,

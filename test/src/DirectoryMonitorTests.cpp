@@ -7,36 +7,11 @@
  * © 2018 by Richard Walters
  */
 
+#include <functional>
 #include <gtest/gtest.h>
 #include <SystemAbstractions/DirectoryMonitor.hpp>
 #include <SystemAbstractions/File.hpp>
 #include <fstream>
-
-/**
- * This object implements the required callback interface
- * of the DirectoryMonitor class, in order to receive
- * a callback when a directory changes.
- */
-struct DirectoryMonitorOwner
-    : public SystemAbstractions::DirectoryMonitor::Owner
-{
-    // Properties
-
-    /**
-     * This flag is set if the DirectoryMonitorChangeDetected
-     * callback method is called, indicating a change was made
-     * to a directory being monitored.
-     */
-    bool changeDetected = false;
-
-    // Methods
-
-    // SystemAbstractions::DirectoryMonitor::Owner
-public:
-    virtual void DirectoryMonitorChangeDetected() override {
-        changeDetected = true;
-    }
-};
 
 /**
  * This is the test fixture for these tests, providing common
@@ -64,13 +39,6 @@ struct DirectoryMonitorTests
      */
     std::string innerPath;
 
-    /**
-     * This object implements the required callback interface
-     * of the DirectoryMonitor class, in order to receive
-     * a callback when a directory changes.
-     */
-    DirectoryMonitorOwner dmOwner;
-
     // Methods
 
     // ::testing::Test
@@ -90,8 +58,10 @@ struct DirectoryMonitorTests
 
 TEST_F(DirectoryMonitorTests, DirectoryMonitoring) {
     // Start monitoring here.
-    ASSERT_TRUE(dm.Start(&dmOwner, innerPath));
-    ASSERT_FALSE(dmOwner.changeDetected);
+    bool changeDetected = false;
+    std::function< void() > dmCallback = [&changeDetected]{ changeDetected = true; };
+    ASSERT_TRUE(dm.Start(dmCallback, innerPath));
+    ASSERT_FALSE(changeDetected);
 
     // Create a file in the monitored area.
     std::string testFilePath = innerPath + "/fred.txt";
@@ -99,8 +69,8 @@ TEST_F(DirectoryMonitorTests, DirectoryMonitoring) {
         std::fstream file(testFilePath, std::ios_base::out | std::ios_base::ate);
         ASSERT_FALSE(file.fail());
         file.close();
-        ASSERT_TRUE(dmOwner.changeDetected);
-        dmOwner.changeDetected = false;
+        ASSERT_TRUE(changeDetected);
+        changeDetected = false;
     }
 
     // Edit the file in the monitored area.
@@ -110,16 +80,16 @@ TEST_F(DirectoryMonitorTests, DirectoryMonitoring) {
         file << "Hello, World\r\n";
         ASSERT_FALSE(file.fail());
         file.close();
-        ASSERT_TRUE(dmOwner.changeDetected);
-        dmOwner.changeDetected = false;
+        ASSERT_TRUE(changeDetected);
+        changeDetected = false;
     }
 
     // Delete the file in the monitored area.
     {
         SystemAbstractions::File file(testFilePath);
         file.Destroy();
-        ASSERT_TRUE(dmOwner.changeDetected);
-        dmOwner.changeDetected = false;
+        ASSERT_TRUE(changeDetected);
+        changeDetected = false;
     }
 
     // Create a file outside the monitored area.
@@ -128,7 +98,7 @@ TEST_F(DirectoryMonitorTests, DirectoryMonitoring) {
         std::fstream file(testFilePath, std::ios_base::out | std::ios_base::ate);
         ASSERT_FALSE(file.fail());
         file.close();
-        ASSERT_FALSE(dmOwner.changeDetected);
+        ASSERT_FALSE(changeDetected);
     }
 
     // Edit the file outside the monitored area.
@@ -138,21 +108,23 @@ TEST_F(DirectoryMonitorTests, DirectoryMonitoring) {
         file << "Hello, World\r\n";
         ASSERT_FALSE(file.fail());
         file.close();
-        ASSERT_FALSE(dmOwner.changeDetected);
+        ASSERT_FALSE(changeDetected);
     }
 
     // Delete the file outside the monitored area.
     {
         SystemAbstractions::File file(testFilePath);
         file.Destroy();
-        ASSERT_FALSE(dmOwner.changeDetected);
+        ASSERT_FALSE(changeDetected);
     }
 }
 
 TEST_F(DirectoryMonitorTests, MoveDirectoryMonitor) {
     // Start monitoring here.
-    ASSERT_TRUE(dm.Start(&dmOwner, innerPath));
-    ASSERT_FALSE(dmOwner.changeDetected);
+    bool changeDetected = false;
+    std::function< void() > dmCallback = [&changeDetected]{ changeDetected = true; };
+    ASSERT_TRUE(dm.Start(dmCallback, innerPath));
+    ASSERT_FALSE(changeDetected);
 
     // Move the monitor
     SystemAbstractions::DirectoryMonitor newDm(std::move(dm));
@@ -166,8 +138,8 @@ TEST_F(DirectoryMonitorTests, MoveDirectoryMonitor) {
         std::fstream file(testFilePath, std::ios_base::out | std::ios_base::ate);
         ASSERT_FALSE(file.fail());
         file.close();
-        ASSERT_TRUE(dmOwner.changeDetected);
-        dmOwner.changeDetected = false;
+        ASSERT_TRUE(changeDetected);
+        changeDetected = false;
     }
 
     // Edit the file in the monitored area.
@@ -177,16 +149,16 @@ TEST_F(DirectoryMonitorTests, MoveDirectoryMonitor) {
         file << "Hello, World\r\n";
         ASSERT_FALSE(file.fail());
         file.close();
-        ASSERT_TRUE(dmOwner.changeDetected);
-        dmOwner.changeDetected = false;
+        ASSERT_TRUE(changeDetected);
+        changeDetected = false;
     }
 
     // Delete the file in the monitored area.
     {
         SystemAbstractions::File file(testFilePath);
         file.Destroy();
-        ASSERT_TRUE(dmOwner.changeDetected);
-        dmOwner.changeDetected = false;
+        ASSERT_TRUE(changeDetected);
+        changeDetected = false;
     }
 
     // Create a file outside the monitored area.
@@ -195,7 +167,7 @@ TEST_F(DirectoryMonitorTests, MoveDirectoryMonitor) {
         std::fstream file(testFilePath, std::ios_base::out | std::ios_base::ate);
         ASSERT_FALSE(file.fail());
         file.close();
-        ASSERT_FALSE(dmOwner.changeDetected);
+        ASSERT_FALSE(changeDetected);
     }
 
     // Edit the file outside the monitored area.
@@ -205,21 +177,23 @@ TEST_F(DirectoryMonitorTests, MoveDirectoryMonitor) {
         file << "Hello, World\r\n";
         ASSERT_FALSE(file.fail());
         file.close();
-        ASSERT_FALSE(dmOwner.changeDetected);
+        ASSERT_FALSE(changeDetected);
     }
 
     // Delete the file outside the monitored area.
     {
         SystemAbstractions::File file(testFilePath);
         file.Destroy();
-        ASSERT_FALSE(dmOwner.changeDetected);
+        ASSERT_FALSE(changeDetected);
     }
 }
 
 TEST_F(DirectoryMonitorTests, Stop) {
     // Start monitoring here.
-    ASSERT_TRUE(dm.Start(&dmOwner, innerPath));
-    ASSERT_FALSE(dmOwner.changeDetected);
+    bool changeDetected = false;
+    std::function< void() > dmCallback = [&changeDetected]{ changeDetected = true; };
+    ASSERT_TRUE(dm.Start(dmCallback, innerPath));
+    ASSERT_FALSE(changeDetected);
 
     // Create a file in the monitored area.
     std::string testFilePath = innerPath + "/fred.txt";
@@ -227,8 +201,8 @@ TEST_F(DirectoryMonitorTests, Stop) {
         std::fstream file(testFilePath, std::ios_base::out | std::ios_base::ate);
         ASSERT_FALSE(file.fail());
         file.close();
-        ASSERT_TRUE(dmOwner.changeDetected);
-        dmOwner.changeDetected = false;
+        ASSERT_TRUE(changeDetected);
+        changeDetected = false;
     }
 
     // Stop monitoring
@@ -241,14 +215,14 @@ TEST_F(DirectoryMonitorTests, Stop) {
         file << "Hello, World\r\n";
         ASSERT_FALSE(file.fail());
         file.close();
-        ASSERT_FALSE(dmOwner.changeDetected);
+        ASSERT_FALSE(changeDetected);
     }
 
     // Delete the file in the monitored area.
     {
         SystemAbstractions::File file(testFilePath);
         file.Destroy();
-        ASSERT_FALSE(dmOwner.changeDetected);
+        ASSERT_FALSE(changeDetected);
     }
 }
 
@@ -262,8 +236,10 @@ TEST_F(DirectoryMonitorTests, ChangeFileThatExistedBeforeMonitoringBegan) {
     }
 
     // Start monitoring here.
-    ASSERT_TRUE(dm.Start(&dmOwner, innerPath));
-    ASSERT_FALSE(dmOwner.changeDetected);
+    bool changeDetected = false;
+    std::function< void() > dmCallback = [&changeDetected]{ changeDetected = true; };
+    ASSERT_TRUE(dm.Start(dmCallback, innerPath));
+    ASSERT_FALSE(changeDetected);
 
     // Edit the file in the monitored area.
     {
@@ -272,15 +248,15 @@ TEST_F(DirectoryMonitorTests, ChangeFileThatExistedBeforeMonitoringBegan) {
         file << "Hello, World\r\n";
         ASSERT_FALSE(file.fail());
         file.close();
-        ASSERT_TRUE(dmOwner.changeDetected);
-        dmOwner.changeDetected = false;
+        ASSERT_TRUE(changeDetected);
+        changeDetected = false;
     }
 
     // Delete the file in the monitored area.
     {
         SystemAbstractions::File file(testFilePath);
         file.Destroy();
-        ASSERT_TRUE(dmOwner.changeDetected);
-        dmOwner.changeDetected = false;
+        ASSERT_TRUE(changeDetected);
+        changeDetected = false;
     }
 }

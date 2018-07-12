@@ -9,6 +9,7 @@
  * Copyright (c) 2016 by Richard Walters
  */
 
+#include <functional>
 #include <memory>
 #include <string>
 
@@ -23,16 +24,10 @@ namespace SystemAbstractions {
         // Custom Types
     public:
         /**
-         * This is implemented by the owner of the object and
-         * used to deliver callbacks.
+         * This is provided by the owner of the object and
+         * called whenever a change is detected to the monitored directory.
          */
-        class Owner {
-        public:
-            /**
-             * @todo Needs documentation
-             */
-            virtual void DirectoryMonitorChangeDetected() {}
-        };
+        typedef std::function< void() > Callback;
 
         // Public Methods
     public:
@@ -69,7 +64,7 @@ namespace SystemAbstractions {
          * @todo Needs documentation
          */
         bool Start(
-            Owner* owner,
+            Callback callback,
             const std::string& path
         );
 
