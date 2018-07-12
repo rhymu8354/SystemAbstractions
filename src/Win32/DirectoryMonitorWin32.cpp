@@ -65,22 +65,6 @@ namespace SystemAbstractions {
         }
     };
 
-    DirectoryMonitor::DirectoryMonitor()
-        : _impl(new DirectoryMonitorImpl())
-    {
-    }
-
-
-    DirectoryMonitor::DirectoryMonitor(DirectoryMonitor&& other) noexcept
-        : _impl(std::move(other._impl))
-    {
-    }
-
-    DirectoryMonitor::DirectoryMonitor(std::unique_ptr< DirectoryMonitorImpl >&& impl) noexcept
-        : _impl(std::move(impl))
-    {
-    }
-
     DirectoryMonitor::~DirectoryMonitor() {
         if (_impl != nullptr) {
             Stop();
@@ -90,10 +74,20 @@ namespace SystemAbstractions {
         }
     }
 
+    DirectoryMonitor::DirectoryMonitor(DirectoryMonitor&& other) noexcept
+        : _impl(std::move(other._impl))
+    {
+    }
+
     DirectoryMonitor& DirectoryMonitor::operator=(DirectoryMonitor&& other) noexcept {
         assert(this != &other);
         _impl = std::move(other._impl);
         return *this;
+    }
+
+    DirectoryMonitor::DirectoryMonitor()
+        : _impl(new DirectoryMonitorImpl())
+    {
     }
 
     bool DirectoryMonitor::Start(

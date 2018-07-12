@@ -29,36 +29,20 @@ namespace SystemAbstractions {
          */
         typedef std::function< void() > Callback;
 
+        // Lifecycle Management
+    public:
+        ~DirectoryMonitor();
+        DirectoryMonitor(const DirectoryMonitor&) = delete;
+        DirectoryMonitor(DirectoryMonitor&& other) noexcept;
+        DirectoryMonitor& operator=(const DirectoryMonitor&) = delete;
+        DirectoryMonitor& operator=(DirectoryMonitor&& other) noexcept;
+
         // Public Methods
     public:
         /**
          * This is an instance constructor.
          */
         DirectoryMonitor();
-
-        /**
-         * This is an instance constructor.
-         *
-         * @param impl
-         *     This is an existing set of properties to encapsulate
-         *     into a new network connection object.
-         */
-        DirectoryMonitor(std::unique_ptr< struct DirectoryMonitorImpl >&& impl) noexcept;
-
-        /**
-         * This is the instance move constructor.
-         */
-        DirectoryMonitor(DirectoryMonitor&& other) noexcept;
-
-        /**
-         * This is the instance destructor.
-         */
-        ~DirectoryMonitor();
-
-        /**
-         * This is the move assignment operator.
-         */
-        DirectoryMonitor& operator=(DirectoryMonitor&& other) noexcept;
 
         /**
          * @todo Needs documentation
@@ -72,10 +56,6 @@ namespace SystemAbstractions {
          * @todo Needs documentation
          */
         void Stop();
-
-        // Disable copy constructor and assignment operator.
-        DirectoryMonitor(const DirectoryMonitor&) = delete;
-        DirectoryMonitor& operator=(const DirectoryMonitor&) = delete;
 
         // Private properties
     private:
