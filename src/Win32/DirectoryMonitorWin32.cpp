@@ -4,7 +4,7 @@
  * This module contains the Windows implementation of the
  * SystemAbstractions::DirectoryMonitor class.
  *
- * Copyright (c) 2016 by Richard Walters
+ * © 2016-2018 by Richard Walters
  */
 
 /**
