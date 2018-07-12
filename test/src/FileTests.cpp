@@ -138,19 +138,65 @@ TEST_F(FileTests, BasicFileMethods) {
         SystemAbstractions::IFile::Buffer buffer(file2.GetSize());
         ASSERT_EQ(buffer.size(), file2.Read(buffer));
         ASSERT_EQ(testString, std::string(buffer.begin(), buffer.end()));
-        std::vector< std::string > list;
-        SystemAbstractions::File::ListDirectory(testAreaPath, list);
-        std::set< std::string > set(list.begin(), list.end());
-        for (const std::string& expectedElement: { "foo.txt", "foo.txt2" }) {
-            const auto element = set.find(testAreaPath + "/" + expectedElement);
-            ASSERT_FALSE(element == set.end()) << expectedElement;
-            (void)set.erase(element);
-        }
-        ASSERT_TRUE(set.empty());
         file2.Destroy();
         ASSERT_FALSE(file2.IsExisting());
     }
     file.Close();
     file.Destroy();
     ASSERT_FALSE(file.IsExisting());
+}
+
+TEST_F(FileTests, DirectoryTests) {
+    // Set up some test files in the test area.
+    SystemAbstractions::File testArea(testAreaPath);
+    const std::string testFilePath = testAreaPath + "/foo.txt";
+    SystemAbstractions::File file(testFilePath);
+    ASSERT_TRUE(file.Create());
+    const std::string testString = "Hello, World\r\n";
+    ASSERT_EQ(testString.length(), file.Write(testString.data(), testString.length()));
+    SystemAbstractions::File file2(testFilePath + "2");
+    ASSERT_TRUE(file.Copy(file2.GetPath()));
+    file.Close();
+
+    // Create a subdirectory with one file in it.
+    const std::string subPath = testAreaPath + "/sub";
+    SystemAbstractions::File::CreateDirectory(subPath);
+    SystemAbstractions::File sub(subPath);
+    ASSERT_TRUE(sub.IsDirectory());
+    const std::string testSubFilePath = subPath + "/bar.txt";
+    SystemAbstractions::File file3(testSubFilePath);
+    ASSERT_TRUE(file3.Create());
+    const std::string testString2 = "Something else!\r\n";
+    ASSERT_EQ(testString2.length(), file3.Write(testString2.data(), testString2.length()));
+    file3.Close();
+
+    // Get a list of the files.
+    std::vector< std::string > list;
+    SystemAbstractions::File::ListDirectory(testAreaPath, list);
+    std::set< std::string > set(list.begin(), list.end());
+    for (const std::string& expectedElement: { "foo.txt", "foo.txt2", "sub" }) {
+        const auto element = set.find(testAreaPath + "/" + expectedElement);
+        ASSERT_FALSE(element == set.end()) << expectedElement;
+        (void)set.erase(element);
+    }
+    ASSERT_TRUE(set.empty());
+
+    // Copy subdirectory and verify its one file inside got copied.
+    const std::string subPath2 = testAreaPath + "/sub2";
+    ASSERT_TRUE(SystemAbstractions::File::CopyDirectory(subPath, subPath2));
+    SystemAbstractions::File sub2(subPath2);
+    ASSERT_TRUE(sub2.IsDirectory());
+    ASSERT_TRUE(sub2.IsExisting());
+    const std::string testSubFilePath2 = subPath2 + "/bar.txt";
+    SystemAbstractions::File file4(testSubFilePath2);
+    ASSERT_TRUE(file4.Open());
+    SystemAbstractions::IFile::Buffer buffer(file4.GetSize());
+    ASSERT_EQ(buffer.size(), file4.Read(buffer));
+    ASSERT_EQ(testString2, std::string(buffer.begin(), buffer.end()));
+    file4.Close();
+
+    // Destroy copy of subdirectory.
+    ASSERT_TRUE(SystemAbstractions::File::DeleteDirectory(subPath2));
+    ASSERT_FALSE(sub2.IsExisting());
+    ASSERT_FALSE(file4.IsExisting());
 }
