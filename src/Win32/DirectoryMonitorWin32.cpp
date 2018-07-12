@@ -15,8 +15,6 @@
 #include <Windows.h>
 
 #include <SystemAbstractions/DirectoryMonitor.hpp>
-
-#include <assert.h>
 #include <thread>
 
 namespace SystemAbstractions {
@@ -84,8 +82,9 @@ namespace SystemAbstractions {
     }
 
     DirectoryMonitor& DirectoryMonitor::operator=(DirectoryMonitor&& other) noexcept {
-        assert(this != &other);
-        impl_ = std::move(other.impl_);
+        if (this != &other) {
+            impl_ = std::move(other.impl_);
+        }
         return *this;
     }
 
