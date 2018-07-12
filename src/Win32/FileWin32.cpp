@@ -13,6 +13,7 @@
  * you don't include Windows.h first.
  */
 #include <Windows.h>
+#undef CreateDirectory
 
 #include "../FileImpl.hpp"
 
