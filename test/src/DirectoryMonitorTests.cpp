@@ -251,3 +251,36 @@ TEST_F(DirectoryMonitorTests, Stop) {
         ASSERT_FALSE(dmOwner.changeDetected);
     }
 }
+
+TEST_F(DirectoryMonitorTests, ChangeFileThatExistedBeforeMonitoringBegan) {
+    // Create a file in the monitored area.
+    std::string testFilePath = innerPath + "/fred.txt";
+    {
+        std::fstream file(testFilePath, std::ios_base::out | std::ios_base::ate);
+        ASSERT_FALSE(file.fail());
+        file.close();
+    }
+
+    // Start monitoring here.
+    ASSERT_TRUE(dm.Start(&dmOwner, innerPath));
+    ASSERT_FALSE(dmOwner.changeDetected);
+
+    // Edit the file in the monitored area.
+    {
+        std::fstream file(testFilePath, std::ios_base::out | std::ios_base::ate);
+        ASSERT_FALSE(file.fail());
+        file << "Hello, World\r\n";
+        ASSERT_FALSE(file.fail());
+        file.close();
+        ASSERT_TRUE(dmOwner.changeDetected);
+        dmOwner.changeDetected = false;
+    }
+
+    // Delete the file in the monitored area.
+    {
+        SystemAbstractions::File file(testFilePath);
+        file.Destroy();
+        ASSERT_TRUE(dmOwner.changeDetected);
+        dmOwner.changeDetected = false;
+    }
+}
