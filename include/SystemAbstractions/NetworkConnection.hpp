@@ -46,12 +46,17 @@ namespace SystemAbstractions {
         class Owner {
         public:
             /**
-             * @todo Needs documentation
+             * This is callback issued whenever more data is received from
+             * the peer of the connection.
+             *
+             * @param[in] message
+             *     This contains the data received from
+             *     the peer of the connection.
              */
             virtual void NetworkConnectionMessageReceived(const std::vector< uint8_t >& message) {}
 
             /**
-             * @todo Needs documentation
+             * This is callback issued whenever the connection is broken.
              */
             virtual void NetworkConnectionBroken() {}
         };
@@ -69,17 +74,46 @@ namespace SystemAbstractions {
         ~NetworkConnection();
 
         /**
-         * @todo Needs documentation
+         * This method forms a new subscription to diagnostic
+         * messages published by the sender.
+         *
+         * @param[in] delegate
+         *     This is the function to call to deliver messages
+         *     to this subscriber.
+         *
+         * @param[in] minLevel
+         *     This is the minimum level of message that this subscriber
+         *     desires to receive.
+         *
+         * @return
+         *     A token representing the subscription is returned.
+         *     This may be passed to UnsubscribeFromDiagnostics
+         *     in order to terminate the subscription.
          */
         DiagnosticsSender::SubscriptionToken SubscribeToDiagnostics(DiagnosticsSender::DiagnosticMessageDelegate delegate, size_t minLevel = 0);
 
         /**
-         * @todo Needs documentation
+         * This method terminates a subscription previously formed
+         * by calling the SubscribeToDiagnostics method.
+         *
+         * @param[in] subscriptionToken
+         *     This is the token returned from SubscribeToDiagnostics
+         *     when the subscription was formed.
          */
         void UnsubscribeFromDiagnostics(DiagnosticsSender::SubscriptionToken subscriptionToken);
 
         /**
-         * @todo Needs documentation
+         * This method attempts to establish a connection to a remote peer.
+         *
+         * @param[in] peerAddress
+         *     This is the IPv4 address of the peer.
+         *
+         * @param[in] peerPort
+         *     This is the port number of the peer.
+         *
+         * @return
+         *     An indication of whether or not the connection was successfully
+         *     established is returned.
          */
         bool Connect(uint32_t peerAddress, uint16_t peerPort);
 
@@ -98,27 +132,48 @@ namespace SystemAbstractions {
         bool Process(Owner* owner);
 
         /**
-         * @todo Needs documentation
+         * This method returns the IPv4 address of the peer, if there
+         * is a connection established.
+         *
+         * @return
+         *     The IPv4 address of the peer, if there is a connection
+         *     established, is returned.
          */
         uint32_t GetPeerAddress() const;
 
         /**
-         * @todo Needs documentation
+         * This method returns the port number of the peer, if there
+         * is a connection established.
+         *
+         * @return
+         *     The port number of the peer, if there is a connection
+         *     established, is returned.
          */
         uint16_t GetPeerPort() const;
 
         /**
-         * @todo Needs documentation
+         * This method returns an indication of whether or not there
+         * is a connection currently established with a peer.
+         *
+         * @return
+         *     An indication of whether or not there
+         *     is a connection currently established with a peer
+         *     is returned.
          */
         bool IsConnected() const;
 
         /**
-         * @todo Needs documentation
+         * This method appends the given data to the queue of data
+         * currently being sent to the peer.  The actual sending
+         * is performed by the processor worker thread.
+         *
+         * @param[in] message
+         *     This holds the data to be appended to the send queue.
          */
         void SendMessage(const std::vector< uint8_t >& message);
 
         /**
-         * @todo Needs documentation
+         * This method immediately breaks the connection to the peer.
          */
         void Close();
 

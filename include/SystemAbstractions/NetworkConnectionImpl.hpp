@@ -25,27 +25,31 @@ namespace SystemAbstractions {
      */
     struct NetworkConnection::Impl {
         /**
-         * @todo Needs documentation
+         * This contains any platform-specific private properties
+         * of the class.
          */
         std::unique_ptr< Platform > platform;
 
         /**
-         * @todo Needs documentation
+         * This points to a class provided by the user
+         * of the NetworkConnection, in order to receive callbacks.
          */
         NetworkConnection::Owner* owner = nullptr;
 
         /**
-         * @todo Needs documentation
+         * This is the IPv4 address of the peer, if there is a connection
+         * established.
          */
         uint32_t peerAddress = 0;
 
         /**
-         * @todo Needs documentation
+         * This is the port number of the peer, if there is a connection
+         * established.
          */
         uint16_t peerPort = 0;
 
         /**
-         * @todo Needs documentation
+         * This is a helper object used to publish diagnostic messages.
          */
         DiagnosticsSender diagnosticsSender;
 
@@ -60,32 +64,55 @@ namespace SystemAbstractions {
         ~Impl();
 
         /**
-         * @todo Needs documentation
+         * This method attempts to establish a connection to the remote peer.
+         *
+         * @return
+         *     An indication of whether or not the connection was successfully
+         *     established is returned.
          */
         bool Connect();
 
         /**
-         * @todo Needs documentation
+         * This method starts message processing on the connection,
+         * listening for incoming messages and sending outgoing messages.
+         *
+         * @return
+         *     An indication of whether or not the method was
+         *     successful is returned.
          */
         bool Process();
 
         /**
-         * @todo Needs documentation
+         * This is the main function called for the worker thread
+         * of the object.  It does all the actual sending and
+         * receiving of messages, using the underlying operating
+         * system network handle.
          */
         void Processor();
 
         /**
-         * @todo Needs documentation
+         * This method returns an indication of whether or not there
+         * is a connection currently established with a peer.
+         *
+         * @return
+         *     An indication of whether or not there
+         *     is a connection currently established with a peer
+         *     is returned.
          */
         bool IsConnected() const;
 
         /**
-         * @todo Needs documentation
+         * This method appends the given data to the queue of data
+         * currently being sent to the peer.  The actual sending
+         * is performed by the processor worker thread.
+         *
+         * @param[in] message
+         *     This holds the data to be appended to the send queue.
          */
         void SendMessage(const std::vector< uint8_t >& message);
 
         /**
-         * @todo Needs documentation
+         * This method immediately breaks the connection to the peer.
          */
         void Close(bool stopProcessing);
     };
