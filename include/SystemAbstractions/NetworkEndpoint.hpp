@@ -57,12 +57,33 @@ namespace SystemAbstractions {
         > PacketReceivedDelegate;
 
         /**
-         * @todo Needs documentation
+         * These are the different sets of behavior that can be
+         * configured for a network endpoint.
          */
         enum class Mode {
+            /**
+             * In this mode, the network endpoint is not connection-oriented,
+             * and only sends and receives unicast packets.
+             */
             Datagram,
+
+            /**
+             * In this mode, the network endpoint listens for connections
+             * from clients, and produces NetworkConnection objects for
+             * each client connection established.
+             */
             Connection,
+
+            /**
+             * In this mode, the network endpoint is set up to only
+             * send multicast or broadcast packets.
+             */
             MulticastSend,
+
+            /**
+             * In this mode, the network endpoint is set up to only
+             * receive multicast or broadcast packets.
+             */
             MulticastReceive,
         };
 
@@ -89,12 +110,34 @@ namespace SystemAbstractions {
         NetworkEndpoint& operator=(NetworkEndpoint&& other) noexcept;
 
         /**
-         * @todo Needs documentation
+         * This method forms a new subscription to diagnostic
+         * messages published by the sender.
+         *
+         * @param[in] delegate
+         *     This is the function to call to deliver messages
+         *     to this subscriber.
+         *
+         * @param[in] minLevel
+         *     This is the minimum level of message that this subscriber
+         *     desires to receive.
+         *
+         * @return
+         *     A token representing the subscription is returned.
+         *     This may be passed to UnsubscribeFromDiagnostics
+         *     in order to terminate the subscription.
          */
-        DiagnosticsSender::SubscriptionToken SubscribeToDiagnostics(DiagnosticsSender::DiagnosticMessageDelegate delegate, size_t minLevel = 0);
+        DiagnosticsSender::SubscriptionToken SubscribeToDiagnostics(
+            DiagnosticsSender::DiagnosticMessageDelegate delegate,
+            size_t minLevel = 0
+        );
 
         /**
-         * @todo Needs documentation
+         * This method terminates a subscription previously formed
+         * by calling the SubscribeToDiagnostics method.
+         *
+         * @param[in] subscriptionToken
+         *     This is the token returned from SubscribeToDiagnostics
+         *     when the subscription was formed.
          */
         void UnsubscribeFromDiagnostics(DiagnosticsSender::SubscriptionToken subscriptionToken);
 
@@ -149,12 +192,28 @@ namespace SystemAbstractions {
         );
 
         /**
-         * @todo Needs documentation
+         * This method returns the network port that the endpoint
+         * has bound for its use.
+         *
+         * @return
+         *     The network port that the endpoint
+         *     has bound for its use is returned.
          */
         uint16_t GetBoundPort() const;
 
         /**
-         * @todo Needs documentation
+         * This method is used when the network endpoint is configured
+         * to send datagram messages (not connection-oriented).
+         * It is called to send a message to one or more recipients.
+         *
+         * @param[in] address
+         *     This is the IPv4 address of the recipient of the message.
+         *
+         * @param[in] port
+         *     This is the port of the recipient of the message.
+         *
+         * @param[in] body
+         *     This is the desired payload of the message.
          */
         void SendPacket(
             uint32_t address,
@@ -163,12 +222,19 @@ namespace SystemAbstractions {
         );
 
         /**
-         * @todo Needs documentation
+         * This method is the opposite of the Open method.  It stops
+         * any and all network activity associated with the endpoint,
+         * and releases any network resources previously acquired.
          */
         void Close();
 
         /**
-         * @todo Needs documentation
+         * This is a helper free function which determines the IPv4
+         * addresses of all active network interfaces on the local host.
+         *
+         * @return
+         *     The IPv4 addresses of all active network interfaces on
+         *     the local host are returned.
          */
         static std::vector< uint32_t > GetInterfaceAddresses();
 
