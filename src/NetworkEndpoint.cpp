@@ -16,23 +16,13 @@
 
 namespace SystemAbstractions {
 
+    NetworkEndpoint::~NetworkEndpoint() = default;
+    NetworkEndpoint::NetworkEndpoint(NetworkEndpoint&& other) noexcept = default;
+    NetworkEndpoint& NetworkEndpoint::operator=(NetworkEndpoint&& other) noexcept = default;
+
     NetworkEndpoint::NetworkEndpoint()
         : impl_(new Impl())
     {
-    }
-
-
-    NetworkEndpoint::NetworkEndpoint(NetworkEndpoint&& other) noexcept
-        : impl_(std::move(other.impl_))
-    {
-    }
-
-    NetworkEndpoint::~NetworkEndpoint() {
-    }
-
-    NetworkEndpoint& NetworkEndpoint::operator=(NetworkEndpoint&& other) noexcept {
-        impl_ = std::move(other.impl_);
-        return *this;
     }
 
     DiagnosticsSender::SubscriptionToken NetworkEndpoint::SubscribeToDiagnostics(DiagnosticsSender::DiagnosticMessageDelegate delegate, size_t minLevel) {

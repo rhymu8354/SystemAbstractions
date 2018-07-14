@@ -87,27 +87,20 @@ namespace SystemAbstractions {
             MulticastReceive,
         };
 
+        // Lifecycle Management
+    public:
+        ~NetworkEndpoint() noexcept;
+        NetworkEndpoint(const NetworkEndpoint&) noexcept = delete;
+        NetworkEndpoint(NetworkEndpoint&& other) noexcept;
+        NetworkEndpoint& operator=(const NetworkEndpoint&) noexcept = delete;
+        NetworkEndpoint& operator=(NetworkEndpoint&& other) noexcept;
+
         // Public methods
     public:
         /**
          * This is the instance constructor.
          */
         NetworkEndpoint();
-
-        /**
-         * This is the instance move constructor.
-         */
-        NetworkEndpoint(NetworkEndpoint&& other) noexcept;
-
-        /**
-         * This is the instance destructor.
-         */
-        ~NetworkEndpoint();
-
-        /**
-         * This is the move assignment operator.
-         */
-        NetworkEndpoint& operator=(NetworkEndpoint&& other) noexcept;
 
         /**
          * This method forms a new subscription to diagnostic
@@ -237,10 +230,6 @@ namespace SystemAbstractions {
          *     the local host are returned.
          */
         static std::vector< uint32_t > GetInterfaceAddresses();
-
-        // Disable copy constructor and assignment operator.
-        NetworkEndpoint(const NetworkEndpoint&) = delete;
-        NetworkEndpoint& operator=(const NetworkEndpoint&) = delete;
 
         // Private properties
     private:
