@@ -21,13 +21,13 @@ namespace SystemAbstractions {
 
     /**
      * This structure contains the private properties of the
-     * NetworkEndpoint class.
+     * NetworkConnection class.
      */
-    struct NetworkConnectionImpl {
+    struct NetworkConnection::Impl {
         /**
          * @todo Needs documentation
          */
-        std::unique_ptr< struct NetworkConnectionPlatform > platform;
+        std::unique_ptr< Platform > platform;
 
         /**
          * @todo Needs documentation
@@ -52,12 +52,12 @@ namespace SystemAbstractions {
         /**
          * This is the instance constructor.
          */
-        NetworkConnectionImpl();
+        Impl();
 
         /**
          * This is the instance destructor.
          */
-        ~NetworkConnectionImpl();
+        ~Impl();
 
         /**
          * @todo Needs documentation

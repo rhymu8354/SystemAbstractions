@@ -2,7 +2,7 @@
  * @file NetworkConnectionWin32.cpp
  *
  * This module contains the Windows implementation of the
- * SystemAbstractions::NetworkConnectionImpl class.
+ * SystemAbstractions::NetworkConnection::Impl class.
  *
  * Copyright (c) 2016 by Richard Walters
  */
@@ -44,8 +44,8 @@ namespace {
 
 namespace SystemAbstractions {
 
-    NetworkConnectionImpl::NetworkConnectionImpl()
-        : platform(new NetworkConnectionPlatform())
+    NetworkConnection::Impl::Impl()
+        : platform(new NetworkConnection::Platform())
         , diagnosticsSender("NetworkConnection")
     {
         WSADATA wsaData;
@@ -54,7 +54,7 @@ namespace SystemAbstractions {
         }
     }
 
-    NetworkConnectionImpl::~NetworkConnectionImpl() {
+    NetworkConnection::Impl::~Impl() {
         Close(true);
         if (platform->wsaStarted) {
             (void)WSACleanup();
@@ -67,7 +67,7 @@ namespace SystemAbstractions {
         }
     }
 
-    bool NetworkConnectionImpl::Connect() {
+    bool NetworkConnection::Impl::Connect() {
         Close(true);
         struct sockaddr_in socketAddress;
         (void)memset(&socketAddress, 0, sizeof(socketAddress));
@@ -106,7 +106,7 @@ namespace SystemAbstractions {
         return true;
     }
 
-    bool NetworkConnectionImpl::Process() {
+    bool NetworkConnection::Impl::Process() {
         if (platform->sock == INVALID_SOCKET) {
             diagnosticsSender.SendDiagnosticInformationString(
                 SystemAbstractions::DiagnosticsSender::Levels::ERROR,
@@ -152,11 +152,11 @@ namespace SystemAbstractions {
             );
             return false;
         }
-        platform->processor = std::move(std::thread(&NetworkConnectionImpl::Processor, this));
+        platform->processor = std::move(std::thread(&NetworkConnection::Impl::Processor, this));
         return true;
     }
 
-    void NetworkConnectionImpl::Processor() {
+    void NetworkConnection::Impl::Processor() {
         const HANDLE handles[2] = { platform->processorStateChangeEvent, platform->socketEvent };
         std::vector< uint8_t > buffer;
         std::unique_lock< std::recursive_mutex > processingLock(platform->processingMutex);
@@ -219,17 +219,17 @@ namespace SystemAbstractions {
         }
     }
 
-    bool NetworkConnectionImpl::IsConnected() const {
+    bool NetworkConnection::Impl::IsConnected() const {
         return (platform->sock != INVALID_SOCKET);
     }
 
-    void NetworkConnectionImpl::SendMessage(const std::vector< uint8_t >& message) {
+    void NetworkConnection::Impl::SendMessage(const std::vector< uint8_t >& message) {
         std::unique_lock< std::recursive_mutex > processingLock(platform->processingMutex);
         platform->outputQueue.insert(platform->outputQueue.end(), message.begin(), message.end());
         (void)SetEvent(platform->processorStateChangeEvent);
     }
 
-    void NetworkConnectionImpl::Close(bool stopProcessing) {
+    void NetworkConnection::Impl::Close(bool stopProcessing) {
         if (
             stopProcessing
             && platform->processor.joinable()
@@ -252,6 +252,18 @@ namespace SystemAbstractions {
             (void)closesocket(platform->sock);
             platform->sock = INVALID_SOCKET;
         }
+    }
+
+    std::shared_ptr< NetworkConnection > NetworkConnection::Platform::MakeConnectionFromExistingSocket(
+        SOCKET sock,
+        uint32_t address,
+        uint16_t port
+    ) {
+        const auto connection = std::make_shared< NetworkConnection >();
+        connection->impl_->platform->sock = sock;
+        connection->impl_->peerAddress = address;
+        connection->impl_->peerPort = port;
+        return connection;
     }
 
 }

@@ -11,6 +11,7 @@
  */
 
 #include <SystemAbstractions/DiagnosticsSender.hpp>
+#include <SystemAbstractions/NetworkConnection.hpp>
 
 #include <deque>
 #include <mutex>
@@ -22,7 +23,9 @@ namespace SystemAbstractions {
      * This structure contains the private properties of the
      * NetworkConnectionPlatform class.
      */
-    struct NetworkConnectionPlatform {
+    struct NetworkConnection::Platform {
+        // Properties
+
         /**
          * @todo Needs documentation
          */
@@ -62,6 +65,28 @@ namespace SystemAbstractions {
          * @todo Needs documentation
          */
         std::deque< uint8_t > outputQueue;
+
+        // Methods
+
+        /**
+         * This is a factory method for creating a new NetworkConnection
+         * object out of an already established connection.
+         *
+         * @param[in] sock
+         *     This is the network socket for the established connection.
+         *
+         * @param[in] address
+         *     This is the IPv4 address of the network interface
+         *     bound for the established connection.
+         *
+         * @param[in] port
+         *     This is the port number bound for the established connection.
+         */
+        static std::shared_ptr< NetworkConnection > MakeConnectionFromExistingSocket(
+            SOCKET sock,
+            uint32_t address,
+            uint16_t port
+        );
     };
 
 }

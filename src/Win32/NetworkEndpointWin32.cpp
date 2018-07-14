@@ -276,11 +276,12 @@ namespace SystemAbstractions {
                         );
                     }
                 } else {
-                    auto connectionImpl = std::make_shared< NetworkConnectionImpl >();
-                    connectionImpl->platform->sock = client;
-                    connectionImpl->peerAddress = ntohl(socketAddress.sin_addr.S_un.S_addr);
-                    connectionImpl->peerPort = ntohs(socketAddress.sin_port);
-                    newConnectionDelegate(std::make_shared< NetworkConnection >(connectionImpl));
+                    auto connection = NetworkConnection::Platform::MakeConnectionFromExistingSocket(
+                        client,
+                        ntohl(socketAddress.sin_addr.S_un.S_addr),
+                        ntohs(socketAddress.sin_port)
+                    );
+                    newConnectionDelegate(connection);
                 }
             } else if (
                 (mode == NetworkEndpoint::Mode::Datagram)

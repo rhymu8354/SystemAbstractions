@@ -15,13 +15,7 @@
 namespace SystemAbstractions {
 
     NetworkConnection::NetworkConnection()
-        : _impl(new NetworkConnectionImpl())
-    {
-    }
-
-
-    NetworkConnection::NetworkConnection(std::shared_ptr< NetworkConnectionImpl > impl)
-        : _impl(impl)
+        : impl_(new Impl())
     {
     }
 
@@ -29,43 +23,43 @@ namespace SystemAbstractions {
     }
 
     DiagnosticsSender::SubscriptionToken NetworkConnection::SubscribeToDiagnostics(DiagnosticsSender::DiagnosticMessageDelegate delegate, size_t minLevel) {
-        return _impl->diagnosticsSender.SubscribeToDiagnostics(delegate, minLevel);
+        return impl_->diagnosticsSender.SubscribeToDiagnostics(delegate, minLevel);
     }
 
     void NetworkConnection::UnsubscribeFromDiagnostics(DiagnosticsSender::SubscriptionToken subscriptionToken) {
-        _impl->diagnosticsSender.UnsubscribeFromDiagnostics(subscriptionToken);
+        impl_->diagnosticsSender.UnsubscribeFromDiagnostics(subscriptionToken);
     }
 
     bool NetworkConnection::Connect(uint32_t peerAddress, uint16_t peerPort) {
-        _impl->Close(true);
-        _impl->peerAddress = peerAddress;
-        _impl->peerPort = peerPort;
-        return _impl->Connect();
+        impl_->Close(true);
+        impl_->peerAddress = peerAddress;
+        impl_->peerPort = peerPort;
+        return impl_->Connect();
     }
 
     bool NetworkConnection::Process(Owner* owner) {
-        _impl->owner = owner;
-        return _impl->Process();
+        impl_->owner = owner;
+        return impl_->Process();
     }
 
     uint32_t NetworkConnection::GetPeerAddress() const {
-        return _impl->peerAddress;
+        return impl_->peerAddress;
     }
 
     uint16_t NetworkConnection::GetPeerPort() const {
-        return _impl->peerPort;
+        return impl_->peerPort;
     }
 
     bool NetworkConnection::IsConnected() const {
-        return _impl->IsConnected();
+        return impl_->IsConnected();
     }
 
     void NetworkConnection::SendMessage(const std::vector< uint8_t >& message) {
-        _impl->SendMessage(message);
+        impl_->SendMessage(message);
     }
 
     void NetworkConnection::Close() {
-        _impl->Close(true);
+        impl_->Close(true);
     }
 
 }

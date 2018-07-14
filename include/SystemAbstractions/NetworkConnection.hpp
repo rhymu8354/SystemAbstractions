@@ -22,8 +22,23 @@ namespace SystemAbstractions {
      * remote object, over a network.
      */
     class NetworkConnection {
-        // Custom types
+        // Types
     public:
+        /**
+         * This is the type of structure that contains the private
+         * properties of the instance.  It is defined in the implementation
+         * and declared here to ensure that it is scoped inside the class.
+         */
+        struct Impl;
+
+        /**
+         * This is the type of structure that contains the platform-specific
+         * private properties of the instance.  It is defined in the
+         * platform-specific part of the implementation and declared here to
+         * ensure that it is scoped inside the class.
+         */
+        struct Platform;
+
         /**
          * This is implemented by the owner of the connection and
          * used to deliver callbacks.
@@ -47,15 +62,6 @@ namespace SystemAbstractions {
          * This is an instance constructor.
          */
         NetworkConnection();
-
-        /**
-         * This is an instance constructor.
-         *
-         * @param impl
-         *     This is an existing set of properties to encapsulate
-         *     into a new network connection object.
-         */
-        NetworkConnection(std::shared_ptr< struct NetworkConnectionImpl > impl);
 
         /**
          * This is the instance destructor.
@@ -118,7 +124,10 @@ namespace SystemAbstractions {
 
         // Private properties
     private:
-        std::shared_ptr< struct NetworkConnectionImpl > _impl;
+        /**
+         * This contains the private properties of the instance.
+         */
+        std::unique_ptr< struct Impl > impl_;
     };
 
 }
