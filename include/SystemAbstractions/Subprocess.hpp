@@ -6,7 +6,7 @@
  *
  * This module declares the SystemAbstractions::Subprocess class.
  *
- * Copyright (c) 2016 by Richard Walters
+ * © 2016-2018 by Richard Walters
  */
 
 #include <memory>
@@ -29,12 +29,14 @@ namespace SystemAbstractions {
         class Owner {
         public:
             /**
-             * @todo Needs documentation
+             * This is callback that is called if the child process
+             * exits normally (without crashing).
              */
             virtual void SubprocessChildExited() {}
 
             /**
-             * @todo Needs documentation
+             * This is callback that is called if the child process
+             * exits abnormally (crashes).
              */
             virtual void SubprocessChildCrashed() {}
         };
@@ -71,7 +73,34 @@ namespace SystemAbstractions {
         Subprocess& operator=(Subprocess&& other) noexcept;
 
         /**
-         * @todo Needs documentation
+         * This method starts the subprocess and establishes
+         * a line of communication (a pipe) with it in order to
+         * detect when the child exits or crashes.
+         *
+         * @note
+         *     The actual command line given to the subprocess
+         *     will have two additional arguments at the front:
+         *     - "child" -- to let the subprocess know that it is
+         *       running as a child (subprocess).
+         *     - (pipe handle) -- identifier of a global pipe
+         *       the subprocess can open and use to communicate
+         *       with the parent process.
+         *
+         * @param[in] program
+         *     This is the path and name of the program to
+         *     run in the subprocess.
+         *
+         * @param[in] args
+         *     These are the command-line arguments to pass to
+         *     the subprocess.
+         *
+         * @param[in] owner
+         *     This object is used to issue callbacks when
+         *     the subprocess exits or crashes.
+         *
+         * @return
+         *     An indication of whether or not the child process
+         *     was started successfully is returned.
          */
         bool StartChild(
             std::string program,
@@ -80,12 +109,25 @@ namespace SystemAbstractions {
         );
 
         /**
-         * @todo Needs documentation
+         * This is the function called by the subprocess
+         * in order to establish a link of communication back
+         * to the parent process, so that the parent process
+         * can know when the child process exits or crashes.
+         *
+         * @param[in,out] args
+         *     On input, this is the original command-line arguments
+         *     to the child process, minus the name of the program,
+         *     which is typically the first command-line argument.
+         *
+         *     On output, this is the remainder of the command-line
+         *     arguments, after the two special arguments at the
+         *     front are removed (see note in StartChild()).
+         *
+         * @return
+         *     An indication of whether or not the child process
+         *     was able to contact the parent successfully is returned.
          */
-        bool ContactParent(
-            std::vector< std::string >& args,
-            Owner* owner
-        );
+        bool ContactParent(std::vector< std::string >& args);
 
         // Disable copy constructor and assignment operator.
         Subprocess(const Subprocess&) = delete;
