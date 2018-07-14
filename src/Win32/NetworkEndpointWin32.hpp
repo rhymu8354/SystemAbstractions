@@ -89,7 +89,7 @@ namespace SystemAbstractions {
         std::recursive_mutex processingMutex;
 
         /**
-         * This temporarily holds messages to be send across the network
+         * This temporarily holds messages to be sent across the network
          * by the worker thread.  It is filled by the SendPacket method.
          */
         std::list< Packet > outputQueue;
