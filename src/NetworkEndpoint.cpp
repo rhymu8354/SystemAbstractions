@@ -4,7 +4,7 @@
  * This module contains the implementation of the
  * SystemAbstractions::NetworkEndpoint class.
  *
- * Copyright (c) 2016 by Richard Walters
+ * © 2016-2018 by Richard Walters
  */
 
 #include <SystemAbstractions/NetworkEndpoint.hpp>
