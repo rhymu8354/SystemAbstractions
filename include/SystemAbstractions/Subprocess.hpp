@@ -74,7 +74,7 @@ namespace SystemAbstractions {
          * @todo Needs documentation
          */
         bool StartChild(
-            const std::string& program,
+            std::string program,
             const std::vector< std::string >& args,
             Owner* owner
         );

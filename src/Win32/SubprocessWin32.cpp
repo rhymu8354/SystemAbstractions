@@ -129,7 +129,7 @@ namespace SystemAbstractions {
     }
 
     bool Subprocess::StartChild(
-        const std::string& program,
+        std::string program,
         const std::vector< std::string >& args,
         Owner* owner
     ) {
@@ -143,6 +143,9 @@ namespace SystemAbstractions {
         if (CreatePipe(&_impl->pipe, &childPipe, &sa, 0) == FALSE) {
             return false;
         }
+
+        // Add file extension because that part is platform-specific.
+        program += ".exe";
 
         std::vector< std::string > childArgs;
         childArgs.push_back("child");
