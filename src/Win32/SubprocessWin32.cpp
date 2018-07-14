@@ -33,7 +33,12 @@ namespace SystemAbstractions {
         // Properties
 
         /**
-         * @todo Needs documentation
+         * This is a thread that is run when the Subprocess class
+         * is used in the parent role.  The thread basically waits
+         * for one of two things to happen:
+         * - The child process writes to the pipe, signaling that it's
+         *   about to exit normally.
+         * - The pipe breaks, indicating that the child process crashed.
          */
         std::thread worker;
 
@@ -50,30 +55,38 @@ namespace SystemAbstractions {
         std::function< void() > childCrashed;
 
         /**
-         * @todo Needs documentation
+         * This is the operating system handle to the child process object.
+         * It's used to block until the child process is completely cleaned
+         * up (after the child process exits or crashes).
          */
         HANDLE child = INVALID_HANDLE_VALUE;
 
         /**
-         * @todo Needs documentation
+         * This is one end of the pipe used to communicate between the
+         * parent and child processes.  The parent only reads it, to know
+         * when the child exits or crashes.  The child writes to it before
+         * exiting normally.  The actual data transferred is not important.
          */
         HANDLE pipe = INVALID_HANDLE_VALUE;
 
         /**
-         * @todo Needs documentation
+         * This holds onto the previous handler of the SIGINT signal,
+         * which is temporarily ignored while monitoring the child process.
          */
         void (*previousSignalHandler)(int) = nullptr;
 
         // Methods
 
         /**
-         * @todo Needs documentation
+         * This is the temporary handler for the SIGINT signal,
+         * while monitoring the child process.
          */
         static void SignalHandler(int) {
         }
 
         /**
-         * @todo Needs documentation
+         * This is the body of the worker thread that is run
+         * to wait for the child to either exit normally or crash.
          */
         void MonitorChild() {
             previousSignalHandler = signal(SIGINT, SignalHandler);
@@ -90,7 +103,15 @@ namespace SystemAbstractions {
         }
 
         /**
-         * @todo Needs documentation
+         * This method is called in three different use cases:
+         * - When the child process is exiting normally, in which case
+         *   it does nothing.
+         * - When the parent process is exiting, in which case it
+         *   joins the monitor/worker thread, in order to ensure
+         *   the child process exits first.
+         * - When the parent process is about to start a new child
+         *   process, in which case we need to make sure any previous
+         *   child process has exited/crashed, and we close the old pipe.
          */
         void JoinChild() {
             if (worker.joinable()) {
