@@ -4,29 +4,6 @@
 #include <SystemAbstractions/File.hpp>
 #include <SystemAbstractions/Subprocess.hpp>
 
-namespace {
-
-    /**
-     * This is used to receive callbacks from the Subprocess class.
-     */
-    struct Owner
-        : public SystemAbstractions::Subprocess::Owner
-    {
-        // Properties
-
-        // Methods
-
-        // SystemAbstractions::Subprocess::Owner
-
-        virtual void SubprocessChildExited() override {
-        }
-
-        virtual void SubprocessChildCrashed() override {
-        }
-    };
-
-}
-
 int main(int argc, char* argv[]) {
     SystemAbstractions::Subprocess parent;
     std::vector< std::string > args;

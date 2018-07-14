@@ -38,9 +38,16 @@ namespace SystemAbstractions {
         std::thread worker;
 
         /**
-         * @todo Needs documentation
+         * This is a callback to call if the child process
+         * exits normally (without crashing).
          */
-        Subprocess::Owner* owner = nullptr;
+        std::function< void() > childExited;
+
+        /**
+         * This is a callback to call if the child process
+         * exits abnormally (crashes).
+         */
+        std::function< void() > childCrashed;
 
         /**
          * @todo Needs documentation
@@ -74,9 +81,9 @@ namespace SystemAbstractions {
             uint8_t token;
             DWORD amtRead = 0;
             if (ReadFile(pipe, &token, 1, &amtRead, NULL) == FALSE) {
-                owner->SubprocessChildCrashed();
+                childCrashed();
             } else {
-                owner->SubprocessChildExited();
+                childExited();
             }
             (void)WaitForSingleObject(child, INFINITE);
             (void)signal(SIGINT, previousSignalHandler);
@@ -131,10 +138,12 @@ namespace SystemAbstractions {
     bool Subprocess::StartChild(
         std::string program,
         const std::vector< std::string >& args,
-        Owner* owner
+        std::function< void() > childExited,
+        std::function< void() > childCrashed
     ) {
         _impl->JoinChild();
-        _impl->owner = owner;
+        _impl->childExited = childExited;
+        _impl->childCrashed = childCrashed;
         SECURITY_ATTRIBUTES sa;
         (void)memset(&sa, 0, sizeof(sa));
         sa.nLength = sizeof(sa);

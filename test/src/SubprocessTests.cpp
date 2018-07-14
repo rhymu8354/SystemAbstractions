@@ -19,9 +19,7 @@ namespace {
     /**
      * This is used to receive callbacks from the unit under test.
      */
-    struct Owner
-        : public SystemAbstractions::Subprocess::Owner
-    {
+    struct Owner {
         // Properties
 
         /**
@@ -83,13 +81,13 @@ namespace {
 
         // SystemAbstractions::Subprocess::Owner
 
-        virtual void SubprocessChildExited() override {
+        void SubprocessChildExited() {
             std::unique_lock< decltype(mutex) > lock(mutex);
             exited = true;
             condition.notify_all();
         }
 
-        virtual void SubprocessChildCrashed() override {
+        void SubprocessChildCrashed() {
             std::unique_lock< decltype(mutex) > lock(mutex);
             crashed = true;
             condition.notify_all();
@@ -183,7 +181,8 @@ TEST_F(SubprocessTests, StartSubprocess) {
         child.StartChild(
             SystemAbstractions::File::GetExeParentDirectory() + "/MockSubprocess",
             {"Hello, World", "exit"},
-            &owner
+            [&owner]{ owner.SubprocessChildExited(); },
+            [&owner]{ owner.SubprocessChildCrashed(); }
         )
     );
     ASSERT_TRUE(AwaitTestAreaChanged());
@@ -195,7 +194,8 @@ TEST_F(SubprocessTests, Exit) {
     child.StartChild(
         SystemAbstractions::File::GetExeParentDirectory() + "/MockSubprocess",
         {"Hello, World", "exit"},
-        &owner
+        [&owner]{ owner.SubprocessChildExited(); },
+        [&owner]{ owner.SubprocessChildCrashed(); }
     );
     ASSERT_TRUE(owner.AwaitExited());
     ASSERT_FALSE(owner.crashed);
@@ -207,7 +207,8 @@ TEST_F(SubprocessTests, Crash) {
     child.StartChild(
         SystemAbstractions::File::GetExeParentDirectory() + "/MockSubprocess",
         {"Hello, World", "crash"},
-        &owner
+        [&owner]{ owner.SubprocessChildExited(); },
+        [&owner]{ owner.SubprocessChildCrashed(); }
     );
     ASSERT_TRUE(owner.AwaitCrashed());
     ASSERT_FALSE(owner.exited);

@@ -9,6 +9,7 @@
  * © 2016-2018 by Richard Walters
  */
 
+#include <functional>
 #include <memory>
 #include <string>
 #include <vector>
@@ -20,27 +21,6 @@ namespace SystemAbstractions {
      * and includes means of communicating between the two processes.
      */
     class Subprocess {
-        // Custom Types
-    public:
-        /**
-         * This is implemented by the owner of the object and
-         * used to deliver callbacks.
-         */
-        class Owner {
-        public:
-            /**
-             * This is callback that is called if the child process
-             * exits normally (without crashing).
-             */
-            virtual void SubprocessChildExited() {}
-
-            /**
-             * This is callback that is called if the child process
-             * exits abnormally (crashes).
-             */
-            virtual void SubprocessChildCrashed() {}
-        };
-
         // Public methods
     public:
         /**
@@ -94,9 +74,13 @@ namespace SystemAbstractions {
          *     These are the command-line arguments to pass to
          *     the subprocess.
          *
-         * @param[in] owner
-         *     This object is used to issue callbacks when
-         *     the subprocess exits or crashes.
+         * @param[in] childExited
+         *     This is a callback to call if the child process
+         *     exits normally (without crashing).
+         *
+         * @param[in] childCrashed
+         *     This is a callback to call if the child process
+         *     exits abnormally (crashes).
          *
          * @return
          *     An indication of whether or not the child process
@@ -105,7 +89,8 @@ namespace SystemAbstractions {
         bool StartChild(
             std::string program,
             const std::vector< std::string >& args,
-            Owner* owner
+            std::function< void() > childExited,
+            std::function< void() > childCrashed
         );
 
         /**
