@@ -8,6 +8,7 @@
  */
 
 #include <gtest/gtest.h>
+#include <string>
 #include <SystemAbstractions/DiagnosticsSender.hpp>
 #include <vector>
 
