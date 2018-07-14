@@ -83,9 +83,7 @@ struct Packet {
 /**
  * This is used to receive callbacks from the unit under test.
  */
-struct Owner
-    : public SystemAbstractions::NetworkConnection::Owner
-{
+struct Owner {
     // Properties
 
     /**
@@ -241,7 +239,14 @@ struct Owner
         std::unique_lock< decltype(mutex) > lock(mutex);
         connections.push_back(newConnection);
         condition.notify_all();
-        (void)newConnection->Process(this);
+        (void)newConnection->Process(
+            [this](const std::vector< uint8_t >& message){
+                NetworkConnectionMessageReceived(message);
+            },
+            [this]{
+                NetworkConnectionBroken();
+            }
+        );
     }
 
     /**
@@ -267,9 +272,15 @@ struct Owner
         condition.notify_all();
     }
 
-    // SystemAbstractions::NetworkConnection::Owner
-public:
-    virtual void NetworkConnectionMessageReceived(const std::vector< uint8_t >& message) override {
+    /**
+     * This is the callback issued whenever more data
+     * is received from the peer of the connection.
+     *
+     * @param[in] message
+     *     This contains the data received from
+     *     the peer of the connection.
+     */
+    void NetworkConnectionMessageReceived(const std::vector< uint8_t >& message) {
         std::unique_lock< decltype(mutex) > lock(mutex);
         streamReceived.insert(
             streamReceived.end(),
@@ -279,7 +290,11 @@ public:
         condition.notify_all();
     }
 
-    virtual void NetworkConnectionBroken() override {
+    /**
+     * This is the callback issued whenever
+     * the connection is broken.
+     */
+    void NetworkConnectionBroken() {
         std::unique_lock< decltype(mutex) > lock(mutex);
         connectionBroken = true;
         condition.notify_all();

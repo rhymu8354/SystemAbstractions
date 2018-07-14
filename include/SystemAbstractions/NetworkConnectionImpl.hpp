@@ -33,10 +33,16 @@ namespace SystemAbstractions {
         std::unique_ptr< Platform > platform;
 
         /**
-         * This points to a class provided by the user
-         * of the NetworkConnection, in order to receive callbacks.
+         * This is the callback issued whenever more data
+         * is received from the peer of the connection.
          */
-        NetworkConnection::Owner* owner = nullptr;
+        MessageReceivedDelegate messageReceivedDelegate;
+
+        /**
+         * This is the callback issued whenever
+         * the connection is broken.
+         */
+        BrokenDelegate brokenDelegate;
 
         /**
          * This is the IPv4 address of the peer, if there is a connection

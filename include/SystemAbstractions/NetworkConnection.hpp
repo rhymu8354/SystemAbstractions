@@ -40,26 +40,22 @@ namespace SystemAbstractions {
         struct Platform;
 
         /**
-         * This is implemented by the owner of the connection and
-         * used to deliver callbacks.
+         * This is the type of callback issued whenever more data
+         * is received from the peer of the connection.
+         *
+         * @param[in] message
+         *     This contains the data received from
+         *     the peer of the connection.
          */
-        class Owner {
-        public:
-            /**
-             * This is callback issued whenever more data is received from
-             * the peer of the connection.
-             *
-             * @param[in] message
-             *     This contains the data received from
-             *     the peer of the connection.
-             */
-            virtual void NetworkConnectionMessageReceived(const std::vector< uint8_t >& message) {}
+        typedef std::function<
+            void(const std::vector< uint8_t >& message)
+        > MessageReceivedDelegate;
 
-            /**
-             * This is callback issued whenever the connection is broken.
-             */
-            virtual void NetworkConnectionBroken() {}
-        };
+        /**
+         * This is the type of callback issued whenever
+         * the connection is broken.
+         */
+        typedef std::function< void() > BrokenDelegate;
 
         // Lifecycle Management
     public:
@@ -124,15 +120,22 @@ namespace SystemAbstractions {
          * This method starts message processing on the connection,
          * listening for incoming messages and sending outgoing messages.
          *
-         * @param[in] owner
-         *     This is a reference to the owner which should receive
-         *     any callbacks from the object.
+         * @param[in] messageReceivedDelegate
+         *     This is the callback issued whenever more data
+         *     is received from the peer of the connection.
+         *
+         * @param[in] brokenDelegate
+         *     This is the callback issued whenever
+         *     the connection is broken.
          *
          * @return
          *     An indication of whether or not the method was
          *     successful is returned.
          */
-        bool Process(Owner* owner);
+        bool Process(
+            MessageReceivedDelegate messageReceivedDelegate,
+            BrokenDelegate brokenDelegate
+        );
 
         /**
          * This method returns the IPv4 address of the peer, if there

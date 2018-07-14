@@ -37,8 +37,12 @@ namespace SystemAbstractions {
         return impl_->Connect();
     }
 
-    bool NetworkConnection::Process(Owner* owner) {
-        impl_->owner = owner;
+    bool NetworkConnection::Process(
+        MessageReceivedDelegate messageReceivedDelegate,
+        BrokenDelegate brokenDelegate
+    ) {
+        impl_->messageReceivedDelegate = messageReceivedDelegate;
+        impl_->brokenDelegate = brokenDelegate;
         return impl_->Process();
     }
 
