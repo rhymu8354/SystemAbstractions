@@ -7,7 +7,7 @@
  * This module declares the Windows implementation of the
  * SystemAbstractions::NetworkEndpointPlatform structure.
  *
- * Copyright (c) 2016 by Richard Walters
+ * © 2016-2018 by Richard Walters
  */
 
 #include <SystemAbstractions/NetworkEndpoint.hpp>
@@ -25,51 +25,72 @@ namespace SystemAbstractions {
      */
     struct NetworkEndpoint::Platform {
         /**
-         * @todo Needs documentation
+         * This is used to hold all the information about
+         * a datagram to be sent.
          */
         struct Packet {
+            /**
+             * This is the IPv4 address of the datagram recipient.
+             */
             uint32_t address;
+
+            /**
+             * This is the port number of the datagram recipient.
+             */
             uint16_t port;
+
+            /**
+             * This is the message to send in the datagram.
+             */
             std::vector< uint8_t > body;
         };
 
         /**
-         * @todo Needs documentation
+         * This keeps track of whether or not WSAStartup succeeded,
+         * because if so we need to call WSACleanup upon teardown.
          */
         bool wsaStarted = false;
 
         /**
-         * @todo Needs documentation
+         * This is the operating system handle to the network
+         * port bound by this object.
          */
         SOCKET sock = INVALID_SOCKET;
 
         /**
-         * @todo Needs documentation
+         * This is the thread which performs all the actual
+         * sending and receiving of data over the network.
          */
         std::thread processor;
 
         /**
-         * @todo Needs documentation
+         * This is an event used with WSAEventSelect in order
+         * for the worker thread to wait for interesting things
+         * to happen with the bound network port.
          */
         HANDLE socketEvent = NULL;
 
         /**
-         * @todo Needs documentation
+         * This is an event used to wake up the worker thread
+         * if a new message to send has been placed in the
+         * output queue, or if we want the worker thread to stop.
          */
         HANDLE processorStateChangeEvent = NULL;
 
         /**
-         * @todo Needs documentation
+         * This flag indicates whether or not the worker thread
+         * should stop.
          */
         bool processorStop = false;
 
         /**
-         * @todo Needs documentation
+         * This is used to synchronize access to the object.
          */
         std::recursive_mutex processingMutex;
 
         /**
-         * @todo Needs documentation
+         * This temporarily holds messages to be send across the network
+         * by the worker thread.  It is filled by the SendPacket method.
          */
         std::list< Packet > outputQueue;
     };
