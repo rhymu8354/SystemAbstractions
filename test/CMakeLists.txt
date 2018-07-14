@@ -11,6 +11,7 @@ set(Sources
     src/DiagnosticsStreamReporterTests.cpp
     src/DirectoryMonitorTests.cpp
     src/FileTests.cpp
+    src/NetworkEndpointTests.cpp
     src/StringExtensionsTests.cpp
     src/StringFileTests.cpp
 )
