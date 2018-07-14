@@ -29,7 +29,7 @@ namespace SystemAbstractions {
      * This structure contains the private methods and properties of
      * the DirectoryMonitor class.
      */
-    struct SubprocessImpl {
+    struct Subprocess::Impl {
         // Properties
 
         /**
@@ -67,14 +67,14 @@ namespace SystemAbstractions {
         // Methods
 
         /**
-          * @todo Needs documentation
-          */
+         * @todo Needs documentation
+         */
         static void SignalHandler(int) {
         }
 
         /**
-          * @todo Needs documentation
-          */
+         * @todo Needs documentation
+         */
         void MonitorChild() {
             previousSignalHandler = signal(SIGINT, SignalHandler);
             (void)WaitForSingleObject(pipe, INFINITE);
@@ -90,8 +90,8 @@ namespace SystemAbstractions {
         }
 
         /**
-          * @todo Needs documentation
-          */
+         * @todo Needs documentation
+         */
         void JoinChild() {
             if (worker.joinable()) {
                 worker.join();
@@ -103,36 +103,22 @@ namespace SystemAbstractions {
         }
     };
 
-    Subprocess::Subprocess()
-        : _impl(new SubprocessImpl())
-    {
-    }
-
-
-    Subprocess::Subprocess(Subprocess&& other) noexcept
-        : _impl(std::move(other._impl))
-    {
-    }
-
-    Subprocess::Subprocess(std::unique_ptr< SubprocessImpl >&& impl) noexcept
-        : _impl(std::move(impl))
-    {
-    }
-
     Subprocess::~Subprocess() {
-        _impl->JoinChild();
-        if (_impl->pipe != INVALID_HANDLE_VALUE) {
+        impl_->JoinChild();
+        if (impl_->pipe != INVALID_HANDLE_VALUE) {
             uint8_t token = 42;
             DWORD amtWritten;
-            (void)WriteFile(_impl->pipe, &token, 1, &amtWritten, NULL);
+            (void)WriteFile(impl_->pipe, &token, 1, &amtWritten, NULL);
             std::this_thread::sleep_for(std::chrono::seconds(1));
-            (void)CloseHandle(_impl->pipe);
+            (void)CloseHandle(impl_->pipe);
         }
     }
+    Subprocess::Subprocess(Subprocess&&) = default;
+    Subprocess& Subprocess::operator=(Subprocess&&) = default;
 
-    Subprocess& Subprocess::operator=(Subprocess&& other) noexcept {
-        _impl = std::move(other._impl);
-        return *this;
+    Subprocess::Subprocess()
+        : impl_(new Impl())
+    {
     }
 
     bool Subprocess::StartChild(
@@ -141,15 +127,15 @@ namespace SystemAbstractions {
         std::function< void() > childExited,
         std::function< void() > childCrashed
     ) {
-        _impl->JoinChild();
-        _impl->childExited = childExited;
-        _impl->childCrashed = childCrashed;
+        impl_->JoinChild();
+        impl_->childExited = childExited;
+        impl_->childCrashed = childCrashed;
         SECURITY_ATTRIBUTES sa;
         (void)memset(&sa, 0, sizeof(sa));
         sa.nLength = sizeof(sa);
         sa.bInheritHandle = TRUE;
         HANDLE childPipe;
-        if (CreatePipe(&_impl->pipe, &childPipe, &sa, 0) == FALSE) {
+        if (CreatePipe(&impl_->pipe, &childPipe, &sa, 0) == FALSE) {
             return false;
         }
 
@@ -218,14 +204,14 @@ namespace SystemAbstractions {
                 &pi
             ) == 0
         ) {
-            (void)CloseHandle(_impl->pipe);
-            _impl->pipe = INVALID_HANDLE_VALUE;
+            (void)CloseHandle(impl_->pipe);
+            impl_->pipe = INVALID_HANDLE_VALUE;
             (void)CloseHandle(childPipe);
             return false;
         }
-        _impl->child = pi.hProcess;
+        impl_->child = pi.hProcess;
         (void)CloseHandle(childPipe);
-        _impl->worker = std::move(std::thread(&SubprocessImpl::MonitorChild, _impl.get()));
+        impl_->worker = std::thread(&Impl::MonitorChild, impl_.get());
         return true;
     }
 
@@ -238,7 +224,7 @@ namespace SystemAbstractions {
             if (sscanf(args[1].c_str(), "%" SCNu64, &pipeNumber) != 1) {
                 return false;
             }
-            _impl->pipe = (HANDLE)pipeNumber;
+            impl_->pipe = (HANDLE)pipeNumber;
             args.erase(args.begin(), args.begin() + 2);
             return true;
         }

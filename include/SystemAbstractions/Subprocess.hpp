@@ -21,36 +21,20 @@ namespace SystemAbstractions {
      * and includes means of communicating between the two processes.
      */
     class Subprocess {
+        // Lifecycle Management
+    public:
+        ~Subprocess();
+        Subprocess(const Subprocess&) = delete;
+        Subprocess(Subprocess&&);
+        Subprocess& operator=(const Subprocess&) = delete;
+        Subprocess& operator=(Subprocess&&);
+
         // Public methods
     public:
         /**
          * This is an instance constructor.
          */
         Subprocess();
-
-        /**
-         * This is an instance constructor.
-         *
-         * @param impl
-         *     This is an existing set of properties to encapsulate
-         *     into a new object.
-         */
-        Subprocess(std::unique_ptr< struct SubprocessImpl >&& impl) noexcept;
-
-        /**
-         * This is the instance move constructor.
-         */
-        Subprocess(Subprocess&& other) noexcept;
-
-        /**
-         * This is the instance destructor.
-         */
-        ~Subprocess();
-
-        /**
-         * This is the move assignment operator.
-         */
-        Subprocess& operator=(Subprocess&& other) noexcept;
 
         /**
          * This method starts the subprocess and establishes
@@ -114,13 +98,19 @@ namespace SystemAbstractions {
          */
         bool ContactParent(std::vector< std::string >& args);
 
-        // Disable copy constructor and assignment operator.
-        Subprocess(const Subprocess&) = delete;
-        Subprocess& operator=(const Subprocess&) = delete;
-
         // Private properties
     private:
-        std::unique_ptr< struct SubprocessImpl > _impl;
+        /**
+         * This is the type of structure that contains the private
+         * properties of the instance.  It is defined in the implementation
+         * and declared here to ensure that it is scoped inside the class.
+         */
+        struct Impl;
+
+        /**
+         * This contains the private properties of the instance.
+         */
+        std::unique_ptr< struct Impl > impl_;
     };
 
 }
