@@ -44,16 +44,6 @@ namespace {
 
 namespace SystemAbstractions {
 
-    NetworkConnection::Impl::Impl()
-        : platform(new NetworkConnection::Platform())
-        , diagnosticsSender("NetworkConnection")
-    {
-        WSADATA wsaData;
-        if (!WSAStartup(MAKEWORD(2, 0), &wsaData)) {
-            platform->wsaStarted = true;
-        }
-    }
-
     NetworkConnection::Impl::~Impl() {
         Close(true);
         if (platform->wsaStarted) {
@@ -64,6 +54,16 @@ namespace SystemAbstractions {
         }
         if (platform->processorStateChangeEvent != NULL) {
             (void)CloseHandle(platform->processorStateChangeEvent);
+        }
+    }
+
+    NetworkConnection::Impl::Impl()
+        : platform(new NetworkConnection::Platform())
+        , diagnosticsSender("NetworkConnection")
+    {
+        WSADATA wsaData;
+        if (!WSAStartup(MAKEWORD(2, 0), &wsaData)) {
+            platform->wsaStarted = true;
         }
     }
 

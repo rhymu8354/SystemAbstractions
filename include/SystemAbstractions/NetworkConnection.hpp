@@ -61,17 +61,20 @@ namespace SystemAbstractions {
             virtual void NetworkConnectionBroken() {}
         };
 
+        // Lifecycle Management
+    public:
+        ~NetworkConnection() noexcept;
+        NetworkConnection(const NetworkConnection&) noexcept = delete;
+        NetworkConnection(NetworkConnection&& other) noexcept = delete;
+        NetworkConnection& operator=(const NetworkConnection&) noexcept = delete;
+        NetworkConnection& operator=(NetworkConnection&& other) noexcept = delete;
+
         // Public methods
     public:
         /**
          * This is an instance constructor.
          */
         NetworkConnection();
-
-        /**
-         * This is the instance destructor.
-         */
-        ~NetworkConnection();
 
         /**
          * This method forms a new subscription to diagnostic

@@ -14,12 +14,12 @@
 
 namespace SystemAbstractions {
 
+    NetworkConnection::~NetworkConnection() {
+    }
+
     NetworkConnection::NetworkConnection()
         : impl_(new Impl())
     {
-    }
-
-    NetworkConnection::~NetworkConnection() {
     }
 
     DiagnosticsSender::SubscriptionToken NetworkConnection::SubscribeToDiagnostics(DiagnosticsSender::DiagnosticMessageDelegate delegate, size_t minLevel) {

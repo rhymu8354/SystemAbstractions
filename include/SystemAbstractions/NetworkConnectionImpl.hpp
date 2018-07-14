@@ -24,6 +24,8 @@ namespace SystemAbstractions {
      * NetworkConnection class.
      */
     struct NetworkConnection::Impl {
+        // Properties
+
         /**
          * This contains any platform-specific private properties
          * of the class.
@@ -53,15 +55,20 @@ namespace SystemAbstractions {
          */
         DiagnosticsSender diagnosticsSender;
 
+        // Lifecycle Management
+
+        ~Impl() noexcept;
+        Impl(const Impl&) noexcept = delete;
+        Impl(Impl&&) noexcept = delete;
+        Impl& operator=(const Impl&) noexcept = delete;
+        Impl& operator=(Impl&&) noexcept = delete;
+
+        // Methods
+
         /**
          * This is the instance constructor.
          */
         Impl();
-
-        /**
-         * This is the instance destructor.
-         */
-        ~Impl();
 
         /**
          * This method attempts to establish a connection to the remote peer.
