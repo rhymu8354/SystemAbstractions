@@ -37,7 +37,16 @@
 
 namespace {
 
+    /**
+     * This is the maximum number of bytes to try to read
+     * from a network socket at once.
+     */
     static const size_t MAXIMUM_READ_SIZE = 65536;
+
+    /**
+     * This is the maximum number of bytes to try to write
+     * to a network socket at once.
+     */
     static const size_t MAXIMUM_WRITE_SIZE = 65536;
 
 }
