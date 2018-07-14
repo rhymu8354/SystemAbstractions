@@ -36,270 +36,274 @@
 #include <sys/socket.h>
 #endif /* _WIN32 or POSIX */
 
-/**
- * This is used to hold all the information about a received
- * datagram that we care about.
- */
-struct Packet {
-    /**
-     * This is a copy of the data from the received datagram.
-     */
-    std::vector< uint8_t > payload;
+namespace {
 
     /**
-     * This is the IPv4 address of the datagram sender.
+     * This is used to hold all the information about a received
+     * datagram that we care about.
      */
-    uint32_t address;
+    struct Packet {
+        /**
+         * This is a copy of the data from the received datagram.
+         */
+        std::vector< uint8_t > payload;
+
+        /**
+         * This is the IPv4 address of the datagram sender.
+         */
+        uint32_t address;
+
+        /**
+         * This is the port number of the datagram sender.
+         */
+        uint16_t port;
+
+        /**
+         * This constructor initializes all properies of the structure.
+         *
+         * @param[in] newPayload
+         *     This is a copy of the data from the received datagram.
+         *
+         * @param[in] newAddress
+         *     This is the IPv4 address of the datagram sender.
+         *
+         * @param[in] port
+         *     This is the port number of the datagram sender.
+         */
+        Packet(
+            const std::vector< uint8_t >& newPayload,
+            uint32_t newAddress,
+            uint16_t newPort
+        )
+            : payload(newPayload)
+            , address(newAddress)
+            , port(newPort)
+        {
+        }
+    };
 
     /**
-     * This is the port number of the datagram sender.
+     * This is used to receive callbacks from the unit under test.
      */
-    uint16_t port;
+    struct Owner {
+        // Properties
 
-    /**
-     * This constructor initializes all properies of the structure.
-     *
-     * @param[in] newPayload
-     *     This is a copy of the data from the received datagram.
-     *
-     * @param[in] newAddress
-     *     This is the IPv4 address of the datagram sender.
-     *
-     * @param[in] port
-     *     This is the port number of the datagram sender.
-     */
-    Packet(
-        const std::vector< uint8_t >& newPayload,
-        uint32_t newAddress,
-        uint16_t newPort
-    )
-        : payload(newPayload)
-        , address(newAddress)
-        , port(newPort)
-    {
-    }
-};
+        /**
+         * This is used to wait for, or signal, a condition
+         * upon which that the owner might be waiting.
+         */
+        std::condition_variable_any condition;
 
-/**
- * This is used to receive callbacks from the unit under test.
- */
-struct Owner {
-    // Properties
+        /**
+         * This is used to synchronize access to the class.
+         */
+        std::mutex mutex;
 
-    /**
-     * This is used to wait for, or signal, a condition
-     * upon which that the owner might be waiting.
-     */
-    std::condition_variable_any condition;
+        /**
+         * This holds a copy of each packet received.
+         */
+        std::vector< Packet > packetsReceived;
 
-    /**
-     * This is used to synchronize access to the class.
-     */
-    std::mutex mutex;
+        /**
+         * This holds the data received from a connection-oriented stream.
+         */
+        std::vector< uint8_t > streamReceived;
 
-    /**
-     * This holds a copy of each packet received.
-     */
-    std::vector< Packet > packetsReceived;
+        /**
+         * These are connections that have been established
+         * between the unit under test and remote clients.
+         */
+        std::vector< std::shared_ptr< SystemAbstractions::NetworkConnection > > connections;
 
-    /**
-     * This holds the data received from a connection-oriented stream.
-     */
-    std::vector< uint8_t > streamReceived;
+        /**
+         * This flag indicates whether or not a connection
+         * to the network endpoint has been broken.
+         */
+        bool connectionBroken = false;
 
-    /**
-     * These are connections that have been established
-     * between the unit under test and remote clients.
-     */
-    std::vector< std::shared_ptr< SystemAbstractions::NetworkConnection > > connections;
+        // Methods
 
-    /**
-     * This flag indicates whether or not a connection
-     * to the network endpoint has been broken.
-     */
-    bool connectionBroken = false;
+        /**
+         * This method waits up to a second for a packet
+         * to be received from the network endpoint.
+         *
+         * @return
+         *     An indication of whether or not a packet
+         *     is received from the network endpoint
+         *     is returned.
+         */
+        bool AwaitPacket() {
+            std::unique_lock< decltype(mutex) > lock(mutex);
+            return condition.wait_for(
+                lock,
+                std::chrono::seconds(1),
+                [this]{
+                    return !packetsReceived.empty();
+                }
+            );
+        }
 
-    // Methods
+        /**
+         * This method waits up to a second for the given number
+         * of bytes to be received from a client connected
+         * to the network endpoint.
+         *
+         * @param[in] numBytes
+         *     This is the number of bytes we expect to receive.
+         *
+         * @return
+         *     An indication of whether or not the given number
+         *     of bytes were received from a client connected
+         *     to the network endpoint is returned.
+         */
+        bool AwaitStream(size_t numBytes) {
+            std::unique_lock< decltype(mutex) > lock(mutex);
+            return condition.wait_for(
+                lock,
+                std::chrono::seconds(1),
+                [this, numBytes]{
+                    return (streamReceived.size() >= numBytes);
+                }
+            );
+        }
 
-    /**
-     * This method waits up to a second for a packet
-     * to be received from the network endpoint.
-     *
-     * @return
-     *     An indication of whether or not a packet
-     *     is received from the network endpoint
-     *     is returned.
-     */
-    bool AwaitPacket() {
-        std::unique_lock< decltype(mutex) > lock(mutex);
-        return condition.wait_for(
-            lock,
-            std::chrono::seconds(1),
-            [this]{
-                return !packetsReceived.empty();
-            }
-        );
-    }
+        /**
+         * This method waits up to a second for a connection
+         * to be received at the network endpoint.
+         *
+         * @return
+         *     An indication of whether or not a connection
+         *     is received at the network endpoint
+         *     is returned.
+         */
+        bool AwaitConnection() {
+            std::unique_lock< decltype(mutex) > lock(mutex);
+            return condition.wait_for(
+                lock,
+                std::chrono::seconds(1),
+                [this]{
+                    return !connections.empty();
+                }
+            );
+        }
 
-    /**
-     * This method waits up to a second for the given number
-     * of bytes to be received from a client connected
-     * to the network endpoint.
-     *
-     * @param[in] numBytes
-     *     This is the number of bytes we expect to receive.
-     *
-     * @return
-     *     An indication of whether or not the given number
-     *     of bytes were received from a client connected
-     *     to the network endpoint is returned.
-     */
-    bool AwaitStream(size_t numBytes) {
-        std::unique_lock< decltype(mutex) > lock(mutex);
-        return condition.wait_for(
-            lock,
-            std::chrono::seconds(1),
-            [this, numBytes]{
-                return (streamReceived.size() >= numBytes);
-            }
-        );
-    }
+        /**
+         * This method waits up to a second for the given number
+         * of connections to be received at the network endpoint.
+         *
+         * @param[in] numConnections
+         *     This is the number of connections for which to wait.
+         *
+         * @return
+         *     An indication of whether or not the given number
+         *     of connections is received at the network endpoint
+         *     is returned.
+         */
+        bool AwaitConnections(size_t numConnections) {
+            std::unique_lock< decltype(mutex) > lock(mutex);
+            return condition.wait_for(
+                lock,
+                std::chrono::seconds(1),
+                [this, numConnections]{
+                    return (connections.size() >= numConnections);
+                }
+            );
+        }
 
-    /**
-     * This method waits up to a second for a connection
-     * to be received at the network endpoint.
-     *
-     * @return
-     *     An indication of whether or not a connection
-     *     is received at the network endpoint
-     *     is returned.
-     */
-    bool AwaitConnection() {
-        std::unique_lock< decltype(mutex) > lock(mutex);
-        return condition.wait_for(
-            lock,
-            std::chrono::seconds(1),
-            [this]{
-                return !connections.empty();
-            }
-        );
-    }
+        /**
+         * This method waits up to a second for a connection
+         * to the network endpoint to be broken.
+         *
+         * @return
+         *     An indication of whether or not a connection
+         *     to the network endpoint is broken
+         *     is returned.
+         */
+        bool AwaitDisconnection() {
+            std::unique_lock< decltype(mutex) > lock(mutex);
+            return condition.wait_for(
+                lock,
+                std::chrono::seconds(1),
+                [this]{
+                    return connectionBroken;
+                }
+            );
+        }
 
-    /**
-     * This method waits up to a second for the given number
-     * of connections to be received at the network endpoint.
-     *
-     * @param[in] numConnections
-     *     This is the number of connections for which to wait.
-     *
-     * @return
-     *     An indication of whether or not the given number
-     *     of connections is received at the network endpoint
-     *     is returned.
-     */
-    bool AwaitConnections(size_t numConnections) {
-        std::unique_lock< decltype(mutex) > lock(mutex);
-        return condition.wait_for(
-            lock,
-            std::chrono::seconds(1),
-            [this, numConnections]{
-                return (connections.size() >= numConnections);
-            }
-        );
-    }
+        /**
+         * This is the callback function to be called whenever
+         * a new client connects to the network endpoint.
+         *
+         * @param[in] newConnection
+         *     This represents the connection to the new client.
+         */
+        void NetworkEndpointNewConnection(std::shared_ptr< SystemAbstractions::NetworkConnection > newConnection) {
+            std::unique_lock< decltype(mutex) > lock(mutex);
+            connections.push_back(newConnection);
+            condition.notify_all();
+            (void)newConnection->Process(
+                [this](const std::vector< uint8_t >& message){
+                    NetworkConnectionMessageReceived(message);
+                },
+                [this]{
+                    NetworkConnectionBroken();
+                }
+            );
+        }
 
-    /**
-     * This method waits up to a second for a connection
-     * to the network endpoint to be broken.
-     *
-     * @return
-     *     An indication of whether or not a connection
-     *     to the network endpoint is broken
-     *     is returned.
-     */
-    bool AwaitDisconnection() {
-        std::unique_lock< decltype(mutex) > lock(mutex);
-        return condition.wait_for(
-            lock,
-            std::chrono::seconds(1),
-            [this]{
-                return connectionBroken;
-            }
-        );
-    }
+        /**
+         * This is the type of callback function to be called whenever
+         * a new datagram-oriented message is received by the network endpoint.
+         *
+         * @param[in] address
+         *     This is the IPv4 address of the client who sent the message.
+         *
+         * @param[in] port
+         *     This is the port number of the client who sent the message.
+         *
+         * @param[in] body
+         *     This is the contents of the datagram sent by the client.
+         */
+        void NetworkEndpointPacketReceived(
+            uint32_t address,
+            uint16_t port,
+            const std::vector< uint8_t >& body
+        ) {
+            std::unique_lock< decltype(mutex) > lock(mutex);
+            packetsReceived.emplace_back(body, address, port);
+            condition.notify_all();
+        }
 
-    /**
-     * This is the callback function to be called whenever
-     * a new client connects to the network endpoint.
-     *
-     * @param[in] newConnection
-     *     This represents the connection to the new client.
-     */
-    void NetworkEndpointNewConnection(std::shared_ptr< SystemAbstractions::NetworkConnection > newConnection) {
-        std::unique_lock< decltype(mutex) > lock(mutex);
-        connections.push_back(newConnection);
-        condition.notify_all();
-        (void)newConnection->Process(
-            [this](const std::vector< uint8_t >& message){
-                NetworkConnectionMessageReceived(message);
-            },
-            [this]{
-                NetworkConnectionBroken();
-            }
-        );
-    }
+        /**
+         * This is the callback issued whenever more data
+         * is received from the peer of the connection.
+         *
+         * @param[in] message
+         *     This contains the data received from
+         *     the peer of the connection.
+         */
+        void NetworkConnectionMessageReceived(const std::vector< uint8_t >& message) {
+            std::unique_lock< decltype(mutex) > lock(mutex);
+            streamReceived.insert(
+                streamReceived.end(),
+                message.begin(),
+                message.end()
+            );
+            condition.notify_all();
+        }
 
-    /**
-     * This is the type of callback function to be called whenever
-     * a new datagram-oriented message is received by the network endpoint.
-     *
-     * @param[in] address
-     *     This is the IPv4 address of the client who sent the message.
-     *
-     * @param[in] port
-     *     This is the port number of the client who sent the message.
-     *
-     * @param[in] body
-     *     This is the contents of the datagram sent by the client.
-     */
-    void NetworkEndpointPacketReceived(
-        uint32_t address,
-        uint16_t port,
-        const std::vector< uint8_t >& body
-    ) {
-        std::unique_lock< decltype(mutex) > lock(mutex);
-        packetsReceived.emplace_back(body, address, port);
-        condition.notify_all();
-    }
+        /**
+         * This is the callback issued whenever
+         * the connection is broken.
+         */
+        void NetworkConnectionBroken() {
+            std::unique_lock< decltype(mutex) > lock(mutex);
+            connectionBroken = true;
+            condition.notify_all();
+        }
+    };
 
-    /**
-     * This is the callback issued whenever more data
-     * is received from the peer of the connection.
-     *
-     * @param[in] message
-     *     This contains the data received from
-     *     the peer of the connection.
-     */
-    void NetworkConnectionMessageReceived(const std::vector< uint8_t >& message) {
-        std::unique_lock< decltype(mutex) > lock(mutex);
-        streamReceived.insert(
-            streamReceived.end(),
-            message.begin(),
-            message.end()
-        );
-        condition.notify_all();
-    }
-
-    /**
-     * This is the callback issued whenever
-     * the connection is broken.
-     */
-    void NetworkConnectionBroken() {
-        std::unique_lock< decltype(mutex) > lock(mutex);
-        connectionBroken = true;
-        condition.notify_all();
-    }
-};
+}
 
 /**
  * This is the test fixture for these tests, providing common
