@@ -210,6 +210,7 @@ namespace SystemAbstractions {
             ) == 0
         ) {
             (void)CloseHandle(_impl->pipe);
+            _impl->pipe = INVALID_HANDLE_VALUE;
             (void)CloseHandle(childPipe);
             return false;
         }
