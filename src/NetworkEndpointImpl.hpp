@@ -10,11 +10,10 @@
  * © 2016-2018 by Richard Walters
  */
 
-#include "DiagnosticsSender.hpp"
-#include "NetworkEndpoint.hpp"
-
 #include <memory>
 #include <stdint.h>
+#include <SystemAbstractions/DiagnosticsSender.hpp>
+#include <SystemAbstractions/NetworkEndpoint.hpp>
 #include <vector>
 
 namespace SystemAbstractions {

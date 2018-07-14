@@ -27,9 +27,7 @@
 #undef min
 #undef max
 
-#include <SystemAbstractions/NetworkConnection.hpp>
-#include <SystemAbstractions/NetworkConnectionImpl.hpp>
-#include <SystemAbstractions/NetworkEndpointImpl.hpp>
+#include "../NetworkEndpointImpl.hpp"
 #include "NetworkConnectionWin32.hpp"
 #include "NetworkEndpointWin32.hpp"
 
@@ -38,6 +36,8 @@
 #include <memory>
 #include <stdint.h>
 #include <string.h>
+#include <SystemAbstractions/NetworkConnection.hpp>
+#include <SystemAbstractions/NetworkConnectionImpl.hpp>
 #include <thread>
 
 namespace {

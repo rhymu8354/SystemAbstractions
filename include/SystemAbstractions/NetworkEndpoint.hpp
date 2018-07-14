@@ -13,6 +13,7 @@
 #include "NetworkConnection.hpp"
 
 #include <memory>
+#include <stddef.h>
 #include <stdint.h>
 #include <vector>
 

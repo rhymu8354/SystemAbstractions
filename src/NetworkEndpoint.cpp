@@ -7,12 +7,12 @@
  * © 2016-2018 by Richard Walters
  */
 
-#include <SystemAbstractions/NetworkEndpoint.hpp>
-#include <SystemAbstractions/NetworkEndpointImpl.hpp>
+#include "NetworkEndpointImpl.hpp"
 
 #include <assert.h>
 #include <inttypes.h>
 #include <memory>
+#include <SystemAbstractions/NetworkEndpoint.hpp>
 
 namespace SystemAbstractions {
 
