@@ -59,7 +59,7 @@ namespace SystemAbstractions {
         /**
          * @todo Needs documentation
          */
-        NetworkEndpoint::Mode mode = NetworkEndpoint::Mode::Unset;
+        NetworkEndpoint::Mode mode = NetworkEndpoint::Mode::Datagram;
 
         /**
          * @todo Needs documentation

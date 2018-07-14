@@ -60,7 +60,6 @@ namespace SystemAbstractions {
          * @todo Needs documentation
          */
         enum class Mode {
-            Unset,
             Datagram,
             Connection,
             MulticastSend,
