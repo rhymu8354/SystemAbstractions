@@ -52,8 +52,8 @@ namespace {
 
 namespace SystemAbstractions {
 
-    NetworkEndpointImpl::NetworkEndpointImpl()
-        : platform(new NetworkEndpointPlatform())
+    NetworkEndpoint::Impl::Impl()
+        : platform(new Platform())
         , diagnosticsSender("NetworkEndpoint")
     {
         WSADATA wsaData;
@@ -62,7 +62,7 @@ namespace SystemAbstractions {
         }
     }
 
-    NetworkEndpointImpl::~NetworkEndpointImpl() {
+    NetworkEndpoint::Impl::~Impl() {
         Close(true);
         if (platform->socketEvent != NULL) {
             (void)CloseHandle(platform->socketEvent);
@@ -75,7 +75,7 @@ namespace SystemAbstractions {
         }
     }
 
-    bool NetworkEndpointImpl::Open() {
+    bool NetworkEndpoint::Impl::Open() {
         // Close endpoint if it was previously open.
         Close(true);
 
@@ -245,11 +245,11 @@ namespace SystemAbstractions {
             "endpoint opened for port %" PRIu16,
             port
         );
-        platform->processor = std::move(std::thread(&NetworkEndpointImpl::Processor, this));
+        platform->processor = std::move(std::thread(&NetworkEndpoint::Impl::Processor, this));
         return true;
     }
 
-    void NetworkEndpointImpl::Processor() {
+    void NetworkEndpoint::Impl::Processor() {
         const HANDLE handles[2] = { platform->processorStateChangeEvent, platform->socketEvent };
         std::vector< uint8_t > buffer;
         std::unique_lock< std::recursive_mutex > processingLock(platform->processingMutex);
@@ -315,7 +315,7 @@ namespace SystemAbstractions {
                 }
             }
             if (!platform->outputQueue.empty()) {
-                NetworkEndpointPlatform::Packet& packet = platform->outputQueue.front();
+                NetworkEndpoint::Platform::Packet& packet = platform->outputQueue.front();
                 (void)memset(&socketAddress, 0, sizeof(socketAddress));
                 socketAddress.sin_family = AF_INET;
                 socketAddress.sin_addr.S_un.S_addr = htonl(packet.address);
@@ -357,13 +357,13 @@ namespace SystemAbstractions {
         }
     }
 
-    void NetworkEndpointImpl::SendPacket(
+    void NetworkEndpoint::Impl::SendPacket(
         uint32_t address,
         uint16_t port,
         const std::vector< uint8_t >& body
     ) {
         std::unique_lock< std::recursive_mutex > processingLock(platform->processingMutex);
-        NetworkEndpointPlatform::Packet packet;
+        NetworkEndpoint::Platform::Packet packet;
         packet.address = address;
         packet.port = port;
         packet.body = body;
@@ -371,7 +371,7 @@ namespace SystemAbstractions {
         (void)SetEvent(platform->processorStateChangeEvent);
     }
 
-    void NetworkEndpointImpl::Close(bool stopProcessing) {
+    void NetworkEndpoint::Impl::Close(bool stopProcessing) {
         if (
             stopProcessing
             && platform->processor.joinable()
@@ -392,7 +392,7 @@ namespace SystemAbstractions {
         }
     }
 
-    std::vector< uint32_t > NetworkEndpointImpl::GetInterfaceAddresses() {
+    std::vector< uint32_t > NetworkEndpoint::Impl::GetInterfaceAddresses() {
         // Start up WinSock library.
         bool wsaStarted = false;
         WSADATA wsaData;

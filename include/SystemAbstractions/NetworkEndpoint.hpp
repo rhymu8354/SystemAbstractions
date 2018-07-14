@@ -244,7 +244,25 @@ namespace SystemAbstractions {
 
         // Private properties
     private:
-        std::unique_ptr< struct NetworkEndpointImpl > _impl;
+        /**
+         * This is the type of structure that contains the private
+         * properties of the instance.  It is defined in the implementation
+         * and declared here to ensure that it is scoped inside the class.
+         */
+        struct Impl;
+
+        /**
+         * This is the type of structure that contains the platform-specific
+         * private properties of the instance.  It is defined in the
+         * platform-specific part of the implementation and declared here to
+         * ensure that it is scoped inside the class.
+         */
+        struct Platform;
+
+        /**
+         * This contains the private properties of the instance.
+         */
+        std::unique_ptr< struct Impl > impl_;
     };
 
 }

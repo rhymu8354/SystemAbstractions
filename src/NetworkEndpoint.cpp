@@ -17,13 +17,13 @@
 namespace SystemAbstractions {
 
     NetworkEndpoint::NetworkEndpoint()
-        : _impl(new NetworkEndpointImpl())
+        : impl_(new Impl())
     {
     }
 
 
     NetworkEndpoint::NetworkEndpoint(NetworkEndpoint&& other) noexcept
-        : _impl(std::move(other._impl))
+        : impl_(std::move(other.impl_))
     {
     }
 
@@ -31,16 +31,16 @@ namespace SystemAbstractions {
     }
 
     NetworkEndpoint& NetworkEndpoint::operator=(NetworkEndpoint&& other) noexcept {
-        _impl = std::move(other._impl);
+        impl_ = std::move(other.impl_);
         return *this;
     }
 
     DiagnosticsSender::SubscriptionToken NetworkEndpoint::SubscribeToDiagnostics(DiagnosticsSender::DiagnosticMessageDelegate delegate, size_t minLevel) {
-        return _impl->diagnosticsSender.SubscribeToDiagnostics(delegate, minLevel);
+        return impl_->diagnosticsSender.SubscribeToDiagnostics(delegate, minLevel);
     }
 
     void NetworkEndpoint::UnsubscribeFromDiagnostics(DiagnosticsSender::SubscriptionToken subscriptionToken) {
-        _impl->diagnosticsSender.UnsubscribeFromDiagnostics(subscriptionToken);
+        impl_->diagnosticsSender.UnsubscribeFromDiagnostics(subscriptionToken);
     }
 
     void NetworkEndpoint::SendPacket(
@@ -48,7 +48,7 @@ namespace SystemAbstractions {
         uint16_t port,
         const std::vector< uint8_t >& body
     ) {
-        _impl->SendPacket(address, port, body);
+        impl_->SendPacket(address, port, body);
     }
 
     bool NetworkEndpoint::Open(
@@ -59,25 +59,25 @@ namespace SystemAbstractions {
         uint32_t groupAddress,
         uint16_t port
     ) {
-        _impl->newConnectionDelegate = newConnectionDelegate;
-        _impl->packetReceivedDelegate = packetReceivedDelegate;
-        _impl->mode = mode;
-        _impl->localAddress = localAddress;
-        _impl->groupAddress = groupAddress;
-        _impl->port = port;
-        return _impl->Open();
+        impl_->newConnectionDelegate = newConnectionDelegate;
+        impl_->packetReceivedDelegate = packetReceivedDelegate;
+        impl_->mode = mode;
+        impl_->localAddress = localAddress;
+        impl_->groupAddress = groupAddress;
+        impl_->port = port;
+        return impl_->Open();
     }
 
     uint16_t NetworkEndpoint::GetBoundPort() const {
-        return _impl->port;
+        return impl_->port;
     }
 
     void NetworkEndpoint::Close() {
-        _impl->Close(true);
+        impl_->Close(true);
     }
 
     std::vector< uint32_t > NetworkEndpoint::GetInterfaceAddresses() {
-        return NetworkEndpointImpl::GetInterfaceAddresses();
+        return Impl::GetInterfaceAddresses();
     }
 
 }

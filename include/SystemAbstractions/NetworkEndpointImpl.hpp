@@ -2,9 +2,9 @@
 #define SYSTEM_ABSTRACTIONS_NETWORK_ENDPOINT_IMPL_HPP
 
 /**
- * @file NetworkEndpointImpl.hpp
+ * @file NetworkEndpoint::Impl.hpp
  *
- * This module declares the SystemAbstractions::NetworkEndpointImpl
+ * This module declares the SystemAbstractions::NetworkEndpoint::Impl
  * structure.
  *
  * © 2016-2018 by Richard Walters
@@ -20,26 +20,27 @@
 namespace SystemAbstractions {
 
     /**
-     * @todo Needs documentation
+     * This contains the private properties of a NetworkEndpoint instance.
      */
-    struct NetworkEndpointImpl {
+    struct NetworkEndpoint::Impl {
         /**
-         * @todo Needs documentation
+         * This contains any platform-specific private properties
+         * of the class.
          */
-        std::unique_ptr< struct NetworkEndpointPlatform > platform;
+        std::unique_ptr< Platform > platform;
 
         /**
          * This is the callback function to be called whenever
          * a new client connects to the network endpoint.
          */
-        NetworkEndpoint::NewConnectionDelegate newConnectionDelegate;
+        NewConnectionDelegate newConnectionDelegate;
 
         /**
          * This is the callback function to be called whenever
          * a new datagram-oriented message is received by
          * the network endpoint.
          */
-        NetworkEndpoint::PacketReceivedDelegate packetReceivedDelegate;
+        PacketReceivedDelegate packetReceivedDelegate;
 
         /**
          * @todo Needs documentation
@@ -59,7 +60,7 @@ namespace SystemAbstractions {
         /**
          * @todo Needs documentation
          */
-        NetworkEndpoint::Mode mode = NetworkEndpoint::Mode::Datagram;
+        Mode mode = Mode::Datagram;
 
         /**
          * @todo Needs documentation
@@ -69,12 +70,12 @@ namespace SystemAbstractions {
         /**
          * This is the instance constructor.
          */
-        NetworkEndpointImpl();
+        Impl();
 
         /**
          * This is the instance destructor.
          */
-        ~NetworkEndpointImpl();
+        ~Impl();
 
         /**
          * @todo Needs documentation

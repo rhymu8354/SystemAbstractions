@@ -21,10 +21,9 @@
 namespace SystemAbstractions {
 
     /**
-     * This structure contains the private properties of the
-     * NetworkEndpointPlatform class.
+     * This is the Win32-specific state for the NetworkEndpoint class.
      */
-    struct NetworkEndpointPlatform {
+    struct NetworkEndpoint::Platform {
         /**
          * @todo Needs documentation
          */
