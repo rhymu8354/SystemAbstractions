@@ -7,7 +7,7 @@
  * This module declares the Windows implementation of the
  * SystemAbstractions::NetworkConnectionPlatform structure.
  *
- * Copyright (c) 2016 by Richard Walters
+ * © 2016-2018 by Richard Walters
  */
 
 #include <SystemAbstractions/DiagnosticsSender.hpp>
