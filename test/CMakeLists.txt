@@ -8,6 +8,7 @@ set(This SystemAbstractionsTests)
 set(Sources
     src/DiagnosticsContextTests.cpp
     src/DiagnosticsSenderTests.cpp
+    src/DiagnosticsStreamReporterTests.cpp
     src/DirectoryMonitorTests.cpp
     src/FileTests.cpp
     src/StringExtensionsTests.cpp

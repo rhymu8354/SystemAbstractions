@@ -6,43 +6,35 @@
  *
  * This module declares the SystemAbstractions::DiagnosticsStreamReporter class.
  *
- * Copyright (c) 2014-2016 by Richard Walters
+ * © 2014-2018 by Richard Walters
  */
 
-#include "DiagnosticsReceiver.hpp"
-#include "Time.hpp"
+#include "DiagnosticsSender.hpp"
 
-#include <stddef.h>
 #include <stdio.h>
 
 namespace SystemAbstractions {
 
     /**
-     * This is a diagnostics receiver that prints diagnostic messages
-     * to streams.
+     * This function returns a new diagnostic message delegate which
+     * formats and prints all received diagnostic messages to the given
+     * log files, according to the time received, the level indicated,
+     * and the received message text.
+     *
+     * @param[in] output
+     *     This is the file to which to print all diagnostic messages
+     *     with levels that are under the "Levels::WARNING" level informally
+     *     defined in the DiagnosticsSender class.
+     *
+     * @param[in] error
+     *     This is the file to which to print all diagnostic messages
+     *     with levels that are at or over the "Levels::WARNING" level
+     *     informally defined in the DiagnosticsSender class.
      */
-    class DiagnosticsStreamReporter
-        : public DiagnosticsReceiver
-    {
-        // Public methods
-    public:
-        DiagnosticsStreamReporter(FILE* output, FILE* error);
-
-        // DiagnosticsReceiver
-    public:
-        void ReceiveDiagnosticInformation(
-            std::string senderName,
-            size_t level,
-            std::string message
-        );
-
-        // Private properties
-    private:
-        FILE* _output;
-        FILE* _error;
-        Time _time;
-        double _timeReference;
-    };
+    DiagnosticsSender::DiagnosticMessageDelegate DiagnosticsStreamReporter(
+        FILE* output,
+        FILE* error
+    );
 
 }
 
