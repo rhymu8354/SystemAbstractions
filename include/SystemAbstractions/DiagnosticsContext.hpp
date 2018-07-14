@@ -6,7 +6,7 @@
  *
  * This module declares the SystemAbstractions::DiagnosticsContext class.
  *
- * Copyright (c) 2014-2016 by Richard Walters
+ * © 2014-2018 by Richard Walters
  */
 
 #include "DiagnosticsSender.hpp"
