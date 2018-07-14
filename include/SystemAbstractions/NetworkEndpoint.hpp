@@ -27,25 +27,34 @@ namespace SystemAbstractions {
         // Custom types
     public:
         /**
-         * This is implemented by the owner of the endpoint and
-         * used to deliver callbacks.
+         * This is the type of callback function to be called whenever
+         * a new client connects to the network endpoint.
+         *
+         * @param[in] newConnection
+         *     This represents the connection to the new client.
          */
-        class Owner {
-        public:
-            /**
-             * @todo Needs documentation
-             */
-            virtual void NetworkEndpointNewConnection(std::shared_ptr< NetworkConnection > newConnection) {}
+        typedef std::function< void(std::shared_ptr< NetworkConnection > newConnection) > NewConnectionDelegate;
 
-            /**
-             * @todo Needs documentation
-             */
-            virtual void NetworkEndpointPacketReceived(
+        /**
+         * This is the type of callback function to be called whenever
+         * a new datagram-oriented message is received by the network endpoint.
+         *
+         * @param[in] address
+         *     This is the IPv4 address of the client who sent the message.
+         *
+         * @param[in] port
+         *     This is the port number of the client who sent the message.
+         *
+         * @param[in] body
+         *     This is the contents of the datagram sent by the client.
+         */
+        typedef std::function<
+            void(
                 uint32_t address,
                 uint16_t port,
                 const std::vector< uint8_t >& body
-            ) {}
-        };
+            )
+        > PacketReceivedDelegate;
 
         /**
          * @todo Needs documentation
@@ -94,9 +103,14 @@ namespace SystemAbstractions {
          * This method starts message or connection processing on the endpoint,
          * depending on the given mode.
          *
-         * @param[in] owner
-         *     This is a reference to the owner which should receive
-         *     any callbacks from the object.
+         * @param[in] newConnectionDelegate
+         *     This is the callback function to be called whenever
+         *     a new client connects to the network endpoint.
+         *
+         * @param[in] packetReceivedDelegate
+         *     This is the callback function to be called whenever
+         *     a new datagram-oriented message is received by
+         *     the network endpoint.
          *
          * @param[in] mode
          *     This selects the kind of processing to perform with
@@ -127,7 +141,8 @@ namespace SystemAbstractions {
          *     successful is returned.
          */
         bool Open(
-            Owner* owner,
+            NewConnectionDelegate newConnectionDelegate,
+            PacketReceivedDelegate packetReceivedDelegate,
             Mode mode,
             uint32_t localAddress,
             uint32_t groupAddress,

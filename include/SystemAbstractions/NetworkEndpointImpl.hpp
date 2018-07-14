@@ -29,9 +29,17 @@ namespace SystemAbstractions {
         std::unique_ptr< struct NetworkEndpointPlatform > platform;
 
         /**
-         * @todo Needs documentation
+         * This is the callback function to be called whenever
+         * a new client connects to the network endpoint.
          */
-        NetworkEndpoint::Owner* owner = nullptr;
+        NetworkEndpoint::NewConnectionDelegate newConnectionDelegate;
+
+        /**
+         * This is the callback function to be called whenever
+         * a new datagram-oriented message is received by
+         * the network endpoint.
+         */
+        NetworkEndpoint::PacketReceivedDelegate packetReceivedDelegate;
 
         /**
          * @todo Needs documentation

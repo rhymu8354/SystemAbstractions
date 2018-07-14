@@ -52,13 +52,15 @@ namespace SystemAbstractions {
     }
 
     bool NetworkEndpoint::Open(
-        Owner* owner,
+        NewConnectionDelegate newConnectionDelegate,
+        PacketReceivedDelegate packetReceivedDelegate,
         Mode mode,
         uint32_t localAddress,
         uint32_t groupAddress,
         uint16_t port
     ) {
-        _impl->owner = owner;
+        _impl->newConnectionDelegate = newConnectionDelegate;
+        _impl->packetReceivedDelegate = packetReceivedDelegate;
         _impl->mode = mode;
         _impl->localAddress = localAddress;
         _impl->groupAddress = groupAddress;
