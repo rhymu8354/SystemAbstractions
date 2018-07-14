@@ -11,14 +11,44 @@
 
 namespace SystemAbstractions {
 
-    DiagnosticsContext::DiagnosticsContext(DiagnosticsSender& diagnosticsSender, std::string context)
-        : _diagnosticsSender(diagnosticsSender)
+    /**
+     * This holds the private properties of the DiagnosticsContext class.
+     */
+    struct DiagnosticsContext::Impl {
+        // Properties
+
+        /**
+         * This is the sender upon which this class is pushing a context
+         * as long as the class instance exists.
+         */
+        DiagnosticsSender& diagnosticsSender;
+
+        // Methods
+
+        /**
+         * This is the constructor.
+         *
+         * @param[in] DiagnosticsSender& newDiagnosticsSender
+         *     This is the sender upon which this class is pushing a context
+         *     as long as the class instance exists.
+         */
+        Impl(DiagnosticsSender& newDiagnosticsSender)
+            : diagnosticsSender(newDiagnosticsSender)
+        {
+        }
+    };
+
+    DiagnosticsContext::DiagnosticsContext(
+        DiagnosticsSender& diagnosticsSender,
+        const std::string& context
+    ) noexcept
+        : impl_(new Impl(diagnosticsSender))
     {
-        _diagnosticsSender.PushContext(context);
+        diagnosticsSender.PushContext(context);
     }
 
-    DiagnosticsContext::~DiagnosticsContext() {
-        _diagnosticsSender.PopContext();
+    DiagnosticsContext::~DiagnosticsContext() noexcept {
+        impl_->diagnosticsSender.PopContext();
     }
 
 }
