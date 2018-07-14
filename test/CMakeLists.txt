@@ -16,6 +16,7 @@ set(Sources
     src/NetworkEndpointTests.cpp
     src/StringExtensionsTests.cpp
     src/StringFileTests.cpp
+    src/SubprocessTests.cpp
 )
 
 add_executable(${This} ${Sources})
@@ -31,9 +32,13 @@ target_link_libraries(${This} PUBLIC
 )
 
 add_subdirectory(MockDynamicLibrary)
-
 add_custom_command(TARGET ${This} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:MockDynamicLibrary> $<TARGET_FILE_DIR:${This}>
+)
+
+add_subdirectory(MockSubprocess)
+add_custom_command(TARGET ${This} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:MockSubprocess> $<TARGET_FILE_DIR:${This}>
 )
 
 add_test(
