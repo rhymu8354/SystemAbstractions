@@ -8,7 +8,6 @@ set(This SystemAbstractions)
 set(Headers
     include/SystemAbstractions/Clipboard.hpp
     include/SystemAbstractions/DiagnosticsContext.hpp
-    include/SystemAbstractions/DiagnosticsReceiver.hpp
     include/SystemAbstractions/DiagnosticsSender.hpp
     include/SystemAbstractions/DiagnosticsStreamReporter.hpp
     include/SystemAbstractions/DirectoryMonitor.hpp
