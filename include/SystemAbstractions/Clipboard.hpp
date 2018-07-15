@@ -12,6 +12,43 @@
 #include <memory>
 #include <string>
 
+#ifdef CLIPBOARD_REVEAL_OS_API
+
+#ifdef _WIN32
+#include <Windows.h>
+#elif defined(APPLE)
+#else /* Linux */
+#endif /* various platforms */
+
+/*
+ * This is used to replace actual operating system calls with calls to
+ * test framework functions, if desired.
+ */
+class ClipboardOperatingSystemInterface {
+public:
+#ifdef _WIN32
+
+    virtual BOOL OpenClipboard(HWND hWndNewOwner);
+    virtual BOOL EmptyClipboard();
+    virtual BOOL IsClipboardFormatAvailable(UINT format);
+    virtual HANDLE GetClipboardData(UINT uFormat);
+    virtual void SetClipboardData(
+        UINT uFormat,
+        HANDLE hMem
+    );
+    virtual BOOL CloseClipboard();
+
+#elif defined(APPLE)
+
+#else /* Linux */
+
+#endif /* various platforms */
+};
+
+extern ClipboardOperatingSystemInterface* selectedClipboardOperatingSystemInterface;
+
+#endif /* CLIPBOARD_REVEAL_OS_API */
+
 namespace SystemAbstractions {
 
     /**

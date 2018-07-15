@@ -199,39 +199,39 @@ namespace SystemAbstractions {
     }
 
     void Clipboard::Copy(const std::string& s) {
-        if (!OpenClipboard(impl_->windowHandle_)) {
+        if (!selectedClipboardOperatingSystemInterface->OpenClipboard(impl_->windowHandle_)) {
             return;
         }
-        if (EmptyClipboard()) {
+        if (selectedClipboardOperatingSystemInterface->EmptyClipboard()) {
             HGLOBAL dataHandle = GlobalAlloc(GMEM_MOVEABLE, s.length() + 1);
             if (dataHandle != NULL) {
                 LPSTR data = (LPSTR)GlobalLock(dataHandle);
                 if (data != NULL) {
                     memcpy(data, s.c_str(), s.length() + 1);
                     (void)GlobalUnlock(data);
-                    (void)SetClipboardData(CF_TEXT, data);
+                    selectedClipboardOperatingSystemInterface->SetClipboardData(CF_TEXT, dataHandle);
                 }
             }
         }
-        (void)CloseClipboard();
+        (void)selectedClipboardOperatingSystemInterface->CloseClipboard();
     }
 
     bool Clipboard::HasString() {
-        if (!OpenClipboard(impl_->windowHandle_)) {
+        if (!selectedClipboardOperatingSystemInterface->OpenClipboard(impl_->windowHandle_)) {
             return false;
         }
-        const bool hasString = (IsClipboardFormatAvailable(CF_TEXT) != 0);
-        (void)CloseClipboard();
+        const bool hasString = (selectedClipboardOperatingSystemInterface->IsClipboardFormatAvailable(CF_TEXT) != 0);
+        (void)selectedClipboardOperatingSystemInterface->CloseClipboard();
         return hasString;
     }
 
     std::string Clipboard::PasteString() {
-        if (!OpenClipboard(impl_->windowHandle_)) {
+        if (!selectedClipboardOperatingSystemInterface->OpenClipboard(impl_->windowHandle_)) {
             return "";
         }
         std::string value;
-        if (IsClipboardFormatAvailable(CF_TEXT)) {
-            HGLOBAL dataHandle = GetClipboardData(CF_TEXT);
+        if (selectedClipboardOperatingSystemInterface->IsClipboardFormatAvailable(CF_TEXT)) {
+            HGLOBAL dataHandle = selectedClipboardOperatingSystemInterface->GetClipboardData(CF_TEXT);
             if (dataHandle != NULL) {
                 LPCSTR data = (LPCSTR)GlobalLock(dataHandle);
                 if (data != NULL) {
@@ -240,8 +240,43 @@ namespace SystemAbstractions {
                 }
             }
         }
-        (void)CloseClipboard();
+        (void)selectedClipboardOperatingSystemInterface->CloseClipboard();
         return value;
     }
 
 }
+
+namespace {
+
+    ClipboardOperatingSystemInterface clipboardWindowsInterface;
+
+}
+
+BOOL ClipboardOperatingSystemInterface::OpenClipboard(HWND hWndNewOwner) {
+    return ::OpenClipboard(hWndNewOwner);
+}
+
+BOOL ClipboardOperatingSystemInterface::EmptyClipboard() {
+    return ::EmptyClipboard();
+}
+
+BOOL ClipboardOperatingSystemInterface::IsClipboardFormatAvailable(UINT format) {
+    return ::IsClipboardFormatAvailable(format);
+}
+
+HANDLE ClipboardOperatingSystemInterface::GetClipboardData(UINT uFormat) {
+    return ::GetClipboardData(uFormat);
+}
+
+void ClipboardOperatingSystemInterface::SetClipboardData(
+    UINT uFormat,
+    HANDLE hMem
+) {
+    (void)::SetClipboardData(uFormat, hMem);
+}
+
+BOOL ClipboardOperatingSystemInterface::CloseClipboard() {
+    return ::CloseClipboard();
+}
+
+ClipboardOperatingSystemInterface* selectedClipboardOperatingSystemInterface = &clipboardWindowsInterface;

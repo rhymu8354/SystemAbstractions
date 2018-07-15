@@ -76,6 +76,8 @@ if(UNIX)
     )
 endif(UNIX)
 
+target_compile_definitions(${This} PRIVATE CLIPBOARD_REVEAL_OS_API)
+
 target_include_directories(${This} PUBLIC include)
 
 add_subdirectory(test)
