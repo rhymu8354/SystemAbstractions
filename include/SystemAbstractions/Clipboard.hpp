@@ -6,7 +6,7 @@
  *
  * This module declares the SystemAbstractions::Clipboard class.
  *
- * Copyright (c) 2016 by Richard Walters
+ * © 2016-2018 by Richard Walters
  */
 
 #include <memory>
