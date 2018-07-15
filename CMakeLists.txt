@@ -16,7 +16,6 @@ set(Headers
     include/SystemAbstractions/IFile.hpp
     include/SystemAbstractions/IFileCollection.hpp
     include/SystemAbstractions/NetworkConnection.hpp
-    include/SystemAbstractions/NetworkConnectionImpl.hpp
     include/SystemAbstractions/NetworkEndpoint.hpp
     include/SystemAbstractions/StringExtensions.hpp
     include/SystemAbstractions/StringFile.hpp
@@ -32,6 +31,7 @@ set(Sources
     src/File.cpp
     src/FileImpl.hpp
     src/NetworkConnection.cpp
+    src/NetworkConnectionImpl.hpp
     src/NetworkEndpoint.cpp
     src/NetworkEndpointImpl.hpp
     src/StringExtensions.cpp

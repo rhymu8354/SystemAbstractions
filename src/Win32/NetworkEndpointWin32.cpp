@@ -27,6 +27,7 @@
 #undef min
 #undef max
 
+#include "../NetworkConnectionImpl.hpp"
 #include "../NetworkEndpointImpl.hpp"
 #include "NetworkConnectionWin32.hpp"
 #include "NetworkEndpointWin32.hpp"
@@ -37,7 +38,6 @@
 #include <stdint.h>
 #include <string.h>
 #include <SystemAbstractions/NetworkConnection.hpp>
-#include <SystemAbstractions/NetworkConnectionImpl.hpp>
 #include <thread>
 
 namespace {

@@ -7,10 +7,10 @@
  * © 2016-2018 by Richard Walters
  */
 
-#include <SystemAbstractions/NetworkConnection.hpp>
-#include <SystemAbstractions/NetworkConnectionImpl.hpp>
+#include "NetworkConnectionImpl.hpp"
 
 #include <inttypes.h>
+#include <SystemAbstractions/NetworkConnection.hpp>
 
 namespace SystemAbstractions {
 
