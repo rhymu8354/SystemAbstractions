@@ -7,7 +7,7 @@
  * This module declares functions which obtain information about the
  * target on which the program is running.
  *
- * Copyright (c) 2014-2016 by Richard Walters
+ * © 2016-2018 by Richard Walters
  */
 
 #include <string>
@@ -15,12 +15,23 @@
 namespace SystemAbstractions {
 
     /**
-     * @todo Needs documentation
+     * This function returns an identifier corresponding to the machine
+     * architecture for which the currently running program was built.
+     *
+     * @return
+     *     An identifier corresponding to the machine architecture for
+     *     which the currently running program was built is returned.
      */
     std::string GetTargetArchitecture();
 
     /**
-     * @todo Needs documentation
+     * This function returns an identifier corresponding to the
+     * build variant that was selected to build the currently running
+     * program.
+     *
+     * @return
+     *     An identifier corresponding to the build variant that was
+     *     selected to build the currently running program.
      */
     std::string GetTargetVariant();
 

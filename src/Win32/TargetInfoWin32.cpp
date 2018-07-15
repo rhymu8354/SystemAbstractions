@@ -4,7 +4,7 @@
  * This module contains the Win32 specific part of the 
  * implementation of the TargetInfo functions.
  *
- * Copyright (c) 2016 by Richard Walters
+ * © 2016-2018 by Richard Walters
  */
 
 #include <SystemAbstractions/TargetInfo.hpp>
