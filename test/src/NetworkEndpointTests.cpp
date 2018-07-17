@@ -514,6 +514,11 @@ TEST_F(NetworkEndpointTests, ConnectionSending) {
         ) == 0
     );
     owner.AwaitConnection();
+    struct sockaddr_in socketAddress;
+    int socketAddressLength = sizeof(socketAddress);
+    ASSERT_TRUE(getsockname(receiver, (struct sockaddr*)&socketAddress, &socketAddressLength) == 0);
+    ASSERT_EQ(ntohl(senderAddress.sin_addr.S_un.S_addr), owner.connections[0]->GetBoundAddress());
+    ASSERT_EQ(ntohs(senderAddress.sin_port), owner.connections[0]->GetBoundPort());
 
     // Test sending a message from the unit under test.
     const std::vector< uint8_t > testPacket{ 0x12, 0x34, 0x56, 0x78 };

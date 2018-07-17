@@ -262,10 +262,10 @@ namespace SystemAbstractions {
             }
             wait = true;
             buffer.resize(MAXIMUM_READ_SIZE);
-            struct sockaddr_in socketAddress;
-            int socketAddressSize = sizeof(socketAddress);
+            struct sockaddr_in peerAddress;
+            int peerAddressSize = sizeof(peerAddress);
             if (mode == NetworkEndpoint::Mode::Connection) {
-                const SOCKET client = accept(platform->sock, (struct sockaddr*)&socketAddress, &socketAddressSize);
+                const SOCKET client = accept(platform->sock, (struct sockaddr*)&peerAddress, &peerAddressSize);
                 if (client == INVALID_SOCKET) {
                     const auto wsaLastError = WSAGetLastError();
                     if (wsaLastError != WSAEWOULDBLOCK) {
@@ -276,10 +276,20 @@ namespace SystemAbstractions {
                         );
                     }
                 } else {
+                    uint32_t boundIpv4Address = 0;
+                    uint16_t boundPort = 0;
+                    struct sockaddr_in boundAddress;
+                    int boundAddressSize = sizeof(boundAddress);
+                    if (getsockname(client, (struct sockaddr*)&boundAddress, &boundAddressSize) == 0) {
+                        boundIpv4Address = ntohl(boundAddress.sin_addr.S_un.S_addr);
+                        boundPort = ntohs(boundAddress.sin_port);
+                    }
                     auto connection = NetworkConnection::Platform::MakeConnectionFromExistingSocket(
                         client,
-                        ntohl(socketAddress.sin_addr.S_un.S_addr),
-                        ntohs(socketAddress.sin_port)
+                        boundIpv4Address,
+                        boundPort,
+                        ntohl(peerAddress.sin_addr.S_un.S_addr),
+                        ntohs(peerAddress.sin_port)
                     );
                     newConnectionDelegate(connection);
                 }
@@ -292,8 +302,8 @@ namespace SystemAbstractions {
                     (char*)&buffer[0],
                     (int)buffer.size(),
                     0,
-                    (struct sockaddr*)&socketAddress,
-                    &socketAddressSize
+                    (struct sockaddr*)&peerAddress,
+                    &peerAddressSize
                 );
                 if (amountReceived == SOCKET_ERROR) {
                     const auto errorCode = WSAGetLastError();
@@ -309,25 +319,25 @@ namespace SystemAbstractions {
                 } else if (amountReceived > 0) {
                     buffer.resize(amountReceived);
                     packetReceivedDelegate(
-                        ntohl(socketAddress.sin_addr.S_un.S_addr),
-                        ntohs(socketAddress.sin_port),
+                        ntohl(peerAddress.sin_addr.S_un.S_addr),
+                        ntohs(peerAddress.sin_port),
                         buffer
                     );
                 }
             }
             if (!platform->outputQueue.empty()) {
                 NetworkEndpoint::Platform::Packet& packet = platform->outputQueue.front();
-                (void)memset(&socketAddress, 0, sizeof(socketAddress));
-                socketAddress.sin_family = AF_INET;
-                socketAddress.sin_addr.S_un.S_addr = htonl(packet.address);
-                socketAddress.sin_port = htons(packet.port);
+                (void)memset(&peerAddress, 0, sizeof(peerAddress));
+                peerAddress.sin_family = AF_INET;
+                peerAddress.sin_addr.S_un.S_addr = htonl(packet.address);
+                peerAddress.sin_port = htons(packet.port);
                 const int amountSent = sendto(
                     platform->sock,
                     (const char*)&packet.body[0],
                     (int)packet.body.size(),
                     0,
-                    (const sockaddr*)&socketAddress,
-                    sizeof(socketAddress)
+                    (const sockaddr*)&peerAddress,
+                    sizeof(peerAddress)
                 );
                 if (amountSent == SOCKET_ERROR) {
                     const auto errorCode = WSAGetLastError();

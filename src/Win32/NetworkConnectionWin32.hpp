@@ -84,17 +84,25 @@ namespace SystemAbstractions {
          * @param[in] sock
          *     This is the network socket for the established connection.
          *
-         * @param[in] address
+         * @param[in] boundAddress
          *     This is the IPv4 address of the network interface
          *     bound for the established connection.
          *
-         * @param[in] port
+         * @param[in] boundPort
          *     This is the port number bound for the established connection.
+         *
+         * @param[in] peerAddress
+         *     This is the IPv4 address of the remote peer of the connection.
+         *
+         * @param[in] peerPort
+         *     This is the port number remote peer of the connection.
          */
         static std::shared_ptr< NetworkConnection > MakeConnectionFromExistingSocket(
             SOCKET sock,
-            uint32_t address,
-            uint16_t port
+            uint32_t boundAddress,
+            uint16_t boundPort,
+            uint32_t peerAddress,
+            uint16_t peerPort
         );
     };
 

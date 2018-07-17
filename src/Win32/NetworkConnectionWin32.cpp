@@ -270,13 +270,17 @@ namespace SystemAbstractions {
 
     std::shared_ptr< NetworkConnection > NetworkConnection::Platform::MakeConnectionFromExistingSocket(
         SOCKET sock,
-        uint32_t address,
-        uint16_t port
+        uint32_t boundAddress,
+        uint16_t boundPort,
+        uint32_t peerAddress,
+        uint16_t peerPort
     ) {
         const auto connection = std::make_shared< NetworkConnection >();
         connection->impl_->platform->sock = sock;
-        connection->impl_->peerAddress = address;
-        connection->impl_->peerPort = port;
+        connection->impl_->boundAddress = boundAddress;
+        connection->impl_->boundPort = boundPort;
+        connection->impl_->peerAddress = peerAddress;
+        connection->impl_->peerPort = peerPort;
         return connection;
     }
 
