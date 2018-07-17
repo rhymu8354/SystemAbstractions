@@ -169,6 +169,26 @@ namespace SystemAbstractions {
         bool IsConnected() const;
 
         /**
+         * This method returns the IPv4 address that the connection
+         * object is using in the current connection.
+         *
+         * @return
+         *     This is the IPv4 address that the connection
+         *     object is using in the current connection.
+         */
+        uint32_t GetBoundAddress() const;
+
+        /**
+         * This method returns the port number that the connection
+         * object is using in the current connection.
+         *
+         * @return
+         *     This is the port number that the connection
+         *     object is using in the current connection.
+         */
+        uint16_t GetBoundPort() const;
+
+        /**
          * This method appends the given data to the queue of data
          * currently being sent to the peer.  The actual sending
          * is performed by the processor worker thread.

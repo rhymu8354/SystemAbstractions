@@ -56,6 +56,18 @@ namespace SystemAbstractions {
         uint16_t peerPort = 0;
 
         /**
+         * This is the IPv4 address that the connection
+         * object is using, if there is a connection established.
+         */
+        uint32_t boundAddress = 0;
+
+        /**
+         * This is the port number that the connection
+         * object is using, if there is a connection established.
+         */
+        uint16_t boundPort = 0;
+
+        /**
          * This is a helper object used to publish diagnostic messages.
          */
         DiagnosticsSender diagnosticsSender;

@@ -58,6 +58,14 @@ namespace SystemAbstractions {
         return impl_->IsConnected();
     }
 
+    uint32_t NetworkConnection::GetBoundAddress() const {
+        return impl_->boundAddress;
+    }
+
+    uint16_t NetworkConnection::GetBoundPort() const {
+        return impl_->boundPort;
+    }
+
     void NetworkConnection::SendMessage(const std::vector< uint8_t >& message) {
         impl_->SendMessage(message);
     }

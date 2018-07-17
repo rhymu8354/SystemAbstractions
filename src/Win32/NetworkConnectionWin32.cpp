@@ -112,6 +112,11 @@ namespace SystemAbstractions {
             Close(false);
             return false;
         }
+        int socketAddressLength = sizeof(socketAddress);
+        if (getsockname(platform->sock, (struct sockaddr*)&socketAddress, &socketAddressLength) == 0) {
+            boundAddress = ntohl(socketAddress.sin_addr.S_un.S_addr);
+            boundPort = ntohs(socketAddress.sin_port);
+        }
         return true;
     }
 

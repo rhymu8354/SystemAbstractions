@@ -331,6 +331,8 @@ TEST(NetworkConnectionTests, EstablishConnection) {
     ASSERT_EQ(server.GetBoundPort(), client.GetPeerPort());
     ASSERT_EQ(0x7F000001, client.GetPeerAddress());
     ASSERT_TRUE(client.IsConnected());
+    ASSERT_EQ(client.GetBoundPort(), clients[0]->GetPeerPort());
+    ASSERT_EQ(client.GetBoundAddress(), clients[0]->GetPeerAddress());
 }
 
 TEST(NetworkConnectionTests, SendingMessage) {
