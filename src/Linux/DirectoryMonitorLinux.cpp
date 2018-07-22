@@ -7,7 +7,6 @@
  * Copyright (c) 2016 by Richard Walters
  */
 
-#include "../DirectoryMonitor.hpp"
 #include "../Posix/PipeSignal.hpp"
 
 #include <assert.h>
@@ -17,6 +16,7 @@
 #include <sys/select.h>
 #include <sys/time.h>
 #include <sys/types.h>
+#include <SystemAbstractions/DirectoryMonitor.hpp>
 #include <thread>
 #include <unistd.h>
 #include <vector>
@@ -27,18 +27,20 @@ namespace SystemAbstractions {
      * This structure contains the private methods and properties of
      * the DirectoryMonitor class.
      */
-    struct DirectoryMonitorImpl {
+    struct DirectoryMonitor::Impl {
         // Properties
 
         /**
-         * @todo Needs documentation
+         * This is the thread which is waiting for notifications from
+         * the operating system about changes to the monitored directory.
          */
         std::thread worker;
 
         /**
-         * @todo Needs documentation
+         * This is provided by the owner of the object and
+         * called whenever a change is detected to the monitored directory.
          */
-        DirectoryMonitor::Owner* owner;
+        DirectoryMonitor::Callback callback;
 
         /**
          * @todo Needs documentation
@@ -76,86 +78,71 @@ namespace SystemAbstractions {
                 if (FD_ISSET(inotifyQueue, &readfds)) {
                     while (read(inotifyQueue, &buffer[0], buffer.size()) > 0) {
                     }
-                    owner->DirectoryMonitorChangeDetected();
+                    callback();
                 }
             }
         }
     };
 
-    DirectoryMonitor::DirectoryMonitor()
-        : _impl(new DirectoryMonitorImpl())
-    {
-    }
-
-
-    DirectoryMonitor::DirectoryMonitor(DirectoryMonitor&& other) noexcept
-        : _impl(std::move(other._impl))
-    {
-    }
-
-    DirectoryMonitor::DirectoryMonitor(std::unique_ptr< DirectoryMonitorImpl >&& impl) noexcept
-        : _impl(std::move(impl))
-    {
-    }
-
     DirectoryMonitor::~DirectoryMonitor() {
         Stop();
     }
+    DirectoryMonitor::DirectoryMonitor(DirectoryMonitor&& other) noexcept = default;
+    DirectoryMonitor& DirectoryMonitor::operator=(DirectoryMonitor&& other) noexcept = default;
 
-    DirectoryMonitor& DirectoryMonitor::operator=(DirectoryMonitor&& other) noexcept {
-        assert(this != &other);
-        _impl = std::move(other._impl);
-        return *this;
+    DirectoryMonitor::DirectoryMonitor()
+        : impl_(new Impl())
+    {
     }
 
     bool DirectoryMonitor::Start(
-        Owner* owner,
+        Callback callback,
         const std::string& path
     ) {
         Stop();
-        if (!_impl->stopSignal.Initialize()) {
+        if (!impl_->stopSignal.Initialize()) {
             return false;
         }
-        _impl->stopSignal.Clear();
-        _impl->owner = owner;
-        _impl->inotifyQueue = inotify_init();
-        if (_impl->inotifyQueue < 0) {
+        impl_->stopSignal.Clear();
+        impl_->callback = callback;
+        impl_->inotifyQueue = inotify_init();
+        if (impl_->inotifyQueue < 0) {
             return false;
         }
-        int flags = fcntl(_impl->inotifyQueue, F_GETFL, 0);
+        int flags = fcntl(impl_->inotifyQueue, F_GETFL, 0);
         if (flags < 0) {
-            (void)close(_impl->inotifyQueue);
-            _impl->inotifyQueue = -1;
+            (void)close(impl_->inotifyQueue);
+            impl_->inotifyQueue = -1;
             return false;
         }
         flags |= O_NONBLOCK;
-        if (fcntl(_impl->inotifyQueue, F_SETFL, flags) < 0) {
-            (void)close(_impl->inotifyQueue);
-            _impl->inotifyQueue = -1;
+        if (fcntl(impl_->inotifyQueue, F_SETFL, flags) < 0) {
+            (void)close(impl_->inotifyQueue);
+            impl_->inotifyQueue = -1;
             return false;
         }
-        _impl->inotifyWatch = inotify_add_watch(
-            _impl->inotifyQueue,
+        impl_->inotifyWatch = inotify_add_watch(
+            impl_->inotifyQueue,
             path.c_str(),
             IN_CREATE | IN_DELETE | IN_MODIFY | IN_MOVED_FROM | IN_MOVED_TO
         );
-        if (_impl->inotifyWatch < 0) {
-            (void)close(_impl->inotifyQueue);
-            _impl->inotifyQueue = -1;
+        if (impl_->inotifyWatch < 0) {
+            (void)close(impl_->inotifyQueue);
+            impl_->inotifyQueue = -1;
         }
-        _impl->worker = std::move(std::thread(&DirectoryMonitorImpl::Run, _impl.get()));
+        impl_->worker = std::thread(&Impl::Run, impl_.get());
         return true;
     }
 
     void DirectoryMonitor::Stop() {
-        if (!_impl->worker.joinable()) {
+        if (!impl_->worker.joinable()) {
             return;
         }
-        _impl->stopSignal.Set();
-        _impl->worker.join();
-        _impl->inotifyWatch = -1;
-        (void)close(_impl->inotifyQueue);
-        _impl->inotifyQueue = -1;
+        impl_->stopSignal.Set();
+        impl_->worker.join();
+        impl_->inotifyWatch = -1;
+        (void)close(impl_->inotifyQueue);
+        impl_->inotifyQueue = -1;
     }
 
 }

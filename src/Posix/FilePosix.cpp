@@ -51,14 +51,49 @@ namespace SystemAbstractions {
         }
     }
 
-    File::File(std::string path)
-        : impl_(new Impl())
+    File::Impl::~Impl() = default;
+    File::Impl::Impl(Impl&&) = default;
+    File::Impl& File::Impl::operator =(Impl&&) = default;
+
+    File::Impl::Impl()
+        : platform(new Platform())
     {
-        impl_->path = path;
+    }
+
+    bool File::Impl::CreatePath(std::string path) {
+        const size_t delimiter = path.find_last_of("/\\");
+        if (delimiter == std::string::npos) {
+            return false;
+        }
+        const std::string oneLevelUp(path.substr(0, delimiter));
+        if (mkdir(oneLevelUp.c_str(), S_IRUSR | S_IWUSR | S_IXUSR) == 0) {
+            return true;
+        }
+        if (errno == EEXIST) {
+            return true;
+        }
+        if (errno != ENOENT) {
+            return false;
+        }
+        if (!CreatePath(oneLevelUp)) {
+            return false;
+        }
+        if (mkdir(oneLevelUp.c_str(), S_IRUSR | S_IWUSR | S_IXUSR) != 0) {
+            return false;
+        }
+        return true;
     }
 
     File::~File() {
         Close();
+    }
+    File::File(File&& other) = default;
+    File& File::operator=(File&& other) = default;
+
+    File::File(std::string path)
+        : impl_(new Impl())
+    {
+        impl_->path = path;
     }
 
     bool File::IsExisting() {
@@ -384,30 +419,6 @@ namespace SystemAbstractions {
             }
         }
         return clone;
-    }
-
-    bool File::Impl::CreatePath(std::string path) {
-        const size_t delimiter = path.find_last_of("/\\");
-        if (delimiter == std::string::npos) {
-            return false;
-        }
-        const std::string oneLevelUp(path.substr(0, delimiter));
-        if (mkdir(oneLevelUp.c_str(), S_IRUSR | S_IWUSR | S_IXUSR) == 0) {
-            return true;
-        }
-        if (errno == EEXIST) {
-            return true;
-        }
-        if (errno != ENOENT) {
-            return false;
-        }
-        if (!CreatePath(oneLevelUp)) {
-            return false;
-        }
-        if (mkdir(oneLevelUp.c_str(), S_IRUSR | S_IWUSR | S_IXUSR) != 0) {
-            return false;
-        }
-        return true;
     }
 
 }

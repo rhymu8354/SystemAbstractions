@@ -58,6 +58,14 @@ if(MSVC)
     )
 elseif(APPLE)
 elseif(UNIX)
+    list(APPEND Sources
+        src/Linux/ClipboardLinux.cpp
+        src/Linux/DirectoryMonitorLinux.cpp
+        src/Linux/DynamicLibraryLinux.cpp
+        src/Linux/FileLinux.cpp
+        src/Linux/TargetInfoLinux.cpp
+        src/Linux/TimeLinux.cpp
+    )
 endif()
 
 if(UNIX)

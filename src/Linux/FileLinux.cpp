@@ -7,8 +7,6 @@
  * Copyright (c) 2013-2016 by Richard Walters
  */
 
-#include "../File.hpp"
-#include "../StringExtensions.hpp"
 #include "../Posix/FilePosix.hpp"
 
 #include <dirent.h>
@@ -22,6 +20,8 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <SystemAbstractions/File.hpp>
+#include <SystemAbstractions/StringExtensions.hpp>
 #include <unistd.h>
 #include <vector>
 

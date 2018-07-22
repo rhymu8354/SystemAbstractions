@@ -1,13 +1,13 @@
 /**
  * @file TargetInfoLinux.cpp
  *
- * This module contains the Linux specific part of the 
+ * This module contains the Linux specific part of the
  * implementation of the TargetInfo functions.
  *
  * Copyright (c) 2016 by Richard Walters
  */
 
-#include "../TargetInfo.hpp"
+#include <SystemAbstractions/TargetInfo.hpp>
 
 namespace SystemAbstractions {
 

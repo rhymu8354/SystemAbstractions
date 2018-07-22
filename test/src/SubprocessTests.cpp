@@ -179,7 +179,7 @@ TEST_F(SubprocessTests, StartSubprocess) {
     SystemAbstractions::Subprocess child;
     ASSERT_TRUE(
         child.StartChild(
-            SystemAbstractions::File::GetExeParentDirectory() + "/MockSubprocess",
+            SystemAbstractions::File::GetExeParentDirectory() + "/MockSubprocessProgram",
             {"Hello, World", "exit"},
             [&owner]{ owner.SubprocessChildExited(); },
             [&owner]{ owner.SubprocessChildCrashed(); }
@@ -192,7 +192,7 @@ TEST_F(SubprocessTests, Exit) {
     Owner owner;
     SystemAbstractions::Subprocess child;
     child.StartChild(
-        SystemAbstractions::File::GetExeParentDirectory() + "/MockSubprocess",
+        SystemAbstractions::File::GetExeParentDirectory() + "/MockSubprocessProgram",
         {"Hello, World", "exit"},
         [&owner]{ owner.SubprocessChildExited(); },
         [&owner]{ owner.SubprocessChildCrashed(); }
@@ -205,7 +205,7 @@ TEST_F(SubprocessTests, Crash) {
     Owner owner;
     SystemAbstractions::Subprocess child;
     child.StartChild(
-        SystemAbstractions::File::GetExeParentDirectory() + "/MockSubprocess",
+        SystemAbstractions::File::GetExeParentDirectory() + "/MockSubprocessProgram",
         {"Hello, World", "crash"},
         [&owner]{ owner.SubprocessChildExited(); },
         [&owner]{ owner.SubprocessChildCrashed(); }

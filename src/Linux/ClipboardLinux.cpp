@@ -1,13 +1,13 @@
 /**
  * @file ClipboardLinux.cpp
  *
- * This module contains the Linux specific part of the 
+ * This module contains the Linux specific part of the
  * implementation of the SystemAbstractions::Clipboard class.
  *
  * Copyright (c) 2017 by Richard Walters
  */
 
-#include "../Clipboard.hpp"
+#include <SystemAbstractions/Clipboard.hpp>
 
 namespace SystemAbstractions {
 
@@ -37,3 +37,11 @@ namespace SystemAbstractions {
     }
 
 }
+
+namespace {
+
+    ClipboardOperatingSystemInterface clipboardLinuxInterface;
+
+}
+
+ClipboardOperatingSystemInterface* selectedClipboardOperatingSystemInterface = &clipboardLinuxInterface;

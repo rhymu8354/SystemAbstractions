@@ -1,14 +1,13 @@
 /**
  * @file TimeLinux.cpp
  *
- * This module contains the Linux specific part of the 
+ * This module contains the Linux specific part of the
  * implementation of the SystemAbstractions::Time class.
  *
  * Copyright (c) 2016 by Richard Walters
  */
 
-#include "../Time.hpp"
-
+#include <SystemAbstractions/Time.hpp>
 #include <time.h>
 
 namespace SystemAbstractions {
@@ -16,11 +15,11 @@ namespace SystemAbstractions {
     /**
      * This is the Linux-specific state for the Time class.
      */
-    struct TimeImpl {
+    struct Time::Impl {
     };
 
     Time::Time()
-        : _impl(new TimeImpl())
+        : impl_(new Impl())
     {
     }
 

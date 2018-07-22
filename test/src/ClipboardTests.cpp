@@ -165,6 +165,41 @@ public:
 
 #else /* POSIX */
 
+/**
+ * This is used to redirect the unit under test to talk
+ * to a mock operating system interface to get to the clipboard.
+ */
+struct MockClipboardOperatingSystemInterface
+    : public ClipboardOperatingSystemInterface
+{
+    // Properties
+
+    /**
+     * This holds onto whatever was last copied into the clipboard.
+     */
+    std::string contents;
+
+    /**
+     * This indicates whether or not the clipboard contains text.
+     */
+    bool hasText = false;
+
+    /**
+     * This captures what operating system calls were made, in what order.
+     */
+    std::vector< std::string > callsInOrder;
+
+    // Methods
+
+    /**
+     * This is the constructor of the class.
+     */
+    MockClipboardOperatingSystemInterface() = default;
+
+    // ClipboardOperatingSystemInterface
+public:
+};
+
 #endif /* different platforms */
 
 /**

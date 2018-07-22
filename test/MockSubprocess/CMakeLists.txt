@@ -3,7 +3,7 @@
 # © 2018 by Richard Walters
 
 cmake_minimum_required(VERSION 3.8)
-set(This MockSubprocess)
+set(This MockSubprocessProgram)
 
 set(Sources
     src/main.cpp
