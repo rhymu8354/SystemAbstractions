@@ -22,7 +22,13 @@ namespace SystemAbstractions {
         /**
          * This is the operating-system handle to the underlying file.
          */
-        FILE* handle = NULL;
+        int handle = -1;
+
+        /**
+         * This flag indicates whether or not the file was
+         * opened with write access.
+         */
+        bool writeAccess = false;
     };
 
     /**

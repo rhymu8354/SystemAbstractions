@@ -12,6 +12,7 @@
 
 #include <dirent.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <pwd.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -117,29 +118,41 @@ namespace SystemAbstractions {
 
     bool File::Open() {
         Close();
-        impl_->platform->handle = fopen(impl_->path.c_str(), "rb");
-        return (impl_->platform->handle != NULL);
+        impl_->platform->handle = open(impl_->path.c_str(), O_RDONLY);
+        impl_->platform->writeAccess = false;
+        return (impl_->platform->handle >= 0);
     }
 
     void File::Close() {
-        if (impl_->platform->handle == NULL) {
+        if (impl_->platform->handle < 0) {
             return;
         }
-        (void)fclose(impl_->platform->handle);
-        impl_->platform->handle = NULL;
+        (void)close(impl_->platform->handle);
+        impl_->platform->handle = -1;
     }
 
     bool File::Create() {
         Close();
-        impl_->platform->handle = fopen(impl_->path.c_str(), "w+b");
-        if (impl_->platform->handle == NULL) {
+        impl_->platform->writeAccess = true;
+        impl_->platform->handle = open(
+            impl_->path.c_str(),
+            O_RDWR | O_CREAT,
+            S_IRUSR | S_IWUSR | S_IXUSR
+        );
+        auto isSuccessful = (impl_->platform->handle >= 0);
+        if (!isSuccessful) {
             if (!Impl::CreatePath(impl_->path)) {
                 return false;
             } else {
-                impl_->platform->handle = fopen(impl_->path.c_str(), "w+b");
+                impl_->platform->handle = open(
+                    impl_->path.c_str(),
+                    O_RDWR | O_CREAT,
+                    S_IRUSR | S_IWUSR | S_IXUSR
+                );
+                isSuccessful = (impl_->platform->handle >= 0);
             }
         }
-        return (impl_->platform->handle != NULL);
+        return isSuccessful;
     }
 
     void File::Destroy() {
@@ -156,7 +169,7 @@ namespace SystemAbstractions {
     }
 
     bool File::Copy(const std::string& destination) {
-        if (impl_->platform->handle == NULL) {
+        if (impl_->platform->handle < 0) {
             if (!Open()) {
                 return false;
             }
@@ -340,88 +353,103 @@ namespace SystemAbstractions {
     }
 
     uint64_t File::GetSize() const {
-        if (impl_->platform->handle == NULL) {
+        if (impl_->platform->handle < 0) {
             return 0;
         }
-        const long originalPosition = ftell(impl_->platform->handle);
-        if (originalPosition == EOF) {
+        const auto originalPosition = lseek(impl_->platform->handle, 0, SEEK_CUR);
+        if (originalPosition == (off_t)-1) {
             return 0;
         }
-        if (fseek(impl_->platform->handle, 0, SEEK_END) == EOF) {
-            (void)fseek(impl_->platform->handle, originalPosition, SEEK_SET);
+        if (lseek(impl_->platform->handle, 0, SEEK_END) == (off_t)-1) {
+            (void)lseek(impl_->platform->handle, originalPosition, SEEK_SET);
             return 0;
         }
-        const long endPosition = ftell(impl_->platform->handle);
-        (void)fseek(impl_->platform->handle, originalPosition, SEEK_SET);
-        if (endPosition == EOF) {
+        const auto endPosition = lseek(impl_->platform->handle, 0, SEEK_CUR);
+        (void)lseek(impl_->platform->handle, originalPosition, SEEK_SET);
+        if (endPosition == (off_t)-1) {
             return 0;
         }
         return (uint64_t)endPosition;
     }
 
     bool File::SetSize(uint64_t size) {
-        const auto originalPosition = std::min(size, GetPosition());
-        (void)fflush(impl_->platform->handle);
-        const bool result = (ftruncate(fileno(impl_->platform->handle), (off_t)size) == 0);
-        SetPosition(originalPosition);
+        const bool result = (ftruncate(impl_->platform->handle, (off_t)size) == 0);
         return result;
     }
 
     uint64_t File::GetPosition() const {
-        if (impl_->platform->handle == NULL) {
+        if (impl_->platform->handle < 0) {
             return 0;
         }
-        const long position = ftell(impl_->platform->handle);
-        if (position == EOF) {
+        const auto position = lseek(impl_->platform->handle, 0, SEEK_CUR);
+        if (position == (off_t)-1) {
             return 0;
         }
         return (uint64_t)position;
     }
 
     void File::SetPosition(uint64_t position) {
-        if (impl_->platform->handle == NULL) {
+        if (impl_->platform->handle < 0) {
             return;
         }
-        (void)fseek(impl_->platform->handle, (long)position, SEEK_SET);
+        (void)lseek(impl_->platform->handle, (long)position, SEEK_SET);
     }
 
     size_t File::Peek(void* buffer, size_t numBytes) const {
-        if (impl_->platform->handle == NULL) {
+        if (impl_->platform->handle < 0) {
             return 0;
         }
-        const long originalPosition = ftell(impl_->platform->handle);
-        if (originalPosition == EOF) {
+        const auto originalPosition = lseek(impl_->platform->handle, 0, SEEK_CUR);
+        if (originalPosition == (off_t)-1) {
             return 0;
         }
-        const size_t readResult = fread(buffer, 1, numBytes, impl_->platform->handle);
-        (void)fseek(impl_->platform->handle, originalPosition, SEEK_SET);
-        return readResult;
+        const auto readResult = read(impl_->platform->handle, buffer, numBytes);
+        (void)lseek(impl_->platform->handle, originalPosition, SEEK_SET);
+        return (
+            (readResult < 0)
+            ? (size_t)0
+            : (size_t)readResult
+        );
     }
 
     size_t File::Read(void* buffer, size_t numBytes) {
-        if (impl_->platform->handle == NULL) {
+        if (impl_->platform->handle < 0) {
             return 0;
         }
-        return fread(buffer, 1, numBytes, impl_->platform->handle);
+        const auto readResult = read(impl_->platform->handle, buffer, numBytes);
+        return (
+            (readResult < 0)
+            ? (size_t)0
+            : (size_t)readResult
+        );
     }
 
     size_t File::Write(const void* buffer, size_t numBytes) {
-        if (impl_->platform->handle == NULL) {
+        if (impl_->platform->handle < 0) {
             return 0;
         }
-        return fwrite(buffer, 1, numBytes, impl_->platform->handle);
+        const auto amountWritten = write(impl_->platform->handle, buffer, numBytes);
+        return (
+            (amountWritten < 0)
+            ? (size_t)0
+            : (size_t)amountWritten
+        );
     }
 
     std::shared_ptr< IFile > File::Clone() {
         auto clone = std::make_shared< File >(impl_->path);
-        if (impl_->platform->handle != NULL) {
-            int cloneHandle = dup(fileno(impl_->platform->handle));
-            if (cloneHandle < 0) {
-                return nullptr;
+        clone->impl_->platform->writeAccess = impl_->platform->writeAccess;
+        if (impl_->platform->handle >= 0) {
+            if (clone->impl_->platform->writeAccess) {
+                clone->impl_->platform->handle = open(
+                    impl_->path.c_str(),
+                    O_RDWR | O_CREAT,
+                    S_IRUSR | S_IWUSR | S_IXUSR
+                );
+            } else {
+                clone->impl_->platform->handle = open(impl_->path.c_str(), O_RDONLY);
             }
-            clone->impl_->platform->handle = fdopen(cloneHandle, "r+b");
-            if (clone->impl_->platform->handle == NULL) {
-                (void)close(cloneHandle);
+            if (clone->impl_->platform->handle < 0) {
                 return nullptr;
             }
         }
