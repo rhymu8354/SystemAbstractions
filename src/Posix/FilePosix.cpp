@@ -85,6 +85,9 @@ namespace SystemAbstractions {
     }
 
     File::~File() {
+        if (impl_ == nullptr) {
+            return;
+        }
         Close();
     }
     File::File(File&& other) = default;
