@@ -136,6 +136,9 @@ namespace SystemAbstractions {
     }
 
     void DirectoryMonitor::Stop() {
+        if (impl_ == nullptr) {
+            return;
+        }
         if (!impl_->worker.joinable()) {
             return;
         }
