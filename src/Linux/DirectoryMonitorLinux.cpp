@@ -129,6 +129,7 @@ namespace SystemAbstractions {
         if (impl_->inotifyWatch < 0) {
             (void)close(impl_->inotifyQueue);
             impl_->inotifyQueue = -1;
+            return false;
         }
         impl_->worker = std::thread(&Impl::Run, impl_.get());
         return true;
