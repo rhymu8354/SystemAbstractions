@@ -60,6 +60,23 @@ elseif(APPLE)
 elseif(UNIX)
 endif()
 
+if(UNIX)
+    list(APPEND Sources
+        src/Posix/DynamicLibraryImpl.hpp
+        src/Posix/DynamicLibraryPosix.cpp
+        src/Posix/FilePosix.cpp
+        src/Posix/FilePosix.hpp
+        src/Posix/NetworkConnectionPosix.cpp
+        src/Posix/NetworkConnectionPosix.hpp
+        src/Posix/NetworkEndpointPosix.cpp
+        src/Posix/NetworkEndpointPosix.hpp
+        src/Posix/PipeSignal.cpp
+        src/Posix/PipeSignal.hpp
+        src/Posix/SubprocessPosix.cpp
+        src/Posix/TimePosix.cpp
+    )
+endif(UNIX)
+
 add_library(${This} STATIC ${Sources} ${Headers})
 set_target_properties(${This} PROPERTIES
     FOLDER Libraries

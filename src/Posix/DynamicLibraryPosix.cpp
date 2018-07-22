@@ -7,14 +7,14 @@
  * Copyright (c) 2016 by Richard Walters
  */
 
-#include "../DynamicLibrary.hpp"
-#include "../StringExtensions.hpp"
 #include "DynamicLibraryImpl.hpp"
 
 #include <assert.h>
 #include <dlfcn.h>
 #include <string>
 #include <sys/param.h>
+#include <SystemAbstractions/DynamicLibrary.hpp>
+#include <SystemAbstractions/StringExtensions.hpp>
 #include <unistd.h>
 #include <vector>
 

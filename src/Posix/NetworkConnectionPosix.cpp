@@ -2,7 +2,7 @@
  * @file NetworkConnectionPosix.cpp
  *
  * This module contains the POSIX implementation of the
- * SystemAbstractions::NetworkConnectionImpl class.
+ * SystemAbstractions::NetworkConnection::Impl class.
  *
  * Copyright (c) 2016 by Richard Walters
  */
@@ -36,17 +36,17 @@ namespace {
 
 namespace SystemAbstractions {
 
-    NetworkConnectionImpl::NetworkConnectionImpl()
-        : platform(new NetworkConnectionPlatform())
+    NetworkConnection::Impl::Impl()
+        : platform(new Platform())
         , diagnosticsSender("NetworkConnection")
     {
     }
 
-    NetworkConnectionImpl::~NetworkConnectionImpl() {
+    NetworkConnection::Impl::~Impl() {
         Close(true);
     }
 
-    bool NetworkConnectionImpl::Connect() {
+    bool NetworkConnection::Impl::Connect() {
         Close(true);
         struct sockaddr_in socketAddress;
         (void)memset(&socketAddress, 0, sizeof(socketAddress));
@@ -54,7 +54,7 @@ namespace SystemAbstractions {
         platform->sock = socket(socketAddress.sin_family, SOCK_STREAM, 0);
         if (platform->sock < 0) {
             diagnosticsSender.SendDiagnosticInformationFormatted(
-                SystemAbstractions::DiagnosticsReceiver::Levels::ERROR,
+                SystemAbstractions::DiagnosticsSender::Levels::ERROR,
                 "error creating socket: %s",
                 strerror(errno)
             );
@@ -62,7 +62,7 @@ namespace SystemAbstractions {
         }
         if (bind(platform->sock, (struct sockaddr*)&socketAddress, (socklen_t)sizeof(socketAddress)) != 0) {
             diagnosticsSender.SendDiagnosticInformationFormatted(
-                SystemAbstractions::DiagnosticsReceiver::Levels::ERROR,
+                SystemAbstractions::DiagnosticsSender::Levels::ERROR,
                 "error in bind: %s",
                 strerror(errno)
             );
@@ -75,7 +75,7 @@ namespace SystemAbstractions {
         socketAddress.sin_port = htons(peerPort);
         if (connect(platform->sock, (const sockaddr*)&socketAddress, (socklen_t)sizeof(socketAddress)) != 0) {
             diagnosticsSender.SendDiagnosticInformationFormatted(
-                SystemAbstractions::DiagnosticsReceiver::Levels::ERROR,
+                SystemAbstractions::DiagnosticsSender::Levels::ERROR,
                 "error in connect: %s",
                 strerror(errno)
             );
@@ -85,10 +85,10 @@ namespace SystemAbstractions {
         return true;
     }
 
-    bool NetworkConnectionImpl::Process() {
+    bool NetworkConnection::Impl::Process() {
         if (platform->sock < 0) {
             diagnosticsSender.SendDiagnosticInformationString(
-                SystemAbstractions::DiagnosticsReceiver::Levels::ERROR,
+                SystemAbstractions::DiagnosticsSender::Levels::ERROR,
                 "not connected"
             );
             return false;
@@ -97,7 +97,7 @@ namespace SystemAbstractions {
         int opt = 1;
         if (setsockopt(platform->sock, SOL_SOCKET, SO_NOSIGPIPE, &opt, sizeof(opt)) < 0) {
             diagnosticsSender.SendDiagnosticInformationFormatted(
-                SystemAbstractions::DiagnosticsReceiver::Levels::WARNING,
+                SystemAbstractions::DiagnosticsSender::Levels::WARNING,
                 "error in setsockopt(SO_NOSIGPIPE): %s",
                 strerror(errno)
             );
@@ -105,7 +105,7 @@ namespace SystemAbstractions {
 #endif /* SO_NOSIGPIPE */
         if (platform->processor.joinable()) {
             diagnosticsSender.SendDiagnosticInformationString(
-                SystemAbstractions::DiagnosticsReceiver::Levels::WARNING,
+                SystemAbstractions::DiagnosticsSender::Levels::WARNING,
                 "already processing"
             );
             return true;
@@ -113,18 +113,18 @@ namespace SystemAbstractions {
         platform->processorStop = false;
         if (!platform->processorStateChangeSignal.Initialize()) {
             diagnosticsSender.SendDiagnosticInformationFormatted(
-                SystemAbstractions::DiagnosticsReceiver::Levels::ERROR,
+                SystemAbstractions::DiagnosticsSender::Levels::ERROR,
                 "error creating processor state change event: %s",
                 platform->processorStateChangeSignal.GetLastError().c_str()
             );
             return false;
         }
         platform->processorStateChangeSignal.Clear();
-        platform->processor = std::thread(&NetworkConnectionImpl::Processor, this);
+        platform->processor = std::thread(&NetworkConnection::Impl::Processor, this);
         return true;
     }
 
-    void NetworkConnectionImpl::Processor() {
+    void NetworkConnection::Impl::Processor() {
         const int processorStateChangeSelectHandle = platform->processorStateChangeSignal.GetSelectHandle();
         const int nfds = std::max(processorStateChangeSelectHandle, platform->sock) + 1;
         fd_set readfds, writefds;
@@ -153,15 +153,15 @@ namespace SystemAbstractions {
             if (amountReceived < 0) {
                 if (errno != EWOULDBLOCK) {
                     Close(false);
-                    owner->NetworkConnectionBroken();
+                    brokenDelegate();
                     break;
                 }
             } else if (amountReceived > 0) {
                 buffer.resize((size_t)amountReceived);
-                owner->NetworkConnectionMessageReceived(buffer);
+                messageReceivedDelegate(buffer);
             } else {
                 Close(false);
-                owner->NetworkConnectionBroken();
+                brokenDelegate();
                 break;
             }
             const auto outputQueueLength = platform->outputQueue.size();
@@ -175,7 +175,7 @@ namespace SystemAbstractions {
                 if (amountSent < 0) {
                     if (errno != EWOULDBLOCK) {
                         Close(false);
-                        owner->NetworkConnectionBroken();
+                        brokenDelegate();
                         break;
                     }
                 } else if (amountSent > 0) {
@@ -188,24 +188,24 @@ namespace SystemAbstractions {
                     }
                 } else {
                     Close(false);
-                    owner->NetworkConnectionBroken();
+                    brokenDelegate();
                     break;
                 }
             }
         }
     }
 
-    bool NetworkConnectionImpl::IsConnected() const {
+    bool NetworkConnection::Impl::IsConnected() const {
         return (platform->sock >= 0);
     }
 
-    void NetworkConnectionImpl::SendMessage(const std::vector< uint8_t >& message) {
+    void NetworkConnection::Impl::SendMessage(const std::vector< uint8_t >& message) {
         std::unique_lock< std::recursive_mutex > processingLock(platform->processingMutex);
         platform->outputQueue.insert(platform->outputQueue.end(), message.begin(), message.end());
         platform->processorStateChangeSignal.Set();
     }
 
-    void NetworkConnectionImpl::Close(bool stopProcessing) {
+    void NetworkConnection::Impl::Close(bool stopProcessing) {
         if (
             stopProcessing
             && platform->processor.joinable()
@@ -229,6 +229,22 @@ namespace SystemAbstractions {
             (void)close(platform->sock);
             platform->sock = -1;
         }
+    }
+
+    std::shared_ptr< NetworkConnection > NetworkConnection::Platform::MakeConnectionFromExistingSocket(
+        int sock,
+        uint32_t boundAddress,
+        uint16_t boundPort,
+        uint32_t peerAddress,
+        uint16_t peerPort
+    ) {
+        const auto connection = std::make_shared< NetworkConnection >();
+        connection->impl_->platform->sock = sock;
+        connection->impl_->boundAddress = boundAddress;
+        connection->impl_->boundPort = boundPort;
+        connection->impl_->peerAddress = peerAddress;
+        connection->impl_->peerPort = peerPort;
+        return connection;
     }
 
 }

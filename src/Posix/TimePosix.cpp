@@ -1,13 +1,13 @@
 /**
  * @file TimePosix.cpp
  *
- * This module contains the POSIX specific part of the 
+ * This module contains the POSIX specific part of the
  * implementation of the SystemAbstractions::Time class.
  *
  * Copyright (c) 2016 by Richard Walters
  */
 
-#include "../Time.hpp"
+#include <SystemAbstractions/Time.hpp>
 
 namespace SystemAbstractions {
 

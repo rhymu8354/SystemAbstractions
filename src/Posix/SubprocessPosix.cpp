@@ -7,9 +7,6 @@
  * Copyright (c) 2016 by Richard Walters
  */
 
-#include "../Subprocess.hpp"
-#include "../StringExtensions.hpp"
-
 #include <assert.h>
 #include <errno.h>
 #include <inttypes.h>
@@ -20,6 +17,8 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <SystemAbstractions/Subprocess.hpp>
+#include <SystemAbstractions/StringExtensions.hpp>
 #include <thread>
 #include <unistd.h>
 #include <vector>
@@ -42,18 +41,30 @@ namespace SystemAbstractions {
      * This structure contains the private methods and properties of
      * the DirectoryMonitor class.
      */
-    struct SubprocessImpl {
+    struct Subprocess::Impl {
         // Properties
 
         /**
-         * @todo Needs documentation
+         * This is a thread that is run when the Subprocess class
+         * is used in the parent role.  The thread basically waits
+         * for one of two things to happen:
+         * - The child process writes to the pipe, signaling that it's
+         *   about to exit normally.
+         * - The pipe breaks, indicating that the child process crashed.
          */
         std::thread worker;
 
         /**
-         * @todo Needs documentation
+         * This is a callback to call if the child process
+         * exits normally (without crashing).
          */
-        Subprocess::Owner* owner;
+        std::function< void() > childExited;
+
+        /**
+         * This is a callback to call if the child process
+         * exits abnormally (crashes).
+         */
+        std::function< void() > childCrashed;
 
         /**
          * @todo Needs documentation
@@ -87,7 +98,7 @@ namespace SystemAbstractions {
                 uint8_t token;
                 auto amtRead = read(pipe, &token, 1);
                 if (amtRead > 0) {
-                    owner->SubprocessChildExited();
+                    childExited();
                     break;
                 } else if (
                     (amtRead == 0)
@@ -96,7 +107,7 @@ namespace SystemAbstractions {
                         && (errno != EINTR)
                     )
                 ) {
-                    owner->SubprocessChildCrashed();
+                    childCrashed();
                     break;
                 }
             }
@@ -117,45 +128,32 @@ namespace SystemAbstractions {
         }
     };
 
-    Subprocess::Subprocess()
-        : _impl(new SubprocessImpl())
-    {
-    }
-
-
-    Subprocess::Subprocess(Subprocess&& other) noexcept
-        : _impl(std::move(other._impl))
-    {
-    }
-
-    Subprocess::Subprocess(std::unique_ptr< SubprocessImpl >&& impl) noexcept
-        : _impl(std::move(impl))
-    {
-    }
-
     Subprocess::~Subprocess() {
-        _impl->JoinChild();
-        if (_impl->pipe >= 0) {
+        impl_->JoinChild();
+        if (impl_->pipe >= 0) {
             uint8_t token = 42;
-            (void)write(_impl->pipe, &token, 1);
+            (void)write(impl_->pipe, &token, 1);
             std::this_thread::sleep_for(std::chrono::seconds(1));
-            (void)close(_impl->pipe);
+            (void)close(impl_->pipe);
         }
     }
+    Subprocess::Subprocess(Subprocess&&) = default;
+    Subprocess& Subprocess::operator=(Subprocess&&) = default;
 
-    Subprocess& Subprocess::operator=(Subprocess&& other) noexcept {
-        assert(this != &other);
-        _impl = std::move(other._impl);
-        return *this;
+    Subprocess::Subprocess()
+        : impl_(new Impl())
+    {
     }
 
     bool Subprocess::StartChild(
-        const std::string& program,
+        std::string program,
         const std::vector< std::string >& args,
-        Owner* owner
+        std::function< void() > childExited,
+        std::function< void() > childCrashed
     ) {
-        _impl->JoinChild();
-        _impl->owner = owner;
+        impl_->JoinChild();
+        impl_->childExited = childExited;
+        impl_->childCrashed = childCrashed;
         int pipeEnds[2];
         if (pipe(pipeEnds) < 0) {
             return false;
@@ -170,8 +168,8 @@ namespace SystemAbstractions {
         }
 
         // Launch program.
-        _impl->child = fork();
-        if (_impl->child == 0) {
+        impl_->child = fork();
+        if (impl_->child == 0) {
             (void)close(pipeEnds[0]);
             std::vector< char* > argv(childArgs.size() + 1);
             for (size_t i = 0; i < childArgs.size(); ++i) {
@@ -180,22 +178,18 @@ namespace SystemAbstractions {
             argv[childArgs.size() + 1] = NULL;
             (void)execv(program.c_str(), &argv[0]);
             (void)exit(-1);
-        } else if (_impl->child < 0) {
+        } else if (impl_->child < 0) {
             (void)close(pipeEnds[0]);
             (void)close(pipeEnds[1]);
             return false;
         }
-        _impl->pipe = pipeEnds[0];
+        impl_->pipe = pipeEnds[0];
         (void)close(pipeEnds[1]);
-        _impl->worker = std::thread(&SubprocessImpl::MonitorChild, _impl.get());
+        impl_->worker = std::thread(&Impl::MonitorChild, impl_.get());
         return true;
     }
 
-    bool Subprocess::ContactParent(
-        std::vector< std::string >& args,
-        Owner* owner
-    ) {
-        _impl->owner = owner;
+    bool Subprocess::ContactParent(std::vector< std::string >& args) {
         if (
             (args.size() >= 2)
             && (args[0] == "child")
@@ -204,7 +198,7 @@ namespace SystemAbstractions {
             if (sscanf(args[1].c_str(), "%d", &pipeNumber) != 1) {
                 return false;
             }
-            _impl->pipe = pipeNumber;
+            impl_->pipe = pipeNumber;
             args.erase(args.begin(), args.begin() + 2);
             return true;
         }

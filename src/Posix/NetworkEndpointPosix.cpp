@@ -2,12 +2,11 @@
  * @file NetworkEndpointPosix.cpp
  *
  * This module contains the POSIX implementation of the
- * SystemAbstractions::NetworkEndpointPlatform class.
+ * SystemAbstractions::NetworkEndpoint::Platform class.
  *
  * Copyright (c) 2016 by Richard Walters
  */
 
-#include "../NetworkConnection.hpp"
 #include "../NetworkConnectionImpl.hpp"
 #include "../NetworkEndpointImpl.hpp"
 #include "NetworkConnectionPosix.hpp"
@@ -27,7 +26,7 @@
 #include <sys/socket.h>
 #include <sys/time.h>
 #include <sys/types.h>
-#include <string.h>
+#include <SystemAbstractions/NetworkConnection.hpp>
 #include <unistd.h>
 
 #ifndef MSG_NOSIGNAL
@@ -42,18 +41,18 @@ namespace {
 
 namespace SystemAbstractions {
 
-    NetworkEndpointImpl::NetworkEndpointImpl()
-        : platform(new NetworkEndpointPlatform())
+    NetworkEndpoint::Impl::Impl()
+        : platform(new Platform())
         , diagnosticsSender("NetworkEndpoint")
     {
     }
 
 
-    NetworkEndpointImpl::~NetworkEndpointImpl() {
+    NetworkEndpoint::Impl::~Impl() {
         Close(true);
     }
 
-    bool NetworkEndpointImpl::Open() {
+    bool NetworkEndpoint::Impl::Open() {
         // Close endpoint if it was previously open.
         Close(true);
 
@@ -65,7 +64,7 @@ namespace SystemAbstractions {
         );
         if (platform->sock < 0) {
             diagnosticsSender.SendDiagnosticInformationFormatted(
-                SystemAbstractions::DiagnosticsReceiver::Levels::ERROR,
+                SystemAbstractions::DiagnosticsSender::Levels::ERROR,
                 "error creating socket: %s",
                 strerror(errno)
             );
@@ -81,7 +80,7 @@ namespace SystemAbstractions {
             multicastInterface.s_addr = htonl(localAddress);
             if (setsockopt(platform->sock, IPPROTO_IP, IP_MULTICAST_IF, (const char*)&multicastInterface, sizeof(multicastInterface)) < 0) {
                 diagnosticsSender.SendDiagnosticInformationFormatted(
-                    SystemAbstractions::DiagnosticsReceiver::Levels::ERROR,
+                    SystemAbstractions::DiagnosticsSender::Levels::ERROR,
                     "error setting socket option IP_MULTICAST_IF: %s",
                     strerror(errno)
                 );
@@ -89,28 +88,28 @@ namespace SystemAbstractions {
                 return false;
             }
         } else {
-            struct sockaddr_in socketAddress;
-            (void)memset(&socketAddress, 0, sizeof(socketAddress));
-            socketAddress.sin_family = AF_INET;
+            struct sockaddr_in peerAddress;
+            (void)memset(&peerAddress, 0, sizeof(peerAddress));
+            peerAddress.sin_family = AF_INET;
             if (mode == NetworkEndpoint::Mode::MulticastReceive) {
                 int option = 1;
                 if (setsockopt(platform->sock, SOL_SOCKET, SO_REUSEADDR, (const char*)&option, sizeof(option)) < 0) {
                     diagnosticsSender.SendDiagnosticInformationFormatted(
-                        SystemAbstractions::DiagnosticsReceiver::Levels::ERROR,
+                        SystemAbstractions::DiagnosticsSender::Levels::ERROR,
                         "error setting socket option SO_REUSEADDR: %s",
                         strerror(errno)
                     );
                     Close(false);
                     return false;
                 }
-                socketAddress.sin_addr.s_addr = INADDR_ANY;
+                peerAddress.sin_addr.s_addr = INADDR_ANY;
             } else {
-                socketAddress.sin_addr.s_addr = htonl(localAddress);
+                peerAddress.sin_addr.s_addr = htonl(localAddress);
             }
-            socketAddress.sin_port = htons(port);
-            if (bind(platform->sock, (struct sockaddr*)&socketAddress, sizeof(socketAddress)) != 0) {
+            peerAddress.sin_port = htons(port);
+            if (bind(platform->sock, (struct sockaddr*)&peerAddress, sizeof(peerAddress)) != 0) {
                 diagnosticsSender.SendDiagnosticInformationFormatted(
-                    SystemAbstractions::DiagnosticsReceiver::Levels::ERROR,
+                    SystemAbstractions::DiagnosticsSender::Levels::ERROR,
                     "error in bind: %s",
                     strerror(errno)
                 );
@@ -124,7 +123,7 @@ namespace SystemAbstractions {
                     multicastGroup.imr_interface.s_addr = htonl(localAddress);
                     if (setsockopt(platform->sock, IPPROTO_IP, IP_ADD_MEMBERSHIP, (const char*)&multicastGroup, sizeof(multicastGroup)) < 0) {
                         diagnosticsSender.SendDiagnosticInformationFormatted(
-                            SystemAbstractions::DiagnosticsReceiver::Levels::ERROR,
+                            SystemAbstractions::DiagnosticsSender::Levels::ERROR,
                             "error setting socket option IP_ADD_MEMBERSHIP: %s",
                             strerror(errno)
                         );
@@ -133,12 +132,12 @@ namespace SystemAbstractions {
                     }
                 }
             } else {
-                socklen_t socketAddressLength = sizeof(socketAddress);
-                if (getsockname(platform->sock, (struct sockaddr*)&socketAddress, &socketAddressLength) == 0) {
-                    port = ntohs(socketAddress.sin_port);
+                socklen_t peerAddressLength = sizeof(peerAddress);
+                if (getsockname(platform->sock, (struct sockaddr*)&peerAddress, &peerAddressLength) == 0) {
+                    port = ntohs(peerAddress.sin_port);
                 } else {
                     diagnosticsSender.SendDiagnosticInformationFormatted(
-                        SystemAbstractions::DiagnosticsReceiver::Levels::ERROR,
+                        SystemAbstractions::DiagnosticsSender::Levels::ERROR,
                         "error in getsockname: %s",
                         strerror(errno)
                     );
@@ -151,7 +150,7 @@ namespace SystemAbstractions {
         // Prepare events used in processing.
         if (!platform->processorStateChangeSignal.Initialize()) {
             diagnosticsSender.SendDiagnosticInformationFormatted(
-                SystemAbstractions::DiagnosticsReceiver::Levels::ERROR,
+                SystemAbstractions::DiagnosticsSender::Levels::ERROR,
                 "error creating processor state change event (%s)",
                 platform->processorStateChangeSignal.GetLastError().c_str()
             );
@@ -163,7 +162,7 @@ namespace SystemAbstractions {
         if (mode == NetworkEndpoint::Mode::Connection) {
             if (listen(platform->sock, SOMAXCONN) != 0) {
                 diagnosticsSender.SendDiagnosticInformationFormatted(
-                    SystemAbstractions::DiagnosticsReceiver::Levels::ERROR,
+                    SystemAbstractions::DiagnosticsSender::Levels::ERROR,
                     "error in listen: %s",
                     strerror(errno)
                 );
@@ -176,11 +175,11 @@ namespace SystemAbstractions {
             port
         );
         platform->processorStop = false;
-        platform->processor = std::thread(&NetworkEndpointImpl::Processor, this);
+        platform->processor = std::thread(&NetworkEndpoint::Impl::Processor, this);
         return true;
     }
 
-    void NetworkEndpointImpl::Processor() {
+    void NetworkEndpoint::Impl::Processor() {
         const int processorStateChangeSelectHandle = platform->processorStateChangeSignal.GetSelectHandle();
         const int nfds = std::max(processorStateChangeSelectHandle, platform->sock) + 1;
         fd_set readfds, writefds;
@@ -205,25 +204,36 @@ namespace SystemAbstractions {
             }
             wait = true;
             buffer.resize(MAXIMUM_READ_SIZE);
-            struct sockaddr_in socketAddress;
-            socklen_t socketAddressSize = (socklen_t)sizeof(socketAddress);
+            struct sockaddr_in peerAddress;
+            socklen_t peerAddressSize = (socklen_t)sizeof(peerAddress);
             if (FD_ISSET(platform->sock, &readfds)) {
                 if (mode == NetworkEndpoint::Mode::Connection) {
-                    const int client = accept(platform->sock, (struct sockaddr*)&socketAddress, &socketAddressSize);
+                    const int client = accept(platform->sock, (struct sockaddr*)&peerAddress, &peerAddressSize);
                     if (client < 0) {
                         if (errno != EWOULDBLOCK) {
                             diagnosticsSender.SendDiagnosticInformationFormatted(
-                                SystemAbstractions::DiagnosticsReceiver::Levels::WARNING,
+                                SystemAbstractions::DiagnosticsSender::Levels::WARNING,
                                 "error in accept: %s",
                                 strerror(errno)
                             );
                         }
                     } else {
-                        auto connectionImpl = std::make_shared< NetworkConnectionImpl >();
-                        connectionImpl->platform->sock = client;
-                        connectionImpl->peerAddress = ntohl(socketAddress.sin_addr.s_addr);
-                        connectionImpl->peerPort = ntohs(socketAddress.sin_port);
-                        owner->NetworkEndpointNewConnection(std::make_shared< NetworkConnection >(connectionImpl));
+                        uint32_t boundIpv4Address = 0;
+                        uint16_t boundPort = 0;
+                        struct sockaddr_in boundAddress;
+                        socklen_t boundAddressSize = sizeof(boundAddress);
+                        if (getsockname(client, (struct sockaddr*)&boundAddress, &boundAddressSize) == 0) {
+                            boundIpv4Address = ntohl(boundAddress.sin_addr.s_addr);
+                            boundPort = ntohs(boundAddress.sin_port);
+                        }
+                        auto connection = NetworkConnection::Platform::MakeConnectionFromExistingSocket(
+                            client,
+                            boundIpv4Address,
+                            boundPort,
+                            ntohl(peerAddress.sin_addr.s_addr),
+                            ntohs(peerAddress.sin_port)
+                        );
+                        newConnectionDelegate(connection);
                     }
                 } else if (
                     (mode == NetworkEndpoint::Mode::Datagram)
@@ -234,13 +244,13 @@ namespace SystemAbstractions {
                         &buffer[0],
                         buffer.size(),
                         MSG_NOSIGNAL | MSG_DONTWAIT,
-                        (struct sockaddr*)&socketAddress,
-                        &socketAddressSize
+                        (struct sockaddr*)&peerAddress,
+                        &peerAddressSize
                     );
                     if (amountReceived < 0) {
                         if (errno != EWOULDBLOCK) {
                             diagnosticsSender.SendDiagnosticInformationFormatted(
-                                SystemAbstractions::DiagnosticsReceiver::Levels::ERROR,
+                                SystemAbstractions::DiagnosticsSender::Levels::ERROR,
                                 "error in recvfrom: %s",
                                 strerror(errno)
                             );
@@ -249,32 +259,32 @@ namespace SystemAbstractions {
                         }
                     } else if (amountReceived > 0) {
                         buffer.resize((size_t)amountReceived);
-                        owner->NetworkEndpointPacketReceived(
-                            ntohl(socketAddress.sin_addr.s_addr),
-                            ntohs(socketAddress.sin_port),
+                        packetReceivedDelegate(
+                            ntohl(peerAddress.sin_addr.s_addr),
+                            ntohs(peerAddress.sin_port),
                             buffer
                         );
                     }
                 }
             }
             if (!platform->outputQueue.empty()) {
-                NetworkEndpointPlatform::Packet& packet = platform->outputQueue.front();
-                (void)memset(&socketAddress, 0, sizeof(socketAddress));
-                socketAddress.sin_family = AF_INET;
-                socketAddress.sin_addr.s_addr = htonl(packet.address);
-                socketAddress.sin_port = htons(packet.port);
+                NetworkEndpoint::Platform::Packet& packet = platform->outputQueue.front();
+                (void)memset(&peerAddress, 0, sizeof(peerAddress));
+                peerAddress.sin_family = AF_INET;
+                peerAddress.sin_addr.s_addr = htonl(packet.address);
+                peerAddress.sin_port = htons(packet.port);
                 const ssize_t amountSent = sendto(
                     platform->sock,
                     &packet.body[0],
                     packet.body.size(),
                     MSG_NOSIGNAL | MSG_DONTWAIT,
-                    (const sockaddr*)&socketAddress,
-                    sizeof(socketAddress)
+                    (const sockaddr*)&peerAddress,
+                    sizeof(peerAddress)
                 );
                 if (amountSent < 0) {
                     if (errno != EWOULDBLOCK) {
                         diagnosticsSender.SendDiagnosticInformationFormatted(
-                            SystemAbstractions::DiagnosticsReceiver::Levels::ERROR,
+                            SystemAbstractions::DiagnosticsSender::Levels::ERROR,
                             "error in sendto: %s",
                             strerror(errno)
                         );
@@ -284,7 +294,7 @@ namespace SystemAbstractions {
                 } else {
                     if ((size_t)amountSent != packet.body.size()) {
                         diagnosticsSender.SendDiagnosticInformationFormatted(
-                            SystemAbstractions::DiagnosticsReceiver::Levels::ERROR,
+                            SystemAbstractions::DiagnosticsSender::Levels::ERROR,
                             "send truncated (%d < %d)",
                             (int)amountSent,
                             (int)packet.body.size()
@@ -299,13 +309,13 @@ namespace SystemAbstractions {
         }
     }
 
-    void NetworkEndpointImpl::SendPacket(
+    void NetworkEndpoint::Impl::SendPacket(
         uint32_t address,
         uint16_t port,
         const std::vector< uint8_t >& body
     ) {
         std::unique_lock< std::recursive_mutex > processingLock(platform->processingMutex);
-        NetworkEndpointPlatform::Packet packet;
+        NetworkEndpoint::Platform::Packet packet;
         packet.address = address;
         packet.port = port;
         packet.body = body;
@@ -313,7 +323,7 @@ namespace SystemAbstractions {
         platform->processorStateChangeSignal.Set();
     }
 
-    void NetworkEndpointImpl::Close(bool stopProcessing) {
+    void NetworkEndpoint::Impl::Close(bool stopProcessing) {
         if (
             stopProcessing
             && platform->processor.joinable()
@@ -333,7 +343,7 @@ namespace SystemAbstractions {
         }
     }
 
-    std::vector< uint32_t > NetworkEndpointImpl::GetInterfaceAddresses() {
+    std::vector< uint32_t > NetworkEndpoint::Impl::GetInterfaceAddresses() {
         std::vector< uint32_t > addresses;
         struct ifaddrs* ifaddrHead;
         if (getifaddrs(&ifaddrHead) < 0) {

@@ -11,18 +11,18 @@
  */
 
 #include <string>
+#include <SystemAbstractions/File.hpp>
 
 namespace SystemAbstractions {
 
     /**
      * This is the POSIX-specific state for the File class.
      */
-    struct FileImpl {
+    struct File::Platform {
         /**
-         * @todo Needs documentation
+         * This is the operating-system handle to the underlying file.
          */
-        FILE* handle;
-
+        FILE* handle = NULL;
     };
 
     /**

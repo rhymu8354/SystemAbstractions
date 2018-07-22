@@ -10,12 +10,12 @@
  * Copyright (c) 2016 by Richard Walters
  */
 
-#include "../NetworkEndpoint.hpp"
 #include "PipeSignal.hpp"
 
 #include <list>
 #include <mutex>
 #include <stdint.h>
+#include <SystemAbstractions/NetworkEndpoint.hpp>
 #include <thread>
 #include <vector>
 
@@ -25,7 +25,7 @@ namespace SystemAbstractions {
      * This structure contains the private properties of the
      * NetworkEndpointPlatform class.
      */
-    struct NetworkEndpointPlatform {
+    struct NetworkEndpoint::Platform {
         /**
          * @todo Needs documentation
          */

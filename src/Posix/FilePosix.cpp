@@ -7,7 +7,7 @@
  * Copyright (c) 2013-2016 by Richard Walters
  */
 
-#include "../File.hpp"
+#include "../FileImpl.hpp"
 #include "FilePosix.hpp"
 
 #include <dirent.h>
@@ -21,6 +21,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <SystemAbstractions/File.hpp>
 #include <unistd.h>
 #include <vector>
 
@@ -51,9 +52,9 @@ namespace SystemAbstractions {
     }
 
     File::File(std::string path)
-        : _path(path)
-        , _impl(new FileImpl())
+        : impl_(new Impl())
     {
+        impl_->path = path;
     }
 
     File::~File() {
@@ -61,13 +62,13 @@ namespace SystemAbstractions {
     }
 
     bool File::IsExisting() {
-        return (access(_path.c_str(), 0) == 0);
+        return (access(impl_->path.c_str(), 0) == 0);
     }
 
     bool File::IsDirectory() {
         struct stat s;
         if (
-            (stat(_path.c_str(), &s) == 0)
+            (stat(impl_->path.c_str(), &s) == 0)
             && (S_ISDIR(s.st_mode))
         ) {
             return s.st_mtime;
@@ -78,46 +79,46 @@ namespace SystemAbstractions {
 
     bool File::Open() {
         Close();
-        _impl->handle = fopen(_path.c_str(), "rb");
-        return (_impl->handle != NULL);
+        impl_->platform->handle = fopen(impl_->path.c_str(), "rb");
+        return (impl_->platform->handle != NULL);
     }
 
     void File::Close() {
-        if (_impl->handle == NULL) {
+        if (impl_->platform->handle == NULL) {
             return;
         }
-        (void)fclose(_impl->handle);
-        _impl->handle = NULL;
+        (void)fclose(impl_->platform->handle);
+        impl_->platform->handle = NULL;
     }
 
     bool File::Create() {
         Close();
-        _impl->handle = fopen(_path.c_str(), "w+b");
-        if (_impl->handle == NULL) {
-            if (!CreatePath(_path)) {
+        impl_->platform->handle = fopen(impl_->path.c_str(), "w+b");
+        if (impl_->platform->handle == NULL) {
+            if (!Impl::CreatePath(impl_->path)) {
                 return false;
             } else {
-                _impl->handle = fopen(_path.c_str(), "w+b");
+                impl_->platform->handle = fopen(impl_->path.c_str(), "w+b");
             }
         }
-        return (_impl->handle != NULL);
+        return (impl_->platform->handle != NULL);
     }
 
     void File::Destroy() {
         Close();
-        (void)remove(_path.c_str());
+        (void)remove(impl_->path.c_str());
     }
 
     bool File::Move(const std::string& newPath) {
-        if (rename(_path.c_str(), newPath.c_str()) != 0) {
+        if (rename(impl_->path.c_str(), newPath.c_str()) != 0) {
             return false;
         }
-        _path = newPath;
+        impl_->path = newPath;
         return true;
     }
 
     bool File::Copy(const std::string& destination) {
-        if (_impl->handle == NULL) {
+        if (impl_->platform->handle == NULL) {
             if (!Open()) {
                 return false;
             }
@@ -143,7 +144,7 @@ namespace SystemAbstractions {
 
     time_t File::GetLastModifiedTime() const {
         struct stat s;
-        if (stat(_path.c_str(), &s) == 0) {
+        if (stat(impl_->path.c_str(), &s) == 0) {
             return s.st_mtime;
         } else {
             return 0;
@@ -247,7 +248,7 @@ namespace SystemAbstractions {
         ) {
             newDirectoryWithSeparator += '/';
         }
-        if (!File::CreatePath(newDirectoryWithSeparator)) {
+        if (!Impl::CreatePath(newDirectoryWithSeparator)) {
             return false;
         }
         DIR* dir = opendir(existingDirectory.c_str());
@@ -301,19 +302,19 @@ namespace SystemAbstractions {
     }
 
     uint64_t File::GetSize() const {
-        if (_impl->handle == NULL) {
+        if (impl_->platform->handle == NULL) {
             return 0;
         }
-        const long originalPosition = ftell(_impl->handle);
+        const long originalPosition = ftell(impl_->platform->handle);
         if (originalPosition == EOF) {
             return 0;
         }
-        if (fseek(_impl->handle, 0, SEEK_END) == EOF) {
-            (void)fseek(_impl->handle, originalPosition, SEEK_SET);
+        if (fseek(impl_->platform->handle, 0, SEEK_END) == EOF) {
+            (void)fseek(impl_->platform->handle, originalPosition, SEEK_SET);
             return 0;
         }
-        const long endPosition = ftell(_impl->handle);
-        (void)fseek(_impl->handle, originalPosition, SEEK_SET);
+        const long endPosition = ftell(impl_->platform->handle);
+        (void)fseek(impl_->platform->handle, originalPosition, SEEK_SET);
         if (endPosition == EOF) {
             return 0;
         }
@@ -321,14 +322,14 @@ namespace SystemAbstractions {
     }
 
     bool File::SetSize(uint64_t size) {
-        return (ftruncate(fileno(_impl->handle), (off_t)size) == 0);
+        return (ftruncate(fileno(impl_->platform->handle), (off_t)size) == 0);
     }
 
     uint64_t File::GetPosition() const {
-        if (_impl->handle == NULL) {
+        if (impl_->platform->handle == NULL) {
             return 0;
         }
-        const long position = ftell(_impl->handle);
+        const long position = ftell(impl_->platform->handle);
         if (position == EOF) {
             return 0;
         }
@@ -336,48 +337,48 @@ namespace SystemAbstractions {
     }
 
     void File::SetPosition(uint64_t position) {
-        if (_impl->handle == NULL) {
+        if (impl_->platform->handle == NULL) {
             return;
         }
-        (void)fseek(_impl->handle, (long)position, SEEK_SET);
+        (void)fseek(impl_->platform->handle, (long)position, SEEK_SET);
     }
 
     size_t File::Peek(void* buffer, size_t numBytes) const {
-        if (_impl->handle == NULL) {
+        if (impl_->platform->handle == NULL) {
             return 0;
         }
-        const long originalPosition = ftell(_impl->handle);
+        const long originalPosition = ftell(impl_->platform->handle);
         if (originalPosition == EOF) {
             return 0;
         }
-        const size_t readResult = fread(buffer, 1, numBytes, _impl->handle);
-        (void)fseek(_impl->handle, originalPosition, SEEK_SET);
+        const size_t readResult = fread(buffer, 1, numBytes, impl_->platform->handle);
+        (void)fseek(impl_->platform->handle, originalPosition, SEEK_SET);
         return readResult;
     }
 
     size_t File::Read(void* buffer, size_t numBytes) {
-        if (_impl->handle == NULL) {
+        if (impl_->platform->handle == NULL) {
             return 0;
         }
-        return fread(buffer, 1, numBytes, _impl->handle);
+        return fread(buffer, 1, numBytes, impl_->platform->handle);
     }
 
     size_t File::Write(const void* buffer, size_t numBytes) {
-        if (_impl->handle == NULL) {
+        if (impl_->platform->handle == NULL) {
             return 0;
         }
-        return fwrite(buffer, 1, numBytes, _impl->handle);
+        return fwrite(buffer, 1, numBytes, impl_->platform->handle);
     }
 
     std::shared_ptr< IFile > File::Clone() {
-        auto clone = std::make_shared< File >(_path);
-        if (_impl->handle != NULL) {
-            int cloneHandle = dup(fileno(_impl->handle));
+        auto clone = std::make_shared< File >(impl_->path);
+        if (impl_->platform->handle != NULL) {
+            int cloneHandle = dup(fileno(impl_->platform->handle));
             if (cloneHandle < 0) {
                 return nullptr;
             }
-            clone->_impl->handle = fdopen(cloneHandle, "r+b");
-            if (clone->_impl->handle == NULL) {
+            clone->impl_->platform->handle = fdopen(cloneHandle, "r+b");
+            if (clone->impl_->platform->handle == NULL) {
                 (void)close(cloneHandle);
                 return nullptr;
             }
@@ -385,7 +386,7 @@ namespace SystemAbstractions {
         return clone;
     }
 
-    bool File::CreatePath(std::string path) {
+    bool File::Impl::CreatePath(std::string path) {
         const size_t delimiter = path.find_last_of("/\\");
         if (delimiter == std::string::npos) {
             return false;
