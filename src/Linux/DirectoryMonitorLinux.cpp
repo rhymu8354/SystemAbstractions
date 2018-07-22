@@ -99,6 +99,9 @@ namespace SystemAbstractions {
         Callback callback,
         const std::string& path
     ) {
+        if (impl_ == nullptr) {
+            return false;
+        }
         Stop();
         if (!impl_->stopSignal.Initialize()) {
             return false;

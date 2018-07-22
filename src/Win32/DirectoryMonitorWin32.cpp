@@ -97,6 +97,9 @@ namespace SystemAbstractions {
         Callback callback,
         const std::string& path
     ) {
+        if (impl_ == nullptr) {
+            return false;
+        }
         Stop();
         if (impl_->stopEvent == NULL) {
             impl_->stopEvent = CreateEvent(NULL, TRUE, FALSE, NULL);

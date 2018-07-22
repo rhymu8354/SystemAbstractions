@@ -309,3 +309,8 @@ TEST_F(DirectoryMonitorTests, ChangeFileThatExistedBeforeMonitoringBegan) {
         ASSERT_TRUE(dmCallbackHelper.AwaitChanged());
     }
 }
+
+TEST_F(DirectoryMonitorTests, MoveBeforeStart) {
+    SystemAbstractions::DirectoryMonitor newDm(std::move(dm));
+    ASSERT_FALSE(dm.Start(dmCallbackHelper.dmCallback, innerPath));
+}
