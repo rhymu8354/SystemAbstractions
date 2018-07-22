@@ -7,11 +7,70 @@
  * © 2018 by Richard Walters
  */
 
+#include <condition_variable>
 #include <functional>
 #include <gtest/gtest.h>
+#include <mutex>
 #include <SystemAbstractions/DirectoryMonitor.hpp>
 #include <SystemAbstractions/File.hpp>
 #include <fstream>
+
+/**
+ * This is a helper used with a directory monitor to
+ * receive the "changed" callback and wait for it to
+ * happen without racing the directory monitor.
+ */
+struct ChangedCallbackHelper {
+    // Properties
+
+    /**
+     * This flag is set when the directory monitor
+     * publishes an event to say the directory was changed.
+     */
+    bool changeDetected = false;
+
+    /**
+     * This is used to wait for the change callback to happen.
+     */
+    std::condition_variable changeCondition;
+
+    /**
+     * This is used to synchronize access to this object.
+     */
+    std::mutex changeMutex;
+
+    /**
+     * This is the delegate to be given to the directory
+     * monitor in order to hook this helper up.
+     */
+    std::function< void() > dmCallback = [this]{
+        std::lock_guard< std::mutex > lock(changeMutex);
+        changeDetected = true;
+        changeCondition.notify_all();
+    };
+
+    // Methods
+
+    /**
+     * This method is called by the unit tests in order to
+     * wait for the directory monitor callback to happen.
+     *
+     * @return
+     *     An indication of whether or not the callback
+     *     happened before a reasonable amount of time
+     *     has elapsed is returned.
+     */
+    bool AwaitChanged() {
+        std::unique_lock< decltype(changeMutex) > lock(changeMutex);
+        const auto changed = changeCondition.wait_for(
+            lock,
+            std::chrono::milliseconds(50),
+            [this]{ return changeDetected; }
+        );
+        changeDetected = false;
+        return changed;
+    }
+};
 
 /**
  * This is the test fixture for these tests, providing common
@@ -26,6 +85,11 @@ struct DirectoryMonitorTests
      * This is the unit under test.
      */
     SystemAbstractions::DirectoryMonitor dm;
+
+    /**
+     * This used to wait for callbacks.
+     */
+    ChangedCallbackHelper dmCallbackHelper;
 
     /**
      * This is the temporary directory to use to test
@@ -56,12 +120,15 @@ struct DirectoryMonitorTests
     }
 };
 
+TEST_F(DirectoryMonitorTests, NoCallbackJustAfterStartingMonitor) {
+    // Start monitoring here.
+    ASSERT_TRUE(dm.Start(dmCallbackHelper.dmCallback, innerPath));
+    ASSERT_FALSE(dmCallbackHelper.AwaitChanged());
+}
+
 TEST_F(DirectoryMonitorTests, DirectoryMonitoring) {
     // Start monitoring here.
-    bool changeDetected = false;
-    std::function< void() > dmCallback = [&changeDetected]{ changeDetected = true; };
-    ASSERT_TRUE(dm.Start(dmCallback, innerPath));
-    ASSERT_FALSE(changeDetected);
+    ASSERT_TRUE(dm.Start(dmCallbackHelper.dmCallback, innerPath));
 
     // Create a file in the monitored area.
     std::string testFilePath = innerPath + "/fred.txt";
@@ -69,8 +136,7 @@ TEST_F(DirectoryMonitorTests, DirectoryMonitoring) {
         std::fstream file(testFilePath, std::ios_base::out | std::ios_base::ate);
         ASSERT_FALSE(file.fail());
         file.close();
-        ASSERT_TRUE(changeDetected);
-        changeDetected = false;
+        ASSERT_TRUE(dmCallbackHelper.AwaitChanged());
     }
 
     // Edit the file in the monitored area.
@@ -80,16 +146,14 @@ TEST_F(DirectoryMonitorTests, DirectoryMonitoring) {
         file << "Hello, World\r\n";
         ASSERT_FALSE(file.fail());
         file.close();
-        ASSERT_TRUE(changeDetected);
-        changeDetected = false;
+        ASSERT_TRUE(dmCallbackHelper.AwaitChanged());
     }
 
     // Delete the file in the monitored area.
     {
         SystemAbstractions::File file(testFilePath);
         file.Destroy();
-        ASSERT_TRUE(changeDetected);
-        changeDetected = false;
+        ASSERT_TRUE(dmCallbackHelper.AwaitChanged());
     }
 
     // Create a file outside the monitored area.
@@ -98,7 +162,7 @@ TEST_F(DirectoryMonitorTests, DirectoryMonitoring) {
         std::fstream file(testFilePath, std::ios_base::out | std::ios_base::ate);
         ASSERT_FALSE(file.fail());
         file.close();
-        ASSERT_FALSE(changeDetected);
+        ASSERT_FALSE(dmCallbackHelper.AwaitChanged());
     }
 
     // Edit the file outside the monitored area.
@@ -108,23 +172,20 @@ TEST_F(DirectoryMonitorTests, DirectoryMonitoring) {
         file << "Hello, World\r\n";
         ASSERT_FALSE(file.fail());
         file.close();
-        ASSERT_FALSE(changeDetected);
+        ASSERT_FALSE(dmCallbackHelper.AwaitChanged());
     }
 
     // Delete the file outside the monitored area.
     {
         SystemAbstractions::File file(testFilePath);
         file.Destroy();
-        ASSERT_FALSE(changeDetected);
+        ASSERT_FALSE(dmCallbackHelper.AwaitChanged());
     }
 }
 
 TEST_F(DirectoryMonitorTests, MoveDirectoryMonitor) {
     // Start monitoring here.
-    bool changeDetected = false;
-    std::function< void() > dmCallback = [&changeDetected]{ changeDetected = true; };
-    ASSERT_TRUE(dm.Start(dmCallback, innerPath));
-    ASSERT_FALSE(changeDetected);
+    ASSERT_TRUE(dm.Start(dmCallbackHelper.dmCallback, innerPath));
 
     // Move the monitor
     SystemAbstractions::DirectoryMonitor newDm(std::move(dm));
@@ -138,8 +199,7 @@ TEST_F(DirectoryMonitorTests, MoveDirectoryMonitor) {
         std::fstream file(testFilePath, std::ios_base::out | std::ios_base::ate);
         ASSERT_FALSE(file.fail());
         file.close();
-        ASSERT_TRUE(changeDetected);
-        changeDetected = false;
+        ASSERT_TRUE(dmCallbackHelper.AwaitChanged());
     }
 
     // Edit the file in the monitored area.
@@ -149,16 +209,14 @@ TEST_F(DirectoryMonitorTests, MoveDirectoryMonitor) {
         file << "Hello, World\r\n";
         ASSERT_FALSE(file.fail());
         file.close();
-        ASSERT_TRUE(changeDetected);
-        changeDetected = false;
+        ASSERT_TRUE(dmCallbackHelper.AwaitChanged());
     }
 
     // Delete the file in the monitored area.
     {
         SystemAbstractions::File file(testFilePath);
         file.Destroy();
-        ASSERT_TRUE(changeDetected);
-        changeDetected = false;
+        ASSERT_TRUE(dmCallbackHelper.AwaitChanged());
     }
 
     // Create a file outside the monitored area.
@@ -167,7 +225,7 @@ TEST_F(DirectoryMonitorTests, MoveDirectoryMonitor) {
         std::fstream file(testFilePath, std::ios_base::out | std::ios_base::ate);
         ASSERT_FALSE(file.fail());
         file.close();
-        ASSERT_FALSE(changeDetected);
+        ASSERT_FALSE(dmCallbackHelper.AwaitChanged());
     }
 
     // Edit the file outside the monitored area.
@@ -177,23 +235,20 @@ TEST_F(DirectoryMonitorTests, MoveDirectoryMonitor) {
         file << "Hello, World\r\n";
         ASSERT_FALSE(file.fail());
         file.close();
-        ASSERT_FALSE(changeDetected);
+        ASSERT_FALSE(dmCallbackHelper.AwaitChanged());
     }
 
     // Delete the file outside the monitored area.
     {
         SystemAbstractions::File file(testFilePath);
         file.Destroy();
-        ASSERT_FALSE(changeDetected);
+        ASSERT_FALSE(dmCallbackHelper.AwaitChanged());
     }
 }
 
 TEST_F(DirectoryMonitorTests, Stop) {
     // Start monitoring here.
-    bool changeDetected = false;
-    std::function< void() > dmCallback = [&changeDetected]{ changeDetected = true; };
-    ASSERT_TRUE(dm.Start(dmCallback, innerPath));
-    ASSERT_FALSE(changeDetected);
+    ASSERT_TRUE(dm.Start(dmCallbackHelper.dmCallback, innerPath));
 
     // Create a file in the monitored area.
     std::string testFilePath = innerPath + "/fred.txt";
@@ -201,8 +256,7 @@ TEST_F(DirectoryMonitorTests, Stop) {
         std::fstream file(testFilePath, std::ios_base::out | std::ios_base::ate);
         ASSERT_FALSE(file.fail());
         file.close();
-        ASSERT_TRUE(changeDetected);
-        changeDetected = false;
+        ASSERT_TRUE(dmCallbackHelper.AwaitChanged());
     }
 
     // Stop monitoring
@@ -215,14 +269,14 @@ TEST_F(DirectoryMonitorTests, Stop) {
         file << "Hello, World\r\n";
         ASSERT_FALSE(file.fail());
         file.close();
-        ASSERT_FALSE(changeDetected);
+        ASSERT_FALSE(dmCallbackHelper.AwaitChanged());
     }
 
     // Delete the file in the monitored area.
     {
         SystemAbstractions::File file(testFilePath);
         file.Destroy();
-        ASSERT_FALSE(changeDetected);
+        ASSERT_FALSE(dmCallbackHelper.AwaitChanged());
     }
 }
 
@@ -236,10 +290,7 @@ TEST_F(DirectoryMonitorTests, ChangeFileThatExistedBeforeMonitoringBegan) {
     }
 
     // Start monitoring here.
-    bool changeDetected = false;
-    std::function< void() > dmCallback = [&changeDetected]{ changeDetected = true; };
-    ASSERT_TRUE(dm.Start(dmCallback, innerPath));
-    ASSERT_FALSE(changeDetected);
+    ASSERT_TRUE(dm.Start(dmCallbackHelper.dmCallback, innerPath));
 
     // Edit the file in the monitored area.
     {
@@ -248,15 +299,13 @@ TEST_F(DirectoryMonitorTests, ChangeFileThatExistedBeforeMonitoringBegan) {
         file << "Hello, World\r\n";
         ASSERT_FALSE(file.fail());
         file.close();
-        ASSERT_TRUE(changeDetected);
-        changeDetected = false;
+        ASSERT_TRUE(dmCallbackHelper.AwaitChanged());
     }
 
     // Delete the file in the monitored area.
     {
         SystemAbstractions::File file(testFilePath);
         file.Destroy();
-        ASSERT_TRUE(changeDetected);
-        changeDetected = false;
+        ASSERT_TRUE(dmCallbackHelper.AwaitChanged());
     }
 }
