@@ -11,6 +11,7 @@
 
 #include <functional>
 #include <map>
+#include <memory>
 #include <mutex>
 #include <deque>
 #include <stdarg.h>
