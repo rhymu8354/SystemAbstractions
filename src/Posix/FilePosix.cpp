@@ -360,7 +360,11 @@ namespace SystemAbstractions {
     }
 
     bool File::SetSize(uint64_t size) {
-        return (ftruncate(fileno(impl_->platform->handle), (off_t)size) == 0);
+        const auto originalPosition = std::min(size, GetPosition());
+        (void)fflush(impl_->platform->handle);
+        const bool result = (ftruncate(fileno(impl_->platform->handle), (off_t)size) == 0);
+        SetPosition(originalPosition);
+        return result;
     }
 
     uint64_t File::GetPosition() const {
