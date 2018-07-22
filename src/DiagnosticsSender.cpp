@@ -20,6 +20,8 @@ namespace {
      * to a DiagnosticsSender's messages.
      */
     struct Subscription {
+        // Properties
+
         /**
          * This is the function to call to deliver messages
          * to this subscriber.
@@ -31,6 +33,34 @@ namespace {
          * desires to receive.
          */
         size_t minLevel = 0;
+
+        // Methods
+
+        /**
+         * This constructor sets all properties to their defaults.
+         */
+        Subscription() = default;
+
+        /**
+         * This constructor is used to initialize all the properties
+         * of the instance.
+         *
+         * @param[in] newDelegate
+         *     This is the function to call to deliver messages
+         *     to this subscriber.
+         *
+         * @param[in] newMinLevel
+         *     This is the minimum level of message that this subscriber
+         *     desires to receive.
+         */
+        Subscription(
+            SystemAbstractions::DiagnosticsSender::DiagnosticMessageDelegate newDelegate,
+            size_t newMinLevel
+        )
+            : delegate(newDelegate)
+            , minLevel(newMinLevel)
+        {
+        }
     };
 
 }
