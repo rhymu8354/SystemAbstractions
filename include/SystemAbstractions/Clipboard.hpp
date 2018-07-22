@@ -42,6 +42,10 @@ public:
 
 #else /* Linux */
 
+    virtual void Copy(const std::string& s);
+    virtual bool HasString();
+    virtual std::string PasteString();
+
 #endif /* various platforms */
 };
 

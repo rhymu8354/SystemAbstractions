@@ -198,6 +198,25 @@ struct MockClipboardOperatingSystemInterface
 
     // ClipboardOperatingSystemInterface
 public:
+    virtual void Copy(const std::string& s) override {
+        callsInOrder.push_back("Copy");
+        contents = s;
+        hasText = true;
+    }
+
+    virtual bool HasString() override {
+        callsInOrder.push_back("HasString");
+        return hasText;
+    }
+
+    virtual std::string PasteString() override {
+        callsInOrder.push_back("PasteString");
+        if (hasText) {
+            return contents;
+        } else {
+            return "";
+        }
+    }
 };
 
 #endif /* different platforms */
@@ -243,6 +262,7 @@ TEST_F(ClipboardTests, Copy) {
     const std::string testString = "Hello, World!";
     clipboard.Copy(testString);
     ASSERT_EQ(testString, mockClipboard.contents);
+#ifdef _WIN32
     ASSERT_EQ(
         (std::vector< std::string >{
             "open",
@@ -252,6 +272,16 @@ TEST_F(ClipboardTests, Copy) {
         }),
         mockClipboard.callsInOrder
     );
+#elif defined(APPLE)
+    ASSERT_TRUE(false) << "test does not work with APPLE yet";
+#else /* Linux */
+    ASSERT_EQ(
+        (std::vector< std::string >{
+            "Copy",
+        }),
+        mockClipboard.callsInOrder
+    );
+#endif /* different platforms */
 }
 
 TEST_F(ClipboardTests, Paste) {
@@ -260,6 +290,7 @@ TEST_F(ClipboardTests, Paste) {
     mockClipboard.contents = testString;
     mockClipboard.hasText = true;
     ASSERT_EQ(testString, clipboard.PasteString());
+#ifdef _WIN32
     ASSERT_EQ(
         (std::vector< std::string >{
             "open",
@@ -269,6 +300,16 @@ TEST_F(ClipboardTests, Paste) {
         }),
         mockClipboard.callsInOrder
     );
+#elif defined(APPLE)
+    ASSERT_TRUE(false) << "test does not work with APPLE yet";
+#else /* Linux */
+    ASSERT_EQ(
+        (std::vector< std::string >{
+            "PasteString",
+        }),
+        mockClipboard.callsInOrder
+    );
+#endif /* different platforms */
 }
 
 TEST_F(ClipboardTests, HasString) {
@@ -278,6 +319,7 @@ TEST_F(ClipboardTests, HasString) {
     mockClipboard.contents = testString;
     mockClipboard.hasText = true;
     ASSERT_TRUE(clipboard.HasString());
+#ifdef _WIN32
     ASSERT_EQ(
         (std::vector< std::string >{
             "open",
@@ -289,4 +331,15 @@ TEST_F(ClipboardTests, HasString) {
         }),
         mockClipboard.callsInOrder
     );
+#elif defined(APPLE)
+    ASSERT_TRUE(false) << "test does not work with APPLE yet";
+#else /* Linux */
+    ASSERT_EQ(
+        (std::vector< std::string >{
+            "HasString",
+            "HasString",
+        }),
+        mockClipboard.callsInOrder
+    );
+#endif /* different platforms */
 }

@@ -7,6 +7,7 @@
  * Copyright (c) 2017 by Richard Walters
  */
 
+#include <string>
 #include <SystemAbstractions/Clipboard.hpp>
 
 namespace SystemAbstractions {
@@ -26,14 +27,15 @@ namespace SystemAbstractions {
     }
 
     void Clipboard::Copy(const std::string& s) {
+        selectedClipboardOperatingSystemInterface->Copy(s);
     }
 
     bool Clipboard::HasString() {
-        return false;
+        return selectedClipboardOperatingSystemInterface->HasString();
     }
 
     std::string Clipboard::PasteString() {
-        return "";
+        return selectedClipboardOperatingSystemInterface->PasteString();
     }
 
 }
@@ -42,6 +44,36 @@ namespace {
 
     ClipboardOperatingSystemInterface clipboardLinuxInterface;
 
+    /**
+     * This isn't the actual "clipboard", but just a dummy
+     * buffer to give the applications and tests the appearance
+     * of there being a clipboard.
+     */
+    std::string fakeClipboard;
+
+    /**
+     * This flag indicates whether or not there is something
+     * in the fake clipboard.
+     */
+    bool fakeClipboardFull = false;
+
+}
+
+void ClipboardOperatingSystemInterface::Copy(const std::string& s) {
+    fakeClipboard = s;
+    fakeClipboardFull = true;
+}
+
+bool ClipboardOperatingSystemInterface::HasString() {
+    return fakeClipboardFull;
+}
+
+std::string ClipboardOperatingSystemInterface::PasteString() {
+    if (fakeClipboardFull) {
+        return fakeClipboard;
+    } else {
+        return "";
+    }
 }
 
 ClipboardOperatingSystemInterface* selectedClipboardOperatingSystemInterface = &clipboardLinuxInterface;
