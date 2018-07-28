@@ -84,6 +84,26 @@ namespace SystemAbstractions {
         char d
     );
 
+    /**
+     * This function joins together the given sequence of smaller strings
+     * into one bigger string, with each piece separated by the given
+     * delimiter string.
+     *
+     * @param[in] v
+     *     This is the sequence of smaller strings to join together.
+     *
+     * @param[in] d
+     *     This is the delimiter string to put between each piece.
+     *
+     * @return
+     *     A single larger string formed by joining together the given
+     *     pieces separated by delimiters is returned.
+     */
+    std::string Join(
+        const std::vector< std::string >& v,
+        const std::string& d
+    );
+
 }
 
 #endif /* SYSTEM_ABSTRACTIONS_STRING_EXTENSIONS_HPP */

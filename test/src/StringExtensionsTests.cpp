@@ -101,3 +101,11 @@ TEST(StringExtensionsTests, Split) {
         SystemAbstractions::Split(line, ' ')
     );
 }
+
+TEST(StringExtensionsTests, Join) {
+    const std::vector< std::string > pieces{"Hello", "World!"};
+    ASSERT_EQ(
+        "Hello, World!",
+        SystemAbstractions::Join(pieces, ", ")
+    );
+}

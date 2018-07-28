@@ -11,6 +11,7 @@
 
 #include <stdarg.h>
 #include <stdlib.h>
+#include <sstream>
 #include <vector>
 
 namespace SystemAbstractions {
@@ -176,6 +177,23 @@ namespace SystemAbstractions {
             }
         }
         return values;
+    }
+
+    std::string Join(
+        const std::vector< std::string >& v,
+        const std::string& d
+    ) {
+        std::ostringstream builder;
+        bool first = true;
+        for (const auto& piece: v) {
+            if (first) {
+                first = false;
+            } else {
+                builder << d;
+            }
+            builder << piece;
+        }
+        return builder.str();
     }
 
 }
