@@ -7,6 +7,7 @@ set(This SystemAbstractionsTests)
 
 set(Sources
     src/ClipboardTests.cpp
+    src/CryptoRandomTests.cpp
     src/DiagnosticsContextTests.cpp
     src/DiagnosticsSenderTests.cpp
     src/DiagnosticsStreamReporterTests.cpp

@@ -7,6 +7,7 @@ set(This SystemAbstractions)
 
 set(Headers
     include/SystemAbstractions/Clipboard.hpp
+    include/SystemAbstractions/CryptoRandom.hpp
     include/SystemAbstractions/DiagnosticsContext.hpp
     include/SystemAbstractions/DiagnosticsSender.hpp
     include/SystemAbstractions/DiagnosticsStreamReporter.hpp
@@ -41,6 +42,7 @@ set(Sources
 if(MSVC)
     list(APPEND Sources
         src/Win32/ClipboardWin32.cpp
+        src/Win32/CryptoRandomWin32.cpp
         src/Win32/DirectoryMonitorWin32.cpp
         src/Win32/DynamicLibraryWin32.cpp
         src/Win32/FileWin32.cpp
@@ -70,6 +72,7 @@ endif()
 
 if(UNIX)
     list(APPEND Sources
+        src/Posix/CryptoRandomPosix.hpp
         src/Posix/DynamicLibraryImpl.hpp
         src/Posix/DynamicLibraryPosix.cpp
         src/Posix/FilePosix.cpp
