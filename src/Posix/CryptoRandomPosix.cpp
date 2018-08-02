@@ -7,8 +7,12 @@
  * © 2018 by Richard Walters
  */
 
+#include <fcntl.h>
 #include <stdio.h>
 #include <SystemAbstractions/CryptoRandom.hpp>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 namespace SystemAbstractions {
 
