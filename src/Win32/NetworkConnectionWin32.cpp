@@ -247,6 +247,7 @@ namespace SystemAbstractions {
         if (
             stopProcessing
             && platform->processor.joinable()
+            && (std::this_thread::get_id() != platform->processor.get_id())
         ) {
             platform->processorStop = true;
             (void)SetEvent(platform->processorStateChangeEvent);

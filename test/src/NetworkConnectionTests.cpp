@@ -8,6 +8,7 @@
  */
 
 #include <condition_variable>
+#include <functional>
 #include <gtest/gtest.h>
 #include <mutex>
 #include <stdint.h>
@@ -100,6 +101,11 @@ namespace {
          * to the network endpoint has been broken.
          */
         bool connectionBroken = false;
+
+        /**
+         * This is a function to call when the connection is closed.
+         */
+        std::function< void() > connectionBrokenDelegate = false;
 
         // Methods
 
@@ -277,9 +283,14 @@ namespace {
          * the connection is broken.
          */
         void NetworkConnectionBroken() {
-            std::unique_lock< decltype(mutex) > lock(mutex);
-            connectionBroken = true;
-            condition.notify_all();
+            if (connectionBrokenDelegate != nullptr) {
+                connectionBrokenDelegate();
+            }
+            {
+                std::unique_lock< decltype(mutex) > lock(mutex);
+                connectionBroken = true;
+                condition.notify_all();
+            }
         }
     };
 
@@ -547,4 +558,75 @@ TEST(NetworkConnectionTests, Close) {
     client.Close();
     ASSERT_TRUE(serverConnectionOwner.AwaitDisconnection());
     ASSERT_TRUE(serverConnectionOwner.connectionBroken);
+}
+
+TEST(NetworkConnectionTests, CloseDuringBrokenConnectionCallback) {
+    SystemAbstractions::NetworkEndpoint server;
+    Owner serverConnectionOwner, clientConnectionOwner;
+    std::vector< std::shared_ptr< SystemAbstractions::NetworkConnection > > clients;
+    std::condition_variable_any callbackCondition;
+    std::mutex callbackMutex;
+    const auto newConnectionDelegate = [
+        &clients,
+        &callbackCondition,
+        &callbackMutex,
+        &serverConnectionOwner
+    ](
+        std::shared_ptr< SystemAbstractions::NetworkConnection > newConnection
+    ){
+        std::unique_lock< std::mutex > lock(callbackMutex);
+        clients.push_back(newConnection);
+        ASSERT_TRUE(
+            newConnection->Process(
+                [&serverConnectionOwner](const std::vector< uint8_t >& message){
+                    serverConnectionOwner.NetworkConnectionMessageReceived(message);
+                },
+                [&serverConnectionOwner]{
+                    serverConnectionOwner.NetworkConnectionBroken();
+                }
+            )
+        );
+        callbackCondition.notify_all();
+    };
+    const auto packetReceivedDelegate = [](
+        uint32_t address,
+        uint16_t port,
+        const std::vector< uint8_t >& body
+    ){
+    };
+    ASSERT_TRUE(
+        server.Open(
+            newConnectionDelegate,
+            packetReceivedDelegate,
+            SystemAbstractions::NetworkEndpoint::Mode::Connection,
+            0,
+            0,
+            0
+        )
+    );
+    SystemAbstractions::NetworkConnection client;
+    clientConnectionOwner.connectionBrokenDelegate = [&client]{ client.Close(); };
+    (void)client.Connect(0x7F000001, server.GetBoundPort());
+    (void)client.Process(
+        [&clientConnectionOwner](const std::vector< uint8_t >& message){
+            clientConnectionOwner.NetworkConnectionMessageReceived(message);
+        },
+        [&clientConnectionOwner]{
+            clientConnectionOwner.NetworkConnectionBroken();
+        }
+    );
+    {
+        std::unique_lock< decltype(callbackMutex) > lock(callbackMutex);
+        ASSERT_TRUE(
+            callbackCondition.wait_for(
+                lock,
+                std::chrono::seconds(1),
+                [&clients]{
+                    return !clients.empty();
+                }
+            )
+        );
+    }
+    clients[0]->Close();
+    clientConnectionOwner.AwaitDisconnection();
 }
