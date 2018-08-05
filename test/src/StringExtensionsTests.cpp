@@ -114,4 +114,11 @@ TEST(StringExtensionsTests, ToLower) {
     EXPECT_EQ("hello", SystemAbstractions::ToLower("Hello"));
     EXPECT_EQ("hello", SystemAbstractions::ToLower("hello"));
     EXPECT_EQ("hello", SystemAbstractions::ToLower("heLLo"));
+    EXPECT_EQ("example", SystemAbstractions::ToLower("eXAmplE"));
+    EXPECT_EQ("example", SystemAbstractions::ToLower("example"));
+    EXPECT_EQ("example", SystemAbstractions::ToLower("EXAMPLE"));
+    EXPECT_EQ("foo1bar", SystemAbstractions::ToLower("foo1BAR"));
+    EXPECT_EQ("foo1bar", SystemAbstractions::ToLower("fOo1bAr"));
+    EXPECT_EQ("foo1bar", SystemAbstractions::ToLower("foo1bar"));
+    EXPECT_EQ("foo1bar", SystemAbstractions::ToLower("FOO1BAR"));
 }
