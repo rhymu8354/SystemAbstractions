@@ -10,6 +10,7 @@
 #include <gtest/gtest.h>
 #include <set>
 #include <SystemAbstractions/File.hpp>
+#include <thread>
 
 /**
  * This is the test fixture for these tests, providing common
@@ -36,7 +37,16 @@ struct FileTests
     }
 
     virtual void TearDown() {
-        ASSERT_TRUE(SystemAbstractions::File::DeleteDirectory(testAreaPath));
+        bool failedToDeleteTestArea = true;
+        for (size_t i = 0; i < 10; ++i) {
+            if (SystemAbstractions::File::DeleteDirectory(testAreaPath)) {
+                failedToDeleteTestArea = false;
+                break;
+            } else {
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            }
+        }
+        ASSERT_FALSE(failedToDeleteTestArea);
     }
 };
 
