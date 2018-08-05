@@ -116,24 +116,13 @@ namespace SystemAbstractions {
          *     desires to receive.
          *
          * @return
-         *     A token representing the subscription is returned.
-         *     This may be passed to UnsubscribeFromDiagnostics
-         *     in order to terminate the subscription.
+         *     A function is returned which may be called
+         *     to terminate the subscription.
          */
-        DiagnosticsSender::SubscriptionToken SubscribeToDiagnostics(
+        DiagnosticsSender::UnsubscribeDelegate SubscribeToDiagnostics(
             DiagnosticsSender::DiagnosticMessageDelegate delegate,
             size_t minLevel = 0
         );
-
-        /**
-         * This method terminates a subscription previously formed
-         * by calling the SubscribeToDiagnostics method.
-         *
-         * @param[in] subscriptionToken
-         *     This is the token returned from SubscribeToDiagnostics
-         *     when the subscription was formed.
-         */
-        void UnsubscribeFromDiagnostics(DiagnosticsSender::SubscriptionToken subscriptionToken);
 
         /**
          * This method starts message or connection processing on the endpoint,

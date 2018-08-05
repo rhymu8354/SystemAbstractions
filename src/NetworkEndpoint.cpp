@@ -25,12 +25,8 @@ namespace SystemAbstractions {
     {
     }
 
-    DiagnosticsSender::SubscriptionToken NetworkEndpoint::SubscribeToDiagnostics(DiagnosticsSender::DiagnosticMessageDelegate delegate, size_t minLevel) {
+    DiagnosticsSender::UnsubscribeDelegate NetworkEndpoint::SubscribeToDiagnostics(DiagnosticsSender::DiagnosticMessageDelegate delegate, size_t minLevel) {
         return impl_->diagnosticsSender.SubscribeToDiagnostics(delegate, minLevel);
-    }
-
-    void NetworkEndpoint::UnsubscribeFromDiagnostics(DiagnosticsSender::SubscriptionToken subscriptionToken) {
-        impl_->diagnosticsSender.UnsubscribeFromDiagnostics(subscriptionToken);
     }
 
     void NetworkEndpoint::SendPacket(

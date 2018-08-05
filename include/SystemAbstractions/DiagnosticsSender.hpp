@@ -36,10 +36,10 @@ namespace SystemAbstractions {
         };
 
         /**
-         * This is the type used for tokens which represent
-         * subscriptions to diagnostic messages.
+         * This is the type of function used to unsubscribe, or remove
+         * a previously-formed subscription.
          */
-        typedef unsigned int SubscriptionToken;
+        typedef std::function< void() > UnsubscribeDelegate;
 
         /**
          * This is the type of function given when subscribing
@@ -97,24 +97,13 @@ namespace SystemAbstractions {
          *     desires to receive.
          *
          * @return
-         *     A token representing the subscription is returned.
-         *     This may be passed to UnsubscribeFromDiagnostics
-         *     in order to terminate the subscription.
+         *     A function is returned which may be called
+         *     to terminate the subscription.
          */
-        SubscriptionToken SubscribeToDiagnostics(
+        UnsubscribeDelegate SubscribeToDiagnostics(
             DiagnosticMessageDelegate delegate,
             size_t minLevel = 0
         );
-
-        /**
-         * This method terminates a subscription previously formed
-         * by calling the SubscribeToDiagnostics method.
-         *
-         * @param[in] subscriptionToken
-         *     This is the token returned from SubscribeToDiagnostics
-         *     when the subscription was formed.
-         */
-        void UnsubscribeFromDiagnostics(SubscriptionToken subscriptionToken);
 
         /**
          * This method returns the lowest of all the minimum desired

@@ -157,14 +157,14 @@ TEST_F(DiagnosticsStreamReporterTests, SaveDiagnosticMessagesToLogFiles) {
     SystemAbstractions::DiagnosticsSender sender("foo");
     auto output = fopen((testAreaPath + "/out.txt").c_str(), "wt");
     auto error = fopen((testAreaPath + "/error.txt").c_str(), "wt");
-    const auto subscriptionToken = sender.SubscribeToDiagnostics(
+    const auto unsubscribeDelegate = sender.SubscribeToDiagnostics(
         SystemAbstractions::DiagnosticsStreamReporter(output, error)
     );
     sender.SendDiagnosticInformationString(0, "hello");
     sender.SendDiagnosticInformationString(10, "world");
     sender.SendDiagnosticInformationString(2, "last message");
     sender.SendDiagnosticInformationString(5, "be careful");
-    sender.UnsubscribeFromDiagnostics(subscriptionToken);
+    unsubscribeDelegate();
     sender.SendDiagnosticInformationString(0, "really the last message");
     (void)fclose(output);
     (void)fclose(error);

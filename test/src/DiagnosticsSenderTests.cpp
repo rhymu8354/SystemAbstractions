@@ -86,7 +86,7 @@ TEST(DiagnosticsSenderTests, BasicSubscriptionAndTransmission) {
     SystemAbstractions::DiagnosticsSender sender("Joe");
     sender.SendDiagnosticInformationString(100, "Very important message nobody will hear; FeelsBadMan");
     std::vector< ReceivedMessage > receivedMessages;
-    const auto subscriptionToken = sender.SubscribeToDiagnostics(
+    const auto unsubscribeDelegate = sender.SubscribeToDiagnostics(
         [&receivedMessages](
             std::string senderName,
             size_t level,
@@ -101,6 +101,7 @@ TEST(DiagnosticsSenderTests, BasicSubscriptionAndTransmission) {
         5
     );
     ASSERT_EQ(5, sender.GetMinLevel());
+    ASSERT_TRUE(unsubscribeDelegate != nullptr);
     sender.SendDiagnosticInformationString(10, "PogChamp");
     sender.SendDiagnosticInformationString(3, "Did you hear that?");
     sender.PushContext("spam");
@@ -108,7 +109,7 @@ TEST(DiagnosticsSenderTests, BasicSubscriptionAndTransmission) {
     sender.SendDiagnosticInformationString(5, "Level 5, can you dig it?");
     sender.PopContext();
     sender.SendDiagnosticInformationString(6, "Level 6 FOR THE WIN");
-    sender.UnsubscribeFromDiagnostics(subscriptionToken);
+    unsubscribeDelegate();
     sender.SendDiagnosticInformationString(5, "Are you still there?");
     ASSERT_EQ(
         receivedMessages,

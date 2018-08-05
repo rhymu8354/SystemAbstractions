@@ -16,6 +16,12 @@
 namespace {
 
     /**
+     * This is used internally by DiagnosticsSender to track
+     * subscriptions.
+     */
+    typedef unsigned int SubscriptionToken;
+
+    /**
      * This holds information about a single subscriber
      * to a DiagnosticsSender's messages.
      */
@@ -117,28 +123,26 @@ namespace SystemAbstractions {
         impl_->name = name;
     }
 
-    auto DiagnosticsSender::SubscribeToDiagnostics(DiagnosticMessageDelegate delegate, size_t minLevel) -> SubscriptionToken {
+    auto DiagnosticsSender::SubscribeToDiagnostics(DiagnosticMessageDelegate delegate, size_t minLevel) -> UnsubscribeDelegate {
         std::lock_guard< std::mutex > lock(impl_->mutex);
         const auto subscriptionToken = impl_->nextSubscriptionToken++;
         impl_->subscribers[subscriptionToken] = { delegate, minLevel };
         impl_->minLevel = std::min(impl_->minLevel, minLevel);
-        return subscriptionToken;
-    }
-
-    void DiagnosticsSender::UnsubscribeFromDiagnostics(SubscriptionToken subscriptionToken) {
-        std::lock_guard< std::mutex > lock(impl_->mutex);
-        auto subscription = impl_->subscribers.find(subscriptionToken);
-        if (subscription == impl_->subscribers.end()) {
-            return;
-        }
-        Subscription oldSubscription(subscription->second);
-        (void)impl_->subscribers.erase(subscription);
-        if (oldSubscription.minLevel == impl_->minLevel) {
-            impl_->minLevel = std::numeric_limits< size_t >::max();
-            for (auto subscriber: impl_->subscribers) {
-                impl_->minLevel = std::min(impl_->minLevel, subscriber.second.minLevel);
+        return [this, subscriptionToken]{
+            std::lock_guard< std::mutex > lock(impl_->mutex);
+            auto subscription = impl_->subscribers.find(subscriptionToken);
+            if (subscription == impl_->subscribers.end()) {
+                return;
             }
-        }
+            Subscription oldSubscription(subscription->second);
+            (void)impl_->subscribers.erase(subscription);
+            if (oldSubscription.minLevel == impl_->minLevel) {
+                impl_->minLevel = std::numeric_limits< size_t >::max();
+                for (auto subscriber: impl_->subscribers) {
+                    impl_->minLevel = std::min(impl_->minLevel, subscriber.second.minLevel);
+                }
+            }
+        };
     }
 
     size_t DiagnosticsSender::GetMinLevel() const {
