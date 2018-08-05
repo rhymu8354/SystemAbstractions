@@ -104,6 +104,19 @@ namespace SystemAbstractions {
         const std::string& d
     );
 
+    /**
+     * This function takes a string and swaps all upper-case characters
+     * with their lower-case equivalents, returning the result.
+     *
+     * @param[in] inString
+     *     This is the string to be normalized.
+     *
+     * @return
+     *     The normalized string is returned.  All upper-case characters
+     *     are replaced with their lower-case equivalents.
+     */
+    std::string ToLower(const std::string& inString);
+
 }
 
 #endif /* SYSTEM_ABSTRACTIONS_STRING_EXTENSIONS_HPP */

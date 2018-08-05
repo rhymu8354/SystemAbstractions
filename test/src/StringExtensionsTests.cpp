@@ -109,3 +109,9 @@ TEST(StringExtensionsTests, Join) {
         SystemAbstractions::Join(pieces, ", ")
     );
 }
+
+TEST(StringExtensionsTests, ToLower) {
+    EXPECT_EQ("hello", SystemAbstractions::ToLower("Hello"));
+    EXPECT_EQ("hello", SystemAbstractions::ToLower("hello"));
+    EXPECT_EQ("hello", SystemAbstractions::ToLower("heLLo"));
+}

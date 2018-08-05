@@ -196,4 +196,13 @@ namespace SystemAbstractions {
         return builder.str();
     }
 
+    std::string ToLower(const std::string& inString) {
+        std::string outString;
+        outString.reserve(inString.size());
+        for (char c: inString) {
+            outString.push_back(tolower(c));
+        }
+        return outString;
+    }
+
 }
