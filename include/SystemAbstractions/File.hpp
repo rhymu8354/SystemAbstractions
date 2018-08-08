@@ -130,6 +130,21 @@ namespace SystemAbstractions {
         std::string GetPath() const;
 
         /**
+         * This function determines whether or not the given path string
+         * indicates an absolute path in the filesystem (as opposed to
+         * a relative path).
+         *
+         * @param[in] path
+         *     This is the path to check.
+         *
+         * @return
+         *     An indication of whether or not the given path string
+         *     indicates an absolute path in the filesystem (as opposed to
+         *     a relative path) is returned.
+         */
+        static bool IsAbsolutePath(const std::string& path);
+
+        /**
          * This method returns the absolute path of the application's
          * executable image.
          *

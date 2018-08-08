@@ -23,6 +23,7 @@
 #include <io.h>
 #include <KnownFolders.h>
 #include <memory>
+#include <regex>
 #include <ShlObj.h>
 #include <Shlwapi.h>
 #include <stddef.h>
@@ -218,6 +219,11 @@ namespace SystemAbstractions {
         } else {
             return 0;
         }
+    }
+
+    bool File::IsAbsolutePath(const std::string& path) {
+        static std::regex AbsolutePathRegex("[a-zA-Z]:[/\\\\].*");
+        return std::regex_match(path, AbsolutePathRegex);
     }
 
     std::string File::GetExeImagePath() {

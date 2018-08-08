@@ -465,3 +465,34 @@ TEST_F(FileTests, WriteBeyondEndAndIntoMiddle) {
         buffer
     );
 }
+
+TEST_F(FileTests, IsAbsolutePath) {
+    struct TestVector {
+        std::string path;
+        bool isAbsolute;
+    };
+    const std::vector< TestVector > testVectors{
+#ifdef _WIN32
+        { "C:/foo", true },
+        { "E:/foo", true },
+        { "C:\\foo", true },
+        { "EE:/foo", false },
+        { "E/foo", false },
+        { "E\\foo", false },
+        { "/foo", false },
+        { "\\foo", false },
+        { "foo", false },
+        { "foo:/", false },
+#else
+        { "/foo", true },
+        { "\\foo", false },
+        { "foo", false },
+#endif
+    };
+    for (const auto& testVector: testVectors) {
+        EXPECT_EQ(
+            testVector.isAbsolute,
+            SystemAbstractions::File::IsAbsolutePath(testVector.path)
+        );
+    }
+}
