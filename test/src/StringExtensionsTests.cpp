@@ -70,11 +70,11 @@ TEST(StringExtensionsTests, Indent) {
     );
 }
 
-TEST(StringExtensionsTests, ParseElement) {
+TEST(StringExtensionsTests, ParseComponent) {
     const std::string line = "Value = {abc {x} = def} NextValue = 42";
     ASSERT_EQ(
         "abc {x} = def}",
-        SystemAbstractions::ParseElement(line, 9, line.length())
+        SystemAbstractions::ParseComponent(line, 9, line.length())
     );
 }
 

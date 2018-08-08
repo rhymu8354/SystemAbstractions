@@ -84,7 +84,7 @@ namespace SystemAbstractions {
         return linesOut;
     }
 
-    std::string ParseElement(const std::string& s, size_t begin, size_t end) {
+    std::string ParseComponent(const std::string& s, size_t begin, size_t end) {
         bool inString = false;
         int level = 1;
         size_t j = begin;

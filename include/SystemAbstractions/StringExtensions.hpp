@@ -57,27 +57,105 @@ namespace SystemAbstractions {
     std::string Trim(const std::string& s);
 
     /**
-     * @todo Needs documentation
+     * This function breaks up the given string into lines,
+     * according to any CR-LF end-of-line character sequences found
+     * in the string, indents all lines except the first,
+     * and then concatenates the lines back together, returning
+     * them as a single string.
+     *
+     * @param[in] linesIn
+     *     This is the string containing the lines to indent.
+     *
+     * @param[in] spaces
+     *     This is the number of spaces to indent each line but the first.
+     *
+     * @return
+     *     The indented text is returned as a single string.
      */
     std::string Indent(std::string linesIn, size_t spaces);
 
     /**
-     * @todo Needs documentation
+     * This function returns a substring of the given string that
+     * contains the next fully delimited "component", such as string,
+     * array, object, etc., given the following recognized delimiter pairs:
+     * - double quotes
+     * - [ ]
+     * - { }
+     * - < >
+     * - ( )
+     *
+     * Escaped delimiter characters (i.e. "\{") are not considered delimiters.
+     *
+     * Any comma (',') or "outer-most" delimiter encountered while scanning
+     * the string is considered to terminate the component.
+     *
+     * @param[in] s
+     *     This is the string from which to extract the next
+     *     delimited component.
+     *
+     * @param[in] begin
+     *     This is the starting position from which to scan
+     *     the next component.
+     *
+     * @param[in] end
+     *     This is the limit to which the string will be scanned
+     *     to determine the next component.
      */
-    std::string ParseElement(const std::string& s, size_t begin, size_t end);
+    std::string ParseComponent(const std::string& s, size_t begin, size_t end);
 
     /**
-     * @todo Needs documentation
+     * This function returns a copy of the given input string, modified
+     * so that every character in the given "charactersToEscape" that is
+     * found in the input string is prefixed by the given "escapeCharacter".
+     *
+     * @param[in] s
+     *     This is the input string.
+     *
+     * @param[in] escapeCharacter
+     *     This is the character to put in front of every character
+     *     in the input string that is a member of the
+     *     "charactersToEscape" set.
+     *
+     * @param[in] charactersToEscape
+     *     These are the characters that should be escaped in the input.
+     *
+     * @return
+     *     A copy of the input string is returned, where every character
+     *     in the given "charactersToEscape" that is found in the input
+     *     string is prefixed by the given "escapeCharacter".
      */
     std::string Escape(const std::string& s, char escapeCharacter, const std::set< char >& charactersToEscape);
 
     /**
-     * @todo Needs documentation
+     * This function removes the given escapeCharacter from the given
+     * input string, returning the result.
+     *
+     * @param[in] s
+     *     This is the string from which to remove all escape characters.
+     *
+     * @param[in] escapeCharacter
+     *     This is the character to remove from the given input string.
+     *
+     * @return
+     *     A copy of the given input string, with all instances of the
+     *     given escape character removed, is returned.
      */
     std::string Unescape(const std::string& s, char escapeCharacter);
 
     /**
-     * @todo Needs documentation
+     * This function breaks the given string at each instance of the
+     * given delimiter, returning the pieces as a collection of substrings.
+     * The delimiter characters are removed.
+     *
+     * @param[in] s
+     *     This is the string to split.
+     *
+     * @param[in] d
+     *     This is the delimiter character at which to split the string.
+     *
+     * @return
+     *     The collection of substrings that result from breaking the given
+     *     string at each delimiter character is returned.
      */
     std::vector< std::string > Split(
         const std::string& s,

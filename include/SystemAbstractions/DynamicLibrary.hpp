@@ -50,17 +50,49 @@ namespace SystemAbstractions {
         DynamicLibrary& operator=(DynamicLibrary&& other) noexcept;
 
         /**
-         * @todo Needs documentation
+         * This method loads the dynamic library from storage,
+         * linking it into the running program.
+         *
+         * @param[in] path
+         *     This is the path to the directory containing
+         *     the dynamic library.
+         *
+         * @param[in] name
+         *     This is the name of the dynamic library, without
+         *     and prefix, suffix, or file extension.
+         *
+         * @return
+         *     An indication of whether or not the library was successfully
+         *     loaded and linked to the program is returned.
          */
         bool Load(const std::string& path, const std::string& name);
 
         /**
-         * @todo Needs documentation
+         * This method unlinks the dynamic library from the running program.
+         *
+         * @note
+         *     Do not call this method until all objects and resources
+         *     (i.e. threads) from the library have been destroyed,
+         *     otherwise the program may crash.
          */
         void Unload();
 
         /**
-         * @todo Needs documentation
+         * This method locates the procedure (function) that has the given
+         * name in the library, and returns its address.
+         *
+         * @note
+         *     This method should only be called while the library is loaded.
+         *
+         * @param[in] name
+         *     This is the name of the function in the library to locate.
+         *
+         * @return
+         *     The address of the given function in the library is returned.
+         *
+         * @retval nullptr
+         *     This is returned if the loader could not find any function
+         *     with the given name in the library.
          */
         void* GetProcedure(const std::string& name);
 
