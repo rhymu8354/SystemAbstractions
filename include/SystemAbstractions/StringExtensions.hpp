@@ -11,6 +11,7 @@
 
 #include <set>
 #include <stdarg.h>
+#include <stdint.h>
 #include <string>
 #include <vector>
 
@@ -194,6 +195,48 @@ namespace SystemAbstractions {
      *     are replaced with their lower-case equivalents.
      */
     std::string ToLower(const std::string& inString);
+
+    /**
+     * These are the different results that can be indicated
+     * when a string is parsed as an integer.
+     */
+    enum class ToIntegerResult {
+        /**
+         * This indicates the size was parsed successfully.
+         */
+        Success,
+
+        /**
+         * This indicates the size had one or more characters
+         * that were not digits.
+         */
+        NotANumber,
+
+        /**
+         * This indicates the size exceeded the maximum representable
+         * size integer.
+         */
+        Overflow
+    };
+
+    /**
+     * This function parses the given string as an
+     * integer, detecting invalid characters, overflow, etc.
+     *
+     * @param[in] numberString
+     *     This is the string containing the number to parse.
+     *
+     * @param[out] number
+     *     This is where to store the number parsed.
+     *
+     * @return
+     *     An indication of whether or not the number was parsed
+     *     successfully is returned.
+     */
+    ToIntegerResult ToInteger(
+        const std::string& numberString,
+        intmax_t& number
+    );
 
 }
 

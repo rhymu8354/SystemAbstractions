@@ -205,4 +205,78 @@ namespace SystemAbstractions {
         return outString;
     }
 
+    ToIntegerResult ToInteger(
+        const std::string& numberString,
+        intmax_t& number
+    ) {
+        size_t index = 0;
+        size_t state = 0;
+        bool negative = false;
+        intmax_t value = 0;
+        while (index < numberString.size()) {
+            switch (state) {
+                case 0: { // [ minus ]
+                    if (numberString[index] == '-') {
+                        negative = true;
+                        ++index;
+                    }
+                    state = 1;
+                } break;
+
+                case 1: { // zero / 1-9
+                    if (numberString[index] == '0') {
+                        state = 2;
+                    } else if (
+                        (numberString[index] >= '1')
+                        && (numberString[index] <= '9')
+                    ) {
+                        state = 3;
+                        value = (decltype(value))(numberString[index] - '0');
+                        value = (value * (negative ? -1 : 1));
+                    } else {
+                        return ToIntegerResult::NotANumber;
+                    }
+                    ++index;
+                } break;
+
+                case 2: { // extra junk!
+                    return ToIntegerResult::NotANumber;
+                } break;
+
+                case 3: { // *DIGIT
+                    if (
+                        (numberString[index] >= '0')
+                        && (numberString[index] <= '9')
+                    ) {
+                        const auto digit = (decltype(value))(numberString[index] - '0');
+                        if (negative) {
+                            if ((std::numeric_limits< decltype(value) >::min() + digit) / 10 > value) {
+                                return ToIntegerResult::Overflow;
+                            }
+                        } else {
+                            if ((std::numeric_limits< decltype(value) >::max() - digit) / 10 < value) {
+                                return ToIntegerResult::Overflow;
+                            }
+                        }
+                        value *= 10;
+                        if (negative) {
+                            value -= digit;
+                        } else {
+                            value += digit;
+                        }
+                        ++index;
+                    } else {
+                        return ToIntegerResult::NotANumber;
+                    }
+                } break;
+            }
+        }
+        if (state >= 2) {
+            number = value;
+            return ToIntegerResult::Success;
+        } else {
+            return ToIntegerResult::NotANumber;
+        }
+    }
+
 }

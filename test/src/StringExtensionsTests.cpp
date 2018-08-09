@@ -8,6 +8,8 @@
  */
 
 #include <gtest/gtest.h>
+#include <inttypes.h>
+#include <limits>
 #include <stdint.h>
 #include <SystemAbstractions/StringExtensions.hpp>
 #include <vector>
@@ -121,4 +123,83 @@ TEST(StringExtensionsTests, ToLower) {
     EXPECT_EQ("foo1bar", SystemAbstractions::ToLower("fOo1bAr"));
     EXPECT_EQ("foo1bar", SystemAbstractions::ToLower("foo1bar"));
     EXPECT_EQ("foo1bar", SystemAbstractions::ToLower("FOO1BAR"));
+}
+
+TEST(StringExtensionsTests, ToInteger) {
+    struct TestVector {
+        std::string input;
+        intmax_t output;
+        SystemAbstractions::ToIntegerResult expectedResult;
+    };
+    const auto maxAsString = SystemAbstractions::sprintf("%" PRIdMAX, std::numeric_limits< intmax_t >::max());
+    const auto minAsString = SystemAbstractions::sprintf("%" PRIdMAX, std::numeric_limits< intmax_t >::min());
+    auto maxPlusOneAsString = maxAsString;
+    size_t digit = maxPlusOneAsString.length();
+    while (digit > 0) {
+        if (maxPlusOneAsString[digit-1] == '9') {
+            maxPlusOneAsString[digit-1] = '0';
+            --digit;
+        } else {
+            ++maxPlusOneAsString[digit-1];
+            break;
+        }
+    }
+    if (digit == 0) {
+        maxPlusOneAsString.insert(maxPlusOneAsString.begin(), '1');
+    }
+    auto minMinusOneAsString = minAsString;
+    digit = minMinusOneAsString.length();
+    while (digit > 1) {
+        if (minMinusOneAsString[digit-1] == '9') {
+            minMinusOneAsString[digit-1] = '0';
+            --digit;
+        } else {
+            ++minMinusOneAsString[digit-1];
+            break;
+        }
+    }
+    if (digit == 1) {
+        minMinusOneAsString.insert(maxPlusOneAsString.begin() + 1, '1');
+    }
+    const std::vector< TestVector > testVectors{
+        {"0", 0, SystemAbstractions::ToIntegerResult::Success},
+        {"42", 42, SystemAbstractions::ToIntegerResult::Success},
+        {"-42", -42, SystemAbstractions::ToIntegerResult::Success},
+        {
+            maxAsString,
+            std::numeric_limits< intmax_t >::max(),
+            SystemAbstractions::ToIntegerResult::Success
+        },
+        {
+            minAsString,
+            std::numeric_limits< intmax_t >::min(),
+            SystemAbstractions::ToIntegerResult::Success
+        },
+        {
+            maxPlusOneAsString,
+            0,
+            SystemAbstractions::ToIntegerResult::Overflow
+        },
+        {
+            minMinusOneAsString,
+            0,
+            SystemAbstractions::ToIntegerResult::Overflow
+        },
+    };
+    for (const auto& testVector: testVectors) {
+        intmax_t output;
+        EXPECT_EQ(
+            testVector.expectedResult,
+            SystemAbstractions::ToInteger(
+                testVector.input,
+                output
+            )
+        );
+        if (testVector.expectedResult == SystemAbstractions::ToIntegerResult::Success) {
+            EXPECT_EQ(
+                output,
+                testVector.output
+            );
+        }
+    }
 }
