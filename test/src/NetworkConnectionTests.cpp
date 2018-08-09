@@ -7,6 +7,7 @@
  * © 2018 by Richard Walters
  */
 
+#include <algorithm>
 #include <condition_variable>
 #include <functional>
 #include <gtest/gtest.h>
@@ -15,7 +16,39 @@
 #include <string>
 #include <SystemAbstractions/NetworkConnection.hpp>
 #include <SystemAbstractions/NetworkEndpoint.hpp>
+#include <thread>
 #include <vector>
+
+#ifdef _WIN32
+/**
+ * WinSock2.h should always be included first because if Windows.h is
+ * included before it, WinSock.h gets included which conflicts
+ * with WinSock2.h.
+ *
+ * Windows.h should always be included next because other Windows header
+ * files, such as KnownFolders.h, don't always define things properly if
+ * you don't include Windows.h beforehand.
+ */
+#include <WinSock2.h>
+#include <Windows.h>
+#include <WS2tcpip.h>
+#include <IPHlpApi.h>
+#pragma comment(lib, "ws2_32")
+#pragma comment(lib, "IPHlpApi")
+#undef ERROR
+#undef SendMessage
+#undef min
+#undef max
+#define IPV4_ADDRESS_IN_SOCKADDR sin_addr.S_un.S_addr
+#define SOCKADDR_LENGTH_TYPE int
+#else /* POSIX */
+#include <netinet/ip.h>
+#include <sys/socket.h>
+#define IPV4_ADDRESS_IN_SOCKADDR sin_addr.s_addr
+#define SOCKADDR_LENGTH_TYPE socklen_t
+#define SOCKET int
+#define closesocket close
+#endif /* _WIN32 or POSIX */
 
 namespace {
 
@@ -296,7 +329,44 @@ namespace {
 
 }
 
-TEST(NetworkConnectionTests, EstablishConnection) {
+/**
+ * This is the test fixture for these tests, providing common
+ * setup and teardown for each test.
+ */
+struct NetworkConnectionTests
+    : public ::testing::Test
+{
+    // Properties
+
+    /**
+     * This keeps track of whether or not WSAStartup succeeded,
+     * because if so we need to call WSACleanup upon teardown.
+     */
+    bool wsaStarted = false;
+
+    // Methods
+
+    // ::testing::Test
+
+    virtual void SetUp() {
+#if _WIN32
+        WSADATA wsaData;
+        if (!WSAStartup(MAKEWORD(2, 0), &wsaData)) {
+            wsaStarted = true;
+        }
+#endif /* _WIN32 */
+    }
+
+    virtual void TearDown() {
+#if _WIN32
+        if (wsaStarted) {
+            (void)WSACleanup();
+        }
+#endif /* _WIN32 */
+    }
+};
+
+TEST_F(NetworkConnectionTests, EstablishConnection) {
     SystemAbstractions::NetworkEndpoint server;
     std::vector< std::shared_ptr< SystemAbstractions::NetworkConnection > > clients;
     std::condition_variable_any callbackCondition;
@@ -346,7 +416,7 @@ TEST(NetworkConnectionTests, EstablishConnection) {
     ASSERT_EQ(client.GetBoundAddress(), clients[0]->GetPeerAddress());
 }
 
-TEST(NetworkConnectionTests, SendingMessage) {
+TEST_F(NetworkConnectionTests, SendingMessage) {
     SystemAbstractions::NetworkEndpoint server;
     Owner serverConnectionOwner, clientConnectionOwner;
     std::vector< std::shared_ptr< SystemAbstractions::NetworkConnection > > clients;
@@ -409,7 +479,7 @@ TEST(NetworkConnectionTests, SendingMessage) {
     ASSERT_EQ(messageAsVector, serverConnectionOwner.streamReceived);
 }
 
-TEST(NetworkConnectionTests, ReceivingMessage) {
+TEST_F(NetworkConnectionTests, ReceivingMessage) {
     SystemAbstractions::NetworkEndpoint server;
     Owner serverConnectionOwner, clientConnectionOwner;
     std::vector< std::shared_ptr< SystemAbstractions::NetworkConnection > > clients;
@@ -484,7 +554,7 @@ TEST(NetworkConnectionTests, ReceivingMessage) {
     ASSERT_EQ(messageAsVector, clientConnectionOwner.streamReceived);
 }
 
-TEST(NetworkConnectionTests, Close) {
+TEST_F(NetworkConnectionTests, Close) {
     SystemAbstractions::NetworkEndpoint server;
     Owner serverConnectionOwner, clientConnectionOwner;
     std::vector< std::shared_ptr< SystemAbstractions::NetworkConnection > > clients;
@@ -560,7 +630,7 @@ TEST(NetworkConnectionTests, Close) {
     ASSERT_TRUE(serverConnectionOwner.connectionBroken);
 }
 
-TEST(NetworkConnectionTests, CloseDuringBrokenConnectionCallback) {
+TEST_F(NetworkConnectionTests, CloseDuringBrokenConnectionCallback) {
     SystemAbstractions::NetworkEndpoint server;
     Owner serverConnectionOwner, clientConnectionOwner;
     std::vector< std::shared_ptr< SystemAbstractions::NetworkConnection > > clients;
@@ -629,4 +699,97 @@ TEST(NetworkConnectionTests, CloseDuringBrokenConnectionCallback) {
     }
     clients[0]->Close();
     clientConnectionOwner.AwaitDisconnection();
+}
+
+TEST_F(NetworkConnectionTests, CloseGracefully) {
+    // Set up a connection-oriented socket to receive
+    // a connection from the unit under test.
+    auto server = socket(AF_INET, SOCK_STREAM, 0);
+    std::shared_ptr< SOCKET > serverReference(
+        &server,
+        [server](SOCKET* s){
+            closesocket(server);
+        }
+    );
+#if _WIN32
+    ASSERT_FALSE(server == INVALID_SOCKET);
+#else /* POSIX */
+    ASSERT_FALSE(server < 0);
+#endif /* _WIN32 or POSIX */
+    struct sockaddr_in serverAddress;
+    (void)memset(&serverAddress, 0, sizeof(serverAddress));
+    serverAddress.sin_family = AF_INET;
+    serverAddress.IPV4_ADDRESS_IN_SOCKADDR = 0;
+    serverAddress.sin_port = 0;
+    ASSERT_TRUE(bind(server, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) == 0);
+    SOCKADDR_LENGTH_TYPE serverAddressLength = sizeof(serverAddress);
+    uint16_t serverPort;
+    ASSERT_TRUE(getsockname(server, (struct sockaddr*)&serverAddress, &serverAddressLength) == 0);
+    serverPort = ntohs(serverAddress.sin_port);
+    ASSERT_TRUE(listen(server, SOMAXCONN) == 0);
+
+    // Have unit under test connect to the server.
+    SystemAbstractions::NetworkConnection client;
+    SOCKET serverConnection;
+    std::thread serverAccept(
+        [server, &serverConnection]{
+            struct sockaddr_in clientAddress;
+            SOCKADDR_LENGTH_TYPE clientAddressLength = sizeof(clientAddress);
+            serverConnection = accept(server, (struct sockaddr*)&clientAddress, &clientAddressLength);
+        #if _WIN32
+            ASSERT_FALSE(serverConnection == INVALID_SOCKET);
+        #else /* POSIX */
+            ASSERT_FALSE(serverConnection < 0);
+        #endif /* _WIN32 or POSIX */
+        }
+    );
+    ASSERT_TRUE(client.Connect(0x7F000001, serverPort));
+    serverAccept.join();
+    Owner clientOwner;
+    (void)client.Process(
+        [&clientOwner](const std::vector< uint8_t >& message){
+            clientOwner.NetworkConnectionMessageReceived(message);
+        },
+        [&clientOwner]{
+            clientOwner.NetworkConnectionBroken();
+        }
+    );
+
+    // Queue up to send a large amount of data to the server.
+    std::vector< uint8_t > data(10000000, 'X');
+    client.SendMessage(data);
+
+    // Issue a graceful close on the client.
+    client.Close(true);
+
+    // Verify server connection is not broken until all the
+    // data is received.
+    std::vector< uint8_t > buffer(100000);
+    size_t totalBytesReceived = 0;
+    while (totalBytesReceived < data.size()) {
+        const auto bytesToReceive = std::min(
+            buffer.size(),
+            data.size() - totalBytesReceived
+        );
+        const auto bytesReceived = recv(
+            serverConnection,
+            (char*) buffer.data(),
+            bytesToReceive,
+            MSG_WAITALL
+        );
+        ASSERT_FALSE(bytesReceived <= 0) << totalBytesReceived;
+        totalBytesReceived += bytesReceived;
+    }
+
+    // Verify unit under test has not yet indicated
+    // that the connection is broken.
+    ASSERT_FALSE(clientOwner.connectionBroken);
+
+    // Close the server connection and verify the connection
+    // is finally broken.
+    (void)closesocket(serverConnection);
+    ASSERT_TRUE(clientOwner.AwaitDisconnection());
+}
+
+TEST_F(NetworkConnectionTests, CloseAbruptly) {
 }

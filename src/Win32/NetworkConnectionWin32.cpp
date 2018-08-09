@@ -243,7 +243,7 @@ namespace SystemAbstractions {
         (void)SetEvent(platform->processorStateChangeEvent);
     }
 
-    void NetworkConnection::Impl::Close(bool stopProcessing) {
+    void NetworkConnection::Impl::Close(bool stopProcessing, bool clean) {
         if (
             stopProcessing
             && platform->processor.joinable()
@@ -255,17 +255,34 @@ namespace SystemAbstractions {
         }
         std::unique_lock< std::recursive_mutex > processingLock(platform->processingMutex);
         if (platform->sock != INVALID_SOCKET) {
-            diagnosticsSender.SendDiagnosticInformationFormatted(
-                0,
-                "closing connection with %" PRIu8 ".%" PRIu8 ".%" PRIu8 ".%" PRIu8 ":%" PRIu16,
-                (uint8_t)((peerAddress >> 24) & 0xFF),
-                (uint8_t)((peerAddress >> 16) & 0xFF),
-                (uint8_t)((peerAddress >> 8) & 0xFF),
-                (uint8_t)(peerAddress & 0xFF),
-                peerPort
-            );
-            (void)closesocket(platform->sock);
-            platform->sock = INVALID_SOCKET;
+            if (clean) {
+                // TODO: change this to mark that we want to automatically
+                // close once all data has been sent and we have received
+                // back the FD_CLOSE indication from the socket.
+                diagnosticsSender.SendDiagnosticInformationFormatted(
+                    0,
+                    "closing connection with %" PRIu8 ".%" PRIu8 ".%" PRIu8 ".%" PRIu8 ":%" PRIu16,
+                    (uint8_t)((peerAddress >> 24) & 0xFF),
+                    (uint8_t)((peerAddress >> 16) & 0xFF),
+                    (uint8_t)((peerAddress >> 8) & 0xFF),
+                    (uint8_t)(peerAddress & 0xFF),
+                    peerPort
+                );
+                (void)closesocket(platform->sock);
+                platform->sock = INVALID_SOCKET;
+            } else {
+                diagnosticsSender.SendDiagnosticInformationFormatted(
+                    0,
+                    "closing connection with %" PRIu8 ".%" PRIu8 ".%" PRIu8 ".%" PRIu8 ":%" PRIu16,
+                    (uint8_t)((peerAddress >> 24) & 0xFF),
+                    (uint8_t)((peerAddress >> 16) & 0xFF),
+                    (uint8_t)((peerAddress >> 8) & 0xFF),
+                    (uint8_t)(peerAddress & 0xFF),
+                    peerPort
+                );
+                (void)closesocket(platform->sock);
+                platform->sock = INVALID_SOCKET;
+            }
         }
     }
 

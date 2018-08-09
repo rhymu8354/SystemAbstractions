@@ -136,9 +136,18 @@ namespace SystemAbstractions {
         void SendMessage(const std::vector< uint8_t >& message);
 
         /**
-         * This method immediately breaks the connection to the peer.
+         * This method breaks the connection to the peer.
+         *
+         * @param[in] stopProcessing
+         *     This flag indicates whether or not the processor thread
+         *     should be joined before closing the connection.
+         *
+         * @param[in] clean
+         *     This flag indicates whether or not to attempt to complete
+         *     any data transmission still in progress, before breaking
+         *     the connection.
          */
-        void Close(bool stopProcessing);
+        void Close(bool stopProcessing, bool clean = false);
     };
 
 }

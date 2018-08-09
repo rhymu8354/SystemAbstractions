@@ -66,8 +66,8 @@ namespace SystemAbstractions {
         impl_->SendMessage(message);
     }
 
-    void NetworkConnection::Close() {
-        impl_->Close(true);
+    void NetworkConnection::Close(bool clean) {
+        impl_->Close(true, clean);
     }
 
 }

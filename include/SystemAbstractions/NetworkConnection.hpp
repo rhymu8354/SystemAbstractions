@@ -188,9 +188,14 @@ namespace SystemAbstractions {
         void SendMessage(const std::vector< uint8_t >& message);
 
         /**
-         * This method immediately breaks the connection to the peer.
+         * This method breaks the connection to the peer.
+         *
+         * @param[in] clean
+         *     This flag indicates whether or not to attempt to complete
+         *     any data transmission still in progress, before breaking
+         *     the connection.
          */
-        void Close();
+        void Close(bool clean = false);
 
         // Private properties
     private:
