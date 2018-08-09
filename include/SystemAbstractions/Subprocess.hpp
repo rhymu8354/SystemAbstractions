@@ -23,11 +23,11 @@ namespace SystemAbstractions {
     class Subprocess {
         // Lifecycle Management
     public:
-        ~Subprocess();
+        ~Subprocess() noexcept;
         Subprocess(const Subprocess&) = delete;
-        Subprocess(Subprocess&&);
+        Subprocess(Subprocess&&) noexcept;
         Subprocess& operator=(const Subprocess&) = delete;
-        Subprocess& operator=(Subprocess&&);
+        Subprocess& operator=(Subprocess&&) noexcept;
 
         // Public methods
     public:

@@ -67,11 +67,11 @@ namespace SystemAbstractions {
 
         // Lifecycle Management
     public:
-        ~DiagnosticsSender();
+        ~DiagnosticsSender() noexcept;
         DiagnosticsSender(const DiagnosticsSender&) = delete;
-        DiagnosticsSender(DiagnosticsSender&&);
+        DiagnosticsSender(DiagnosticsSender&&) noexcept;
         DiagnosticsSender& operator=(const DiagnosticsSender&) = delete;
-        DiagnosticsSender& operator=(DiagnosticsSender&&);
+        DiagnosticsSender& operator=(DiagnosticsSender&&) noexcept;
 
         // Public methods
     public:

@@ -52,13 +52,13 @@ namespace SystemAbstractions {
         return std::vector< uint8_t >(impl_->value.begin(), impl_->value.end());
     }
 
-    StringFile& StringFile::operator =(const std::string &b) {
+    StringFile& StringFile::operator=(const std::string &b) {
         impl_->value.assign(b.begin(), b.end());
         impl_->position = 0;
         return *this;
     }
 
-    StringFile& StringFile::operator =(const std::vector< uint8_t > &b) {
+    StringFile& StringFile::operator=(const std::vector< uint8_t > &b) {
         impl_->value.assign(b.begin(), b.end());
         impl_->position = 0;
         return *this;

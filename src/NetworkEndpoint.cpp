@@ -16,7 +16,7 @@
 
 namespace SystemAbstractions {
 
-    NetworkEndpoint::~NetworkEndpoint() = default;
+    NetworkEndpoint::~NetworkEndpoint() noexcept = default;
     NetworkEndpoint::NetworkEndpoint(NetworkEndpoint&& other) noexcept = default;
     NetworkEndpoint& NetworkEndpoint::operator=(NetworkEndpoint&& other) noexcept = default;
 

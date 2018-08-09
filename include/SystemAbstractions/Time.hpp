@@ -21,9 +21,9 @@ namespace SystemAbstractions {
         // Lifecycle management
     public:
         ~Time() noexcept;
-        Time(const Time&) noexcept = delete;
+        Time(const Time&) = delete;
         Time(Time&&) noexcept;
-        Time& operator=(const Time&) noexcept = delete;
+        Time& operator=(const Time&) = delete;
         Time& operator=(Time&&) noexcept;
 
         // Public methods

@@ -60,49 +60,20 @@ namespace SystemAbstractions {
      * native operating system.
      */
     class Clipboard {
+        // Lifecycle management
+    public:
+        ~Clipboard() noexcept;
+        Clipboard(const Clipboard& other) = default;
+        Clipboard(Clipboard&& other) noexcept= default;
+        Clipboard& operator=(const Clipboard& other) = default;
+        Clipboard& operator=(Clipboard&& other) noexcept = default;
+
         // Public methods
     public:
         /**
          * This is the default constructor.
          */
         Clipboard();
-
-        /**
-         * This is the destructor.
-         */
-        ~Clipboard();
-
-        /**
-         * This is the copy constructor.
-         *
-         * @param[in] other
-         *     This is the other object to copy.
-         */
-        Clipboard(const Clipboard& other) = default;
-
-        /**
-         * This is the move constructor.
-         *
-         * @param[in] other
-         *     This is the other object to move.
-         */
-        Clipboard(Clipboard&& other) = default;
-
-        /**
-         * This is the copy-assignment operator.
-         *
-         * @param[in] other
-         *     This is the other object to copy.
-         */
-        Clipboard& operator=(const Clipboard& other) = default;
-
-        /**
-         * This is the move-assignment operator.
-         *
-         * @param[in] other
-         *     This is the other object to move.
-         */
-        Clipboard& operator=(Clipboard&& other) = default;
 
         /**
          * This puts the given string into the clipboard.

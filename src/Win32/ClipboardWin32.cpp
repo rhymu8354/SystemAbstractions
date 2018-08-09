@@ -64,6 +64,24 @@ namespace SystemAbstractions {
          */
         static HWND windowHandle_;
 
+        // Lifecycle management
+
+        ~Impl() noexcept {
+            if (--instances_ == 0) {
+                if (!initFailed_) {
+                    if (windowHandle_ != NULL) {
+                        DestroyWindow(windowHandle_);
+                        windowHandle_ = NULL;
+                    }
+                    (void)UnregisterClass(WINDOW_CLASS_NAME, GetModuleHandle(NULL));
+                }
+            }
+        }
+        Impl(const Impl& other) = delete;
+        Impl(Impl&& other) noexcept = delete;
+        Impl& operator=(const Impl& other) = default;
+        Impl& operator=(Impl&& other) noexcept = default;
+
         // Methods
 
         /**
@@ -95,53 +113,6 @@ namespace SystemAbstractions {
                 }
             }
         }
-
-        /**
-         * This is the destructor.
-         */
-        ~Impl() {
-            if (--instances_ == 0) {
-                if (!initFailed_) {
-                    if (windowHandle_ != NULL) {
-                        DestroyWindow(windowHandle_);
-                        windowHandle_ = NULL;
-                    }
-                    (void)UnregisterClass(WINDOW_CLASS_NAME, GetModuleHandle(NULL));
-                }
-            }
-        }
-
-        /**
-         * This is the copy constructor.
-         *
-         * @param[in] other
-         *     This is the other object to copy.
-         */
-        Impl(const Impl& other) = delete;
-
-        /**
-         * This is the move constructor.
-         *
-         * @param[in] other
-         *     This is the other object to move.
-         */
-        Impl(Impl&& other) = delete;
-
-        /**
-         * This is the copy-assignment operator.
-         *
-         * @param[in] other
-         *     This is the other object to copy.
-         */
-        Impl& operator=(const Impl& other) = default;
-
-        /**
-         * This is the move-assignment operator.
-         *
-         * @param[in] other
-         *     This is the other object to move.
-         */
-        Impl& operator=(Impl&& other) = default;
 
         /**
          * This is the window procedure that handles messages for the

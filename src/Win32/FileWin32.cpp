@@ -78,9 +78,9 @@ namespace SystemAbstractions {
         bool writeAccess = false;
     };
 
-    File::Impl::~Impl() = default;
-    File::Impl::Impl(Impl&&) = default;
-    File::Impl& File::Impl::operator =(Impl&&) = default;
+    File::Impl::~Impl() noexcept = default;
+    File::Impl::Impl(Impl&&) noexcept = default;
+    File::Impl& File::Impl::operator=(Impl&&) noexcept = default;
 
     File::Impl::Impl()
         : platform(new Platform())
@@ -112,15 +112,15 @@ namespace SystemAbstractions {
         return true;
     }
 
-    File::~File() {
+    File::~File() noexcept {
         if (impl_ == nullptr) {
             return;
         }
         Close();
     }
 
-    File::File(File&& other) = default;
-    File& File::operator=(File&& other) = default;
+    File::File(File&& other) noexcept = default;
+    File& File::operator=(File&& other) noexcept= default;
 
     File::File(std::string path)
         : impl_(new Impl())

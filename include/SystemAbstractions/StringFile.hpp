@@ -24,11 +24,11 @@ namespace SystemAbstractions {
     class StringFile: public IFile {
         // Lifecycle management
     public:
-        ~StringFile();
+        ~StringFile() noexcept;
         StringFile(const StringFile&) = delete;
-        StringFile(StringFile&&) = delete;
+        StringFile(StringFile&&) noexcept = delete;
         StringFile& operator=(const StringFile&) = delete;
-        StringFile& operator=(StringFile&&) = delete;
+        StringFile& operator=(StringFile&&) noexcept = delete;
 
         // Public methods
     public:
@@ -61,12 +61,12 @@ namespace SystemAbstractions {
         /**
          * This is the assignment from std::string operator.
          */
-        StringFile& operator =(const std::string &b);
+        StringFile& operator=(const std::string &b);
 
         /**
          * This is the assignment from std::vector< uint8_t > operator.
          */
-        StringFile& operator =(const std::vector< uint8_t > &b);
+        StringFile& operator=(const std::vector< uint8_t > &b);
 
         /**
          * This method removes the given number of bytes from the front

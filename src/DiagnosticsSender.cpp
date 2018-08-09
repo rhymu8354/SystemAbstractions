@@ -113,9 +113,9 @@ namespace SystemAbstractions {
         mutable std::mutex mutex;
     };
 
-    DiagnosticsSender::~DiagnosticsSender() = default;
-    DiagnosticsSender::DiagnosticsSender(DiagnosticsSender&&) = default;
-    DiagnosticsSender& DiagnosticsSender::operator=(DiagnosticsSender&&) = default;
+    DiagnosticsSender::~DiagnosticsSender() noexcept = default;
+    DiagnosticsSender::DiagnosticsSender(DiagnosticsSender&&) noexcept = default;
+    DiagnosticsSender& DiagnosticsSender::operator=(DiagnosticsSender&&) noexcept = default;
 
     DiagnosticsSender::DiagnosticsSender(std::string name)
         : impl_(new Impl())

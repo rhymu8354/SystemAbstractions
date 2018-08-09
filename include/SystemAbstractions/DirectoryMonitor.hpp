@@ -31,7 +31,7 @@ namespace SystemAbstractions {
 
         // Lifecycle Management
     public:
-        ~DirectoryMonitor();
+        ~DirectoryMonitor() noexcept;
         DirectoryMonitor(const DirectoryMonitor&) = delete;
         DirectoryMonitor(DirectoryMonitor&& other) noexcept;
         DirectoryMonitor& operator=(const DirectoryMonitor&) = delete;

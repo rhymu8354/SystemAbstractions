@@ -24,11 +24,11 @@ namespace SystemAbstractions {
     class File: public IFile {
         // Lifecycle Management
     public:
-        ~File();
+        ~File() noexcept;
         File(const File&) = delete;
-        File(File&& other);
+        File(File&& other) noexcept;
         File& operator=(const File&) = delete;
-        File& operator=(File&& other);
+        File& operator=(File&& other) noexcept;
 
         // Public methods
     public:

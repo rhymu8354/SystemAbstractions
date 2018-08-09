@@ -31,9 +31,11 @@ namespace SystemAbstractions {
 
         // Lifecycle Management
 
-        ~Impl();
-        Impl(Impl&&);
-        Impl& operator =(Impl&&);
+        ~Impl() noexcept;
+        Impl(const Impl&) = delete;
+        Impl(Impl&&) noexcept;
+        Impl& operator=(const Impl&) = delete;
+        Impl& operator=(Impl&&) noexcept;
 
         // Methods
 

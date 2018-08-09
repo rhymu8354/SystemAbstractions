@@ -21,9 +21,9 @@ namespace SystemAbstractions {
         // Lifecycle methods
     public:
         ~CryptoRandom() noexcept;
-        CryptoRandom(const CryptoRandom&) noexcept = delete;
+        CryptoRandom(const CryptoRandom&) = delete;
         CryptoRandom(CryptoRandom&&) noexcept = delete;
-        CryptoRandom& operator=(const CryptoRandom&) noexcept = delete;
+        CryptoRandom& operator=(const CryptoRandom&) = delete;
         CryptoRandom& operator=(CryptoRandom&&) noexcept = delete;
 
         // Public methods

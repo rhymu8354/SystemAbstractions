@@ -91,9 +91,9 @@ namespace SystemAbstractions {
         // Lifecycle Management
     public:
         ~NetworkEndpoint() noexcept;
-        NetworkEndpoint(const NetworkEndpoint&) noexcept = delete;
+        NetworkEndpoint(const NetworkEndpoint&) = delete;
         NetworkEndpoint(NetworkEndpoint&& other) noexcept;
-        NetworkEndpoint& operator=(const NetworkEndpoint&) noexcept = delete;
+        NetworkEndpoint& operator=(const NetworkEndpoint&) = delete;
         NetworkEndpoint& operator=(NetworkEndpoint&& other) noexcept;
 
         // Public methods

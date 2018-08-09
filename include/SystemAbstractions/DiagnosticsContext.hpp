@@ -24,9 +24,9 @@ namespace SystemAbstractions {
         // Lifecycle Management
     public:
         ~DiagnosticsContext() noexcept;
-        DiagnosticsContext(const DiagnosticsContext&) noexcept = delete;
+        DiagnosticsContext(const DiagnosticsContext&) = delete;
         DiagnosticsContext(DiagnosticsContext&&) noexcept = delete;
-        DiagnosticsContext& operator=(const DiagnosticsContext&) noexcept = delete;
+        DiagnosticsContext& operator=(const DiagnosticsContext&) = delete;
         DiagnosticsContext& operator=(DiagnosticsContext&&) noexcept = delete;
 
         // Public methods

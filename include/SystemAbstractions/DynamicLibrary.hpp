@@ -18,36 +18,20 @@ namespace SystemAbstractions {
      * This class represents a dynamically loaded library.
      */
     class DynamicLibrary {
+        // Lifecycle management
+    public:
+        ~DynamicLibrary();
+        DynamicLibrary(const DynamicLibrary&) = delete;
+        DynamicLibrary(DynamicLibrary&& other) noexcept;
+        DynamicLibrary& operator=(const DynamicLibrary& other) = delete;
+        DynamicLibrary& operator=(DynamicLibrary&& other) noexcept;
+
         // Public methods
     public:
         /**
          * This is an instance constructor.
          */
         DynamicLibrary();
-
-        /**
-         * This is an instance constructor.
-         *
-         * @param impl
-         *     This is an existing set of properties to encapsulate
-         *     into a new object.
-         */
-        DynamicLibrary(std::unique_ptr< struct DynamicLibraryImpl >&& impl) noexcept;
-
-        /**
-         * This is the instance move constructor.
-         */
-        DynamicLibrary(DynamicLibrary&& other) noexcept;
-
-        /**
-         * This is the instance destructor.
-         */
-        ~DynamicLibrary();
-
-        /**
-         * This is the move assignment operator.
-         */
-        DynamicLibrary& operator=(DynamicLibrary&& other) noexcept;
 
         /**
          * This method loads the dynamic library from storage,
@@ -107,10 +91,6 @@ namespace SystemAbstractions {
          *     object is returned.
          */
         std::string GetLastError();
-
-        // Disable copy constructor and assignment operator.
-        DynamicLibrary(const DynamicLibrary&) = delete;
-        DynamicLibrary& operator=(const DynamicLibrary&) = delete;
 
         // Private properties
     private:

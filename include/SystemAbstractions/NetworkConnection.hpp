@@ -60,9 +60,9 @@ namespace SystemAbstractions {
         // Lifecycle Management
     public:
         ~NetworkConnection() noexcept;
-        NetworkConnection(const NetworkConnection&) noexcept = delete;
+        NetworkConnection(const NetworkConnection&) = delete;
         NetworkConnection(NetworkConnection&& other) noexcept = delete;
-        NetworkConnection& operator=(const NetworkConnection&) noexcept = delete;
+        NetworkConnection& operator=(const NetworkConnection&) = delete;
         NetworkConnection& operator=(NetworkConnection&& other) noexcept = delete;
 
         // Public methods
