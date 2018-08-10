@@ -291,6 +291,11 @@ namespace SystemAbstractions {
             (uint8_t)(peerAddress & 0xFF),
             peerPort
         );
+        if (!platform->peerClosed) {
+            if (brokenDelegate != nullptr) {
+                brokenDelegate();
+            }
+        }
     }
 
     std::shared_ptr< NetworkConnection > NetworkConnection::Platform::MakeConnectionFromExistingSocket(

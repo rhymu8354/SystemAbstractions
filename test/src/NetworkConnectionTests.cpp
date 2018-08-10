@@ -803,4 +803,99 @@ TEST_F(NetworkConnectionTests, CloseGracefully) {
 }
 
 TEST_F(NetworkConnectionTests, CloseAbruptly) {
+    // Set up a connection-oriented socket to receive
+    // a connection from the unit under test.
+    auto server = socket(AF_INET, SOCK_STREAM, 0);
+    std::shared_ptr< SOCKET > serverReference(
+        &server,
+        [&server](SOCKET* s){
+            if (server != INVALID_SOCKET) {
+                closesocket(server);
+            }
+        }
+    );
+#if _WIN32
+    ASSERT_FALSE(server == INVALID_SOCKET);
+#else /* POSIX */
+    ASSERT_FALSE(server < 0);
+#endif /* _WIN32 or POSIX */
+    struct sockaddr_in serverAddress;
+    (void)memset(&serverAddress, 0, sizeof(serverAddress));
+    serverAddress.sin_family = AF_INET;
+    serverAddress.IPV4_ADDRESS_IN_SOCKADDR = 0;
+    serverAddress.sin_port = 0;
+    ASSERT_TRUE(bind(server, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) == 0);
+    SOCKADDR_LENGTH_TYPE serverAddressLength = sizeof(serverAddress);
+    uint16_t serverPort;
+    ASSERT_TRUE(getsockname(server, (struct sockaddr*)&serverAddress, &serverAddressLength) == 0);
+    serverPort = ntohs(serverAddress.sin_port);
+    ASSERT_TRUE(listen(server, SOMAXCONN) == 0);
+
+    // Have unit under test connect to the server.
+    SystemAbstractions::NetworkConnection client;
+    SOCKET serverConnection;
+    std::shared_ptr< SOCKET > serverConnectionReference(
+        &serverConnection,
+        [&serverConnection](SOCKET* s){
+            if (serverConnection != INVALID_SOCKET) {
+                closesocket(serverConnection);
+            }
+        }
+    );
+    std::thread serverAccept(
+        [server, &serverConnection]{
+            struct sockaddr_in clientAddress;
+            SOCKADDR_LENGTH_TYPE clientAddressLength = sizeof(clientAddress);
+            serverConnection = accept(server, (struct sockaddr*)&clientAddress, &clientAddressLength);
+        #if _WIN32
+            ASSERT_FALSE(serverConnection == INVALID_SOCKET);
+        #else /* POSIX */
+            ASSERT_FALSE(serverConnection < 0);
+        #endif /* _WIN32 or POSIX */
+        }
+    );
+    ASSERT_TRUE(client.Connect(0x7F000001, serverPort));
+    serverAccept.join();
+    Owner clientOwner;
+    (void)client.Process(
+        [&clientOwner](const std::vector< uint8_t >& message){
+            clientOwner.NetworkConnectionMessageReceived(message);
+        },
+        [&clientOwner]{
+            clientOwner.NetworkConnectionBroken();
+        }
+    );
+
+    // Queue up to send a large amount of data to the server.
+    std::vector< uint8_t > data(10000000, 'X');
+    client.SendMessage(data);
+
+    // Issue an abrupt close on the client.
+    client.Close(false);
+
+    // Verify server connection is broken before all the
+    // data is received.
+    std::vector< uint8_t > buffer(100000);
+    size_t totalBytesReceived = 0;
+    while (totalBytesReceived < data.size()) {
+        const auto bytesToReceive = std::min(
+            buffer.size(),
+            data.size() - totalBytesReceived
+        );
+        const auto bytesReceived = recv(
+            serverConnection,
+            (char*) buffer.data(),
+            (int)bytesToReceive,
+            MSG_WAITALL
+        );
+        if (bytesReceived <= 0) {
+            break;
+        }
+        totalBytesReceived += bytesReceived;
+    }
+    EXPECT_LT(totalBytesReceived, data.size());
+
+    // Verify unit under test has indicated
+    // that the connection is broken.
+    EXPECT_TRUE(clientOwner.AwaitDisconnection());
 }
