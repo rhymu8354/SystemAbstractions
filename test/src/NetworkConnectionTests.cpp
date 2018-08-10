@@ -707,8 +707,10 @@ TEST_F(NetworkConnectionTests, CloseGracefully) {
     auto server = socket(AF_INET, SOCK_STREAM, 0);
     std::shared_ptr< SOCKET > serverReference(
         &server,
-        [server](SOCKET* s){
-            closesocket(server);
+        [&server](SOCKET* s){
+            if (server != INVALID_SOCKET) {
+                closesocket(server);
+            }
         }
     );
 #if _WIN32
@@ -731,6 +733,14 @@ TEST_F(NetworkConnectionTests, CloseGracefully) {
     // Have unit under test connect to the server.
     SystemAbstractions::NetworkConnection client;
     SOCKET serverConnection;
+    std::shared_ptr< SOCKET > serverConnectionReference(
+        &serverConnection,
+        [&serverConnection](SOCKET* s){
+            if (serverConnection != INVALID_SOCKET) {
+                closesocket(serverConnection);
+            }
+        }
+    );
     std::thread serverAccept(
         [server, &serverConnection]{
             struct sockaddr_in clientAddress;
@@ -788,6 +798,7 @@ TEST_F(NetworkConnectionTests, CloseGracefully) {
     // Close the server connection and verify the connection
     // is finally broken.
     (void)closesocket(serverConnection);
+    serverConnection = INVALID_SOCKET;
     ASSERT_TRUE(clientOwner.AwaitDisconnection());
 }
 
