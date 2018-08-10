@@ -774,7 +774,7 @@ TEST_F(NetworkConnectionTests, CloseGracefully) {
         const auto bytesReceived = recv(
             serverConnection,
             (char*) buffer.data(),
-            bytesToReceive,
+            (int)bytesToReceive,
             MSG_WAITALL
         );
         ASSERT_FALSE(bytesReceived <= 0) << totalBytesReceived;
