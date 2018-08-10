@@ -26,6 +26,8 @@ set(Headers
 )
 
 set(Sources
+    src/DataQueue.cpp
+    src/DataQueue.hpp
     src/DiagnosticsContext.cpp
     src/DiagnosticsSender.cpp
     src/DiagnosticsStreamReporter.cpp

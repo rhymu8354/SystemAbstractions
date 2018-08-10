@@ -8,6 +8,7 @@ set(This SystemAbstractionsTests)
 set(Sources
     src/ClipboardTests.cpp
     src/CryptoRandomTests.cpp
+    src/DataQueueTests.cpp
     src/DiagnosticsContextTests.cpp
     src/DiagnosticsSenderTests.cpp
     src/DiagnosticsStreamReporterTests.cpp
@@ -26,7 +27,7 @@ set_target_properties(${This} PROPERTIES
     FOLDER Tests
 )
 
-target_include_directories(${This} PRIVATE ..)
+target_include_directories(${This} PRIVATE ../src)
 
 target_compile_definitions(${This} PRIVATE CLIPBOARD_REVEAL_OS_API)
 
