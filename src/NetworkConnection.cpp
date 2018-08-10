@@ -27,7 +27,6 @@ namespace SystemAbstractions {
     }
 
     bool NetworkConnection::Connect(uint32_t peerAddress, uint16_t peerPort) {
-        impl_->Close(true);
         impl_->peerAddress = peerAddress;
         impl_->peerPort = peerPort;
         return impl_->Connect();
@@ -67,7 +66,11 @@ namespace SystemAbstractions {
     }
 
     void NetworkConnection::Close(bool clean) {
-        impl_->Close(true, clean);
+        impl_->Close(
+            clean
+            ? Impl::CloseProcedure::Graceful
+            : Impl::CloseProcedure::ImmediateAndStopProcessor
+        );
     }
 
 }

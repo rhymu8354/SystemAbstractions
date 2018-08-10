@@ -10,10 +10,11 @@
  * © 2016-2018 by Richard Walters
  */
 
+#include "../DataQueue.hpp"
+
 #include <SystemAbstractions/DiagnosticsSender.hpp>
 #include <SystemAbstractions/NetworkConnection.hpp>
 
-#include <deque>
 #include <mutex>
 #include <stdint.h>
 
@@ -37,6 +38,24 @@ namespace SystemAbstractions {
          * port bound by this object.
          */
         SOCKET sock = INVALID_SOCKET;
+
+        /**
+         * This flag indicates whether or not the peer of
+         * the connection has signaled a graceful close.
+         */
+        bool peerClosed = false;
+
+        /**
+         * This flag indicates whether or not the connection is
+         * in the process of being gracefully closed.
+         */
+        bool closing = false;
+
+        /**
+         * This flag indicates whether or not the socket has
+         * been shut down (FD_CLOSE indication sent).
+         */
+        bool shutdownSent = false;
 
         /**
          * This is the thread which performs all the actual
@@ -73,7 +92,7 @@ namespace SystemAbstractions {
          * This temporarily holds data to be sent across the network
          * by the worker thread.  It is filled by the SendMessage method.
          */
-        std::deque< uint8_t > outputQueue;
+        DataQueue outputQueue;
 
         // Methods
 
@@ -104,6 +123,13 @@ namespace SystemAbstractions {
             uint32_t peerAddress,
             uint16_t peerPort
         );
+
+        /**
+         * This helper method is called from various places to standardize
+         * what the class does when it wants to immediately close
+         * the connection.
+         */
+        void CloseImmediately();
     };
 
 }

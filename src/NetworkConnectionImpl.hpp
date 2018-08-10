@@ -23,6 +23,36 @@ namespace SystemAbstractions {
      * NetworkConnection class.
      */
     struct NetworkConnection::Impl {
+        // Types
+
+        /**
+         * This is used to indicate what procedure to follow
+         * in order to close the connection.
+         */
+        enum class CloseProcedure {
+            /**
+             * This indicates the connection should be terminated
+             * immediately without stopping the processor thread.
+             */
+            ImmediateDoNotStopProcessor,
+
+            /**
+             * This indicates the connection should be terminated
+             * immediately, and the processor thread should be joined.
+             */
+            ImmediateAndStopProcessor,
+
+            /**
+             * This indicates the connection should be gracefully
+             * closed, meaning all data queued to be sent should
+             * first be sent by the processor thread, and then the
+             * socket should be marked as no longer sending data
+             * (e.g. "shutdown" or sending the FD_CLOSE condition),
+             * and then finally the socket should be closed.
+             */
+            Graceful,
+        };
+
         // Properties
 
         /**
@@ -138,16 +168,18 @@ namespace SystemAbstractions {
         /**
          * This method breaks the connection to the peer.
          *
-         * @param[in] stopProcessing
-         *     This flag indicates whether or not the processor thread
-         *     should be joined before closing the connection.
-         *
-         * @param[in] clean
-         *     This flag indicates whether or not to attempt to complete
-         *     any data transmission still in progress, before breaking
-         *     the connection.
+         * @param[in] procedure
+         *     This indicates the procedure to follow in order
+         *     to close the connection.
          */
-        void Close(bool stopProcessing, bool clean = false);
+        void Close(CloseProcedure procedure);
+
+        /**
+         * This helper method is called from various places to standardize
+         * what the class does when it wants to immediately close
+         * the connection.
+         */
+        void CloseImmediately();
     };
 
 }
