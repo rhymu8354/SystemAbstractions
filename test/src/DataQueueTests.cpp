@@ -143,3 +143,111 @@ TEST(DataQueueTests, DequeueFullBufferPlusPartialNextBufferThenTheRest) {
     EXPECT_EQ(0, q.GetBuffersQueued());
     EXPECT_EQ(0, q.GetBytesQueued());
 }
+
+TEST(DataQueueTests, PeekPartialBuffer) {
+    // Arrange
+    SystemAbstractions::DataQueue q;
+    std::vector< uint8_t > data(10, 'X');
+    q.Enqueue(data);
+    data.assign(5, 'Y');
+    q.Enqueue(data);
+
+    // Act
+    data = q.Peek(8);
+
+    // Assert
+    EXPECT_EQ(
+        "XXXXXXXX",
+        std::string(data.begin(), data.end())
+    );
+    EXPECT_EQ(2, q.GetBuffersQueued());
+    EXPECT_EQ(15, q.GetBytesQueued());
+}
+
+TEST(DataQueueTests, PeekExactlyOneFullBuffer) {
+    // Arrange
+    SystemAbstractions::DataQueue q;
+    std::vector< uint8_t > data(10, 'X');
+    q.Enqueue(data);
+    data.assign(5, 'Y');
+    q.Enqueue(data);
+
+    // Act
+    data = q.Peek(10);
+
+    // Assert
+    EXPECT_EQ(
+        "XXXXXXXXXX",
+        std::string(data.begin(), data.end())
+    );
+    EXPECT_EQ(2, q.GetBuffersQueued());
+    EXPECT_EQ(15, q.GetBytesQueued());
+}
+
+TEST(DataQueueTests, PeekFullBufferPlusPartialNextBuffer) {
+    // Arrange
+    SystemAbstractions::DataQueue q;
+    std::vector< uint8_t > data(10, 'X');
+    q.Enqueue(data);
+    data.assign(5, 'Y');
+    q.Enqueue(data);
+
+    // Act
+    data = q.Peek(12);
+
+    // Assert
+    EXPECT_EQ(
+        "XXXXXXXXXXYY",
+        std::string(data.begin(), data.end())
+    );
+    EXPECT_EQ(2, q.GetBuffersQueued());
+    EXPECT_EQ(15, q.GetBytesQueued());
+}
+
+TEST(DataQueueTests, DropPartialBuffer) {
+    // Arrange
+    SystemAbstractions::DataQueue q;
+    std::vector< uint8_t > data(10, 'X');
+    q.Enqueue(data);
+    data.assign(5, 'Y');
+    q.Enqueue(data);
+
+    // Act
+    q.Drop(8);
+
+    // Assert
+    EXPECT_EQ(2, q.GetBuffersQueued());
+    EXPECT_EQ(7, q.GetBytesQueued());
+}
+
+TEST(DataQueueTests, DropExactlyOneFullBuffer) {
+    // Arrange
+    SystemAbstractions::DataQueue q;
+    std::vector< uint8_t > data(10, 'X');
+    q.Enqueue(data);
+    data.assign(5, 'Y');
+    q.Enqueue(data);
+
+    // Act
+    q.Drop(10);
+
+    // Assert
+    EXPECT_EQ(1, q.GetBuffersQueued());
+    EXPECT_EQ(5, q.GetBytesQueued());
+}
+
+TEST(DataQueueTests, DropFullBufferPlusPartialNextBuffer) {
+    // Arrange
+    SystemAbstractions::DataQueue q;
+    std::vector< uint8_t > data(10, 'X');
+    q.Enqueue(data);
+    data.assign(5, 'Y');
+    q.Enqueue(data);
+
+    // Act
+    q.Drop(12);
+
+    // Assert
+    EXPECT_EQ(1, q.GetBuffersQueued());
+    EXPECT_EQ(3, q.GetBytesQueued());
+}

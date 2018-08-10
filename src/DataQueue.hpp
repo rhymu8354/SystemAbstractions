@@ -78,6 +78,29 @@ namespace SystemAbstractions {
         Buffer Dequeue(size_t numBytesRequested);
 
         /**
+         * This method tries to copy the given number of bytes from
+         * the queue.  Fewer bytes may be returned if there are fewer
+         * bytes in the queue than requested.
+         *
+         * @param[in] numBytesRequested
+         *     This is the number of bytes to try to copy from the queue.
+         *
+         * @return
+         *     The bytes actually copy from the queue are returned.
+         */
+        Buffer Peek(size_t numBytesRequested);
+
+        /**
+         * This method tries to remove the given number of bytes from
+         * the queue.  Fewer bytes may be removed if there are fewer
+         * bytes in the queue than requested.
+         *
+         * @param[in] numBytesRequested
+         *     This is the number of bytes to try to remove from the queue.
+         */
+        void Drop(size_t numBytesRequested);
+
+        /**
          * This method returns the number of distinct buffers of data
          * currently held in the queue.
          *
