@@ -49,6 +49,7 @@ if(MSVC)
         src/Win32/DynamicLibraryWin32.cpp
         src/Win32/FileWin32.cpp
         src/Win32/NetworkConnectionWin32.cpp
+        src/Win32/NetworkConnectionWin32.hpp
         src/Win32/NetworkEndpointWin32.cpp
         src/Win32/NetworkEndpointWin32.hpp
         src/Win32/SubprocessWin32.cpp
