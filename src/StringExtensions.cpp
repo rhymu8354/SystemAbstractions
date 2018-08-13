@@ -250,7 +250,7 @@ namespace SystemAbstractions {
                     ) {
                         const auto digit = (decltype(value))(numberString[index] - '0');
                         if (negative) {
-                            if ((std::numeric_limits< decltype(value) >::min() + digit) / 10 > value) {
+                            if ((std::numeric_limits< decltype(value) >::lowest() + digit) / 10 > value) {
                                 return ToIntegerResult::Overflow;
                             }
                         } else {

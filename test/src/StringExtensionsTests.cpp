@@ -132,7 +132,7 @@ TEST(StringExtensionsTests, ToInteger) {
         SystemAbstractions::ToIntegerResult expectedResult;
     };
     const auto maxAsString = SystemAbstractions::sprintf("%" PRIdMAX, std::numeric_limits< intmax_t >::max());
-    const auto minAsString = SystemAbstractions::sprintf("%" PRIdMAX, std::numeric_limits< intmax_t >::min());
+    const auto minAsString = SystemAbstractions::sprintf("%" PRIdMAX, std::numeric_limits< intmax_t >::lowest());
     auto maxPlusOneAsString = maxAsString;
     size_t digit = maxPlusOneAsString.length();
     while (digit > 0) {
@@ -172,7 +172,7 @@ TEST(StringExtensionsTests, ToInteger) {
         },
         {
             minAsString,
-            std::numeric_limits< intmax_t >::min(),
+            std::numeric_limits< intmax_t >::lowest(),
             SystemAbstractions::ToIntegerResult::Success
         },
         {
