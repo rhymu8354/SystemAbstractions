@@ -11,6 +11,7 @@
 
 #include <inttypes.h>
 #include <SystemAbstractions/NetworkConnection.hpp>
+#include <SystemAbstractions/StringExtensions.hpp>
 
 namespace SystemAbstractions {
 
@@ -70,6 +71,17 @@ namespace SystemAbstractions {
             clean
             ? Impl::CloseProcedure::Graceful
             : Impl::CloseProcedure::ImmediateAndStopProcessor
+        );
+    }
+
+    std::string NetworkConnection::Impl::GetPeerName() const {
+        return SystemAbstractions::sprintf(
+            "%" PRIu8 ".%" PRIu8 ".%" PRIu8 ".%" PRIu8 ":%" PRIu16,
+            (uint8_t)((peerAddress >> 24) & 0xFF),
+            (uint8_t)((peerAddress >> 16) & 0xFF),
+            (uint8_t)((peerAddress >> 8) & 0xFF),
+            (uint8_t)(peerAddress & 0xFF),
+            peerPort
         );
     }
 

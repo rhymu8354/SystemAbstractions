@@ -180,6 +180,16 @@ namespace SystemAbstractions {
          * the connection.
          */
         void CloseImmediately();
+
+        /**
+         * This method returns a string representation of the address
+         * of the peer of the connection.
+         *
+         * @return
+         *     A string representation of the address
+         *     of the peer of the connection is returned.
+         */
+        std::string GetPeerName() const;
     };
 
 }

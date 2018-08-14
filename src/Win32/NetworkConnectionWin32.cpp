@@ -196,6 +196,10 @@ namespace SystemAbstractions {
                 buffer.resize((size_t)amountReceived);
                 messageReceivedDelegate(buffer);
             } else {
+                diagnosticsSender.SendDiagnosticInformationString(
+                    0,
+                    "connection with " + GetPeerName() + " closed by peer"
+                );
                 platform->peerClosed = true;
                 brokenDelegate();
                 break;
@@ -265,14 +269,9 @@ namespace SystemAbstractions {
         if (platform->sock != INVALID_SOCKET) {
             if (procedure == CloseProcedure::Graceful) {
                 platform->closing = true;
-                diagnosticsSender.SendDiagnosticInformationFormatted(
+                diagnosticsSender.SendDiagnosticInformationString(
                     0,
-                    "closing connection with %" PRIu8 ".%" PRIu8 ".%" PRIu8 ".%" PRIu8 ":%" PRIu16,
-                    (uint8_t)((peerAddress >> 24) & 0xFF),
-                    (uint8_t)((peerAddress >> 16) & 0xFF),
-                    (uint8_t)((peerAddress >> 8) & 0xFF),
-                    (uint8_t)(peerAddress & 0xFF),
-                    peerPort
+                    "closing connection with " + GetPeerName()
                 );
             } else {
                 CloseImmediately();
@@ -282,14 +281,9 @@ namespace SystemAbstractions {
 
     void NetworkConnection::Impl::CloseImmediately() {
         platform->CloseImmediately();
-        diagnosticsSender.SendDiagnosticInformationFormatted(
+        diagnosticsSender.SendDiagnosticInformationString(
             0,
-            "closed connection with %" PRIu8 ".%" PRIu8 ".%" PRIu8 ".%" PRIu8 ":%" PRIu16,
-            (uint8_t)((peerAddress >> 24) & 0xFF),
-            (uint8_t)((peerAddress >> 16) & 0xFF),
-            (uint8_t)((peerAddress >> 8) & 0xFF),
-            (uint8_t)(peerAddress & 0xFF),
-            peerPort
+            "closed connection with " + GetPeerName()
         );
         if (!platform->peerClosed) {
             if (brokenDelegate != nullptr) {
