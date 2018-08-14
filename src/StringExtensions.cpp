@@ -7,11 +7,11 @@
  * Copyright © 2014-2018 by Richard Walters
  */
 
-#include <SystemAbstractions/StringExtensions.hpp>
-
+#include <limits>
 #include <stdarg.h>
 #include <stdlib.h>
 #include <sstream>
+#include <SystemAbstractions/StringExtensions.hpp>
 #include <vector>
 
 namespace SystemAbstractions {
