@@ -31,11 +31,6 @@ namespace SystemAbstractions {
     {
     }
 
-    DynamicLibrary::DynamicLibrary(std::unique_ptr< DynamicLibraryImpl >&& impl) noexcept
-        : _impl(std::move(impl))
-    {
-    }
-
     DynamicLibrary::~DynamicLibrary() {
         if (_impl == nullptr) {
             return;
