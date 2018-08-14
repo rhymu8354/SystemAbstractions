@@ -10,6 +10,7 @@
  * Copyright (c) 2016 by Richard Walters
  */
 
+#include "../DataQueue.hpp"
 #include "PipeSignal.hpp"
 
 #include <deque>
@@ -29,34 +30,58 @@ namespace SystemAbstractions {
         // Properties
 
         /**
-         * @todo Needs documentation
+         * This is the operating system handle to the network
+         * port bound by this object.
          */
         int sock = -1;
 
         /**
-         * @todo Needs documentation
+         * This flag indicates whether or not the peer of
+         * the connection has signaled a graceful close.
+         */
+        bool peerClosed = false;
+
+        /**
+         * This flag indicates whether or not the connection is
+         * in the process of being gracefully closed.
+         */
+        bool closing = false;
+
+        /**
+         * This flag indicates whether or not the socket has
+         * been shut down (FD_CLOSE indication sent).
+         */
+        bool shutdownSent = false;
+
+        /**
+         * This is the thread which performs all the actual
+         * sending and receiving of data over the network.
          */
         std::thread processor;
 
         /**
-         * @todo Needs documentation
+         * This is used to wake up the worker thread
+         * if a new message to send has been placed in the
+         * output queue, or if we want the worker thread to stop.
          */
         PipeSignal processorStateChangeSignal;
 
         /**
-         * @todo Needs documentation
+         * This flag indicates whether or not the worker thread
+         * should stop.
          */
         bool processorStop = false;
 
         /**
-         * @todo Needs documentation
+         * This is used to synchronize access to the object.
          */
         std::recursive_mutex processingMutex;
 
         /**
-         * @todo Needs documentation
+         * This temporarily holds data to be sent across the network
+         * by the worker thread.  It is filled by the SendMessage method.
          */
-        std::deque< uint8_t > outputQueue;
+        DataQueue outputQueue;
 
         // Methods
 
@@ -87,6 +112,13 @@ namespace SystemAbstractions {
             uint32_t peerAddress,
             uint16_t peerPort
         );
+
+        /**
+         * This helper method is called from various places to standardize
+         * what the class does when it wants to immediately close
+         * the connection.
+         */
+        void CloseImmediately();
     };
 
 }

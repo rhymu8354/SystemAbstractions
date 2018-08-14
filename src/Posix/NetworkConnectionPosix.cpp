@@ -43,11 +43,11 @@ namespace SystemAbstractions {
     }
 
     NetworkConnection::Impl::~Impl() {
-        Close(true);
+        Close(CloseProcedure::ImmediateAndStopProcessor);
     }
 
     bool NetworkConnection::Impl::Connect() {
-        Close(true);
+        Close(CloseProcedure::ImmediateAndStopProcessor);
         struct sockaddr_in socketAddress;
         (void)memset(&socketAddress, 0, sizeof(socketAddress));
         socketAddress.sin_family = AF_INET;
@@ -66,7 +66,7 @@ namespace SystemAbstractions {
                 "error in bind: %s",
                 strerror(errno)
             );
-            Close(false);
+            Close(CloseProcedure::ImmediateDoNotStopProcessor);
             return false;
         }
         (void)memset(&socketAddress, 0, sizeof(socketAddress));
@@ -79,7 +79,7 @@ namespace SystemAbstractions {
                 "error in connect: %s",
                 strerror(errno)
             );
-            Close(false);
+            Close(CloseProcedure::ImmediateDoNotStopProcessor);
             return false;
         }
         socklen_t socketAddressLength = sizeof(socketAddress);
@@ -141,7 +141,7 @@ namespace SystemAbstractions {
                 FD_ZERO(&readfds);
                 FD_ZERO(&writefds);
                 FD_SET(platform->sock, &readfds);
-                if (platform->outputQueue.size() > 0) {
+                if (platform->outputQueue.GetBytesQueued() > 0) {
                     FD_SET(platform->sock, &writefds);
                 }
                 FD_SET(processorStateChangeSelectHandle, &readfds);
@@ -157,7 +157,7 @@ namespace SystemAbstractions {
             const auto amountReceived = recv(platform->sock, (char*)&buffer[0], (int)buffer.size(), MSG_NOSIGNAL | MSG_DONTWAIT);
             if (amountReceived < 0) {
                 if (errno != EWOULDBLOCK) {
-                    Close(false);
+                    Close(CloseProcedure::ImmediateDoNotStopProcessor);
                     brokenDelegate();
                     break;
                 }
@@ -165,36 +165,45 @@ namespace SystemAbstractions {
                 buffer.resize((size_t)amountReceived);
                 messageReceivedDelegate(buffer);
             } else {
-                Close(false);
+                platform->peerClosed = true;
                 brokenDelegate();
                 break;
             }
-            const auto outputQueueLength = platform->outputQueue.size();
+            const auto outputQueueLength = platform->outputQueue.GetBytesQueued();
             if (outputQueueLength > 0) {
                 const auto writeSize = (int)std::min(outputQueueLength, MAXIMUM_WRITE_SIZE);
-                buffer.assign(
-                    platform->outputQueue.begin(),
-                    platform->outputQueue.begin() + writeSize
-                );
+                buffer = platform->outputQueue.Peek(writeSize);
                 const auto amountSent = send(platform->sock, (const char*)&buffer[0], writeSize, MSG_NOSIGNAL | MSG_DONTWAIT);
                 if (amountSent < 0) {
                     if (errno != EWOULDBLOCK) {
-                        Close(false);
+                        Close(CloseProcedure::ImmediateDoNotStopProcessor);
                         brokenDelegate();
                         break;
                     }
                 } else if (amountSent > 0) {
-                    (void)platform->outputQueue.erase(platform->outputQueue.begin(), platform->outputQueue.begin() + amountSent);
+                    (void)platform->outputQueue.Drop(amountSent);
                     if (
                         (amountSent == writeSize)
-                        && !platform->outputQueue.empty()
+                        && (platform->outputQueue.GetBytesQueued() > 0)
                     ) {
                         wait = false;
                     }
                 } else {
-                    Close(false);
+                    Close(CloseProcedure::ImmediateDoNotStopProcessor);
                     brokenDelegate();
                     break;
+                }
+            }
+            if (
+                (platform->outputQueue.GetBytesQueued() == 0)
+                && platform->closing
+            ) {
+                if (!platform->shutdownSent) {
+                    shutdown(platform->sock, SHUT_WR);
+                    platform->shutdownSent = true;
+                }
+                if (platform->peerClosed) {
+                    CloseImmediately();
                 }
             }
         }
@@ -206,14 +215,15 @@ namespace SystemAbstractions {
 
     void NetworkConnection::Impl::SendMessage(const std::vector< uint8_t >& message) {
         std::unique_lock< std::recursive_mutex > processingLock(platform->processingMutex);
-        platform->outputQueue.insert(platform->outputQueue.end(), message.begin(), message.end());
+        platform->outputQueue.Enqueue(message);
         platform->processorStateChangeSignal.Set();
     }
 
-    void NetworkConnection::Impl::Close(bool stopProcessing) {
+    void NetworkConnection::Impl::Close(CloseProcedure procedure) {
         if (
-            stopProcessing
+            (procedure == CloseProcedure::ImmediateAndStopProcessor)
             && platform->processor.joinable()
+            && (std::this_thread::get_id() != platform->processor.get_id())
         ) {
             platform->processorStop = true;
             platform->processorStateChangeSignal.Set();
@@ -221,18 +231,38 @@ namespace SystemAbstractions {
         }
         std::unique_lock< std::recursive_mutex > processingLock(platform->processingMutex);
         if (platform->sock >= 0) {
-            diagnosticsSender.SendDiagnosticInformationFormatted(
-                0,
-                "closing connection with %" PRIu8 ".%" PRIu8 ".%" PRIu8 ".%" PRIu8 ":%" PRIu16,
-                (uint8_t)((peerAddress >> 24) & 0xFF),
-                (uint8_t)((peerAddress >> 16) & 0xFF),
-                (uint8_t)((peerAddress >> 8) & 0xFF),
-                (uint8_t)(peerAddress & 0xFF),
-                peerPort
-            );
-            (void)shutdown(platform->sock, SHUT_RDWR);
-            (void)close(platform->sock);
-            platform->sock = -1;
+            if (procedure == CloseProcedure::Graceful) {
+                platform->closing = true;
+                diagnosticsSender.SendDiagnosticInformationFormatted(
+                    0,
+                    "closing connection with %" PRIu8 ".%" PRIu8 ".%" PRIu8 ".%" PRIu8 ":%" PRIu16,
+                    (uint8_t)((peerAddress >> 24) & 0xFF),
+                    (uint8_t)((peerAddress >> 16) & 0xFF),
+                    (uint8_t)((peerAddress >> 8) & 0xFF),
+                    (uint8_t)(peerAddress & 0xFF),
+                    peerPort
+                );
+            } else {
+                CloseImmediately();
+            }
+        }
+    }
+
+    void NetworkConnection::Impl::CloseImmediately() {
+        platform->CloseImmediately();
+        diagnosticsSender.SendDiagnosticInformationFormatted(
+            0,
+            "closed connection with %" PRIu8 ".%" PRIu8 ".%" PRIu8 ".%" PRIu8 ":%" PRIu16,
+            (uint8_t)((peerAddress >> 24) & 0xFF),
+            (uint8_t)((peerAddress >> 16) & 0xFF),
+            (uint8_t)((peerAddress >> 8) & 0xFF),
+            (uint8_t)(peerAddress & 0xFF),
+            peerPort
+        );
+        if (!platform->peerClosed) {
+            if (brokenDelegate != nullptr) {
+                brokenDelegate();
+            }
         }
     }
 
@@ -250,6 +280,11 @@ namespace SystemAbstractions {
         connection->impl_->peerAddress = peerAddress;
         connection->impl_->peerPort = peerPort;
         return connection;
+    }
+
+    void NetworkConnection::Platform::CloseImmediately() {
+        (void)close(sock);
+        sock = -1;
     }
 
 }
