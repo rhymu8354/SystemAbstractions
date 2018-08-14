@@ -14,6 +14,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <pwd.h>
+#include <regex>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -200,6 +201,11 @@ namespace SystemAbstractions {
         } else {
             return 0;
         }
+    }
+
+    bool File::IsAbsolutePath(const std::string& path) {
+        static std::regex AbsolutePathRegex("[~/].*");
+        return std::regex_match(path, AbsolutePathRegex);
     }
 
     void File::ListDirectory(const std::string& directory, std::vector< std::string >& list) {
