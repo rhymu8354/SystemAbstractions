@@ -16,7 +16,7 @@
 TEST(CryptoRandomTests, Generate) {
     SystemAbstractions::CryptoRandom generator;
     std::vector< int > counts(256);
-    constexpr size_t iterations = 10000000;
+    constexpr size_t iterations = 1000000;
     for (size_t i = 0; i < iterations; ++i) {
         uint8_t buffer;
         generator.Generate(&buffer, 1);
@@ -32,7 +32,7 @@ TEST(CryptoRandomTests, Generate) {
     for (auto count: counts) {
         const auto difference = abs(count - average);
         largestDifference = std::max(largestDifference, difference);
-        EXPECT_LE(difference, average / 20);
+        EXPECT_LE(difference, average / 10);
     }
     printf("Average: %d, Largest difference: %d\n", average, largestDifference);
 }
