@@ -35,7 +35,7 @@ namespace SystemAbstractions {
         Impl(const Impl&) = delete;
         Impl(Impl&&) noexcept;
         Impl& operator=(const Impl&) = delete;
-        Impl& operator=(Impl&&) noexcept;
+        Impl& operator=(Impl&&);
 
         // Methods
 

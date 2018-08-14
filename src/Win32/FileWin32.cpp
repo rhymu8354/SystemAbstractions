@@ -80,7 +80,7 @@ namespace SystemAbstractions {
 
     File::Impl::~Impl() noexcept = default;
     File::Impl::Impl(Impl&&) noexcept = default;
-    File::Impl& File::Impl::operator=(Impl&&) noexcept = default;
+    File::Impl& File::Impl::operator=(Impl&&) = default;
 
     File::Impl::Impl()
         : platform(new Platform())
