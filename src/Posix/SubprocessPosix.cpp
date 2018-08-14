@@ -128,7 +128,7 @@ namespace SystemAbstractions {
         }
     };
 
-    Subprocess::~Subprocess() {
+    Subprocess::~Subprocess() noexcept {
         impl_->JoinChild();
         if (impl_->pipe >= 0) {
             uint8_t token = 42;
@@ -137,8 +137,8 @@ namespace SystemAbstractions {
             (void)close(impl_->pipe);
         }
     }
-    Subprocess::Subprocess(Subprocess&&) = default;
-    Subprocess& Subprocess::operator=(Subprocess&&) = default;
+    Subprocess::Subprocess(Subprocess&&) noexcept = default;
+    Subprocess& Subprocess::operator=(Subprocess&&) noexcept = default;
 
     Subprocess::Subprocess()
         : impl_(new Impl())
