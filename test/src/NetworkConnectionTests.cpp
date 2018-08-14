@@ -708,7 +708,11 @@ TEST_F(NetworkConnectionTests, CloseGracefully) {
     std::shared_ptr< SOCKET > serverReference(
         &server,
         [&server](SOCKET* s){
+#if _WIN32
             if (server != INVALID_SOCKET) {
+#else /* POSIX */
+            if (server >= 0) {
+#endif /* _WIN32 or POSIX */
                 closesocket(server);
             }
         }
@@ -736,7 +740,11 @@ TEST_F(NetworkConnectionTests, CloseGracefully) {
     std::shared_ptr< SOCKET > serverConnectionReference(
         &serverConnection,
         [&serverConnection](SOCKET* s){
+#if _WIN32
             if (serverConnection != INVALID_SOCKET) {
+#else /* POSIX */
+            if (serverConnection >= 0) {
+#endif /* _WIN32 or POSIX */
                 closesocket(serverConnection);
             }
         }
@@ -798,7 +806,11 @@ TEST_F(NetworkConnectionTests, CloseGracefully) {
     // Close the server connection and verify the connection
     // is finally broken.
     (void)closesocket(serverConnection);
+#if _WIN32
     serverConnection = INVALID_SOCKET;
+#else /* POSIX */
+    serverConnection = -1;
+#endif /* _WIN32 or POSIX */
     ASSERT_TRUE(clientOwner.AwaitDisconnection());
 }
 
@@ -809,7 +821,11 @@ TEST_F(NetworkConnectionTests, CloseAbruptly) {
     std::shared_ptr< SOCKET > serverReference(
         &server,
         [&server](SOCKET* s){
+#if _WIN32
             if (server != INVALID_SOCKET) {
+#else /* POSIX */
+            if (server >= 0) {
+#endif /* _WIN32 or POSIX */
                 closesocket(server);
             }
         }
@@ -837,7 +853,11 @@ TEST_F(NetworkConnectionTests, CloseAbruptly) {
     std::shared_ptr< SOCKET > serverConnectionReference(
         &serverConnection,
         [&serverConnection](SOCKET* s){
+#if _WIN32
             if (serverConnection != INVALID_SOCKET) {
+#else /* POSIX */
+            if (serverConnection >= 0) {
+#endif /* _WIN32 or POSIX */
                 closesocket(serverConnection);
             }
         }
