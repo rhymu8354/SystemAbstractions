@@ -62,6 +62,14 @@ if(MSVC)
         -D_CRT_SECURE_NO_WARNINGS
     )
 elseif(APPLE)
+    list(APPEND Sources
+        src/Mach/ClipboardMach.mm
+        src/Mach/DirectoryMonitorMach.cpp
+        src/Mach/DynamicLibraryMach.cpp
+        src/Mach/FileMach.cpp
+        src/Mach/TargetInfoMach.cpp
+        src/Mach/TimeMach.cpp
+    )
 elseif(UNIX)
     list(APPEND Sources
         src/Linux/ClipboardLinux.cpp
@@ -97,8 +105,9 @@ set_target_properties(${This} PROPERTIES
 )
 
 if(APPLE)
+    find_library(AppKit AppKit)
     find_library(CF CoreFoundation)
-    target_link_libraries(${This} ${CF})
+    target_link_libraries(${This} ${CF} ${AppKit})
 endif(APPLE)
 if(UNIX)
     target_link_libraries(${This}

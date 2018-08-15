@@ -7,7 +7,6 @@
  * Copyright (c) 2016 by Richard Walters
  */
 
-#include "../DirectoryMonitor.hpp"
 #include "../Posix/PipeSignal.hpp"
 
 #include <assert.h>
@@ -15,6 +14,7 @@
 #include <sys/event.h>
 #include <sys/time.h>
 #include <sys/types.h>
+#include <SystemAbstractions/DirectoryMonitor.hpp>
 #include <thread>
 #include <unistd.h>
 
@@ -24,18 +24,20 @@ namespace SystemAbstractions {
      * This structure contains the private methods and properties of
      * the DirectoryMonitor class.
      */
-    struct DirectoryMonitorImpl {
+    struct DirectoryMonitor::Impl {
         // Properties
 
         /**
-         * @todo Needs documentation
+         * This is the thread which is waiting for notifications from
+         * the operating system about changes to the monitored directory.
          */
         std::thread worker;
 
         /**
-         * @todo Needs documentation
+         * This is provided by the owner of the object and
+         * called whenever a change is detected to the monitored directory.
          */
-        DirectoryMonitor::Owner* owner;
+        DirectoryMonitor::Callback callback;
 
         /**
          * @todo Needs documentation
@@ -74,71 +76,62 @@ namespace SystemAbstractions {
                 if (event.ident == stopSignal.GetSelectHandle()) {
                     break;
                 }
-                owner->DirectoryMonitorChangeDetected();
+                callback();
             }
         }
     };
 
-    DirectoryMonitor::DirectoryMonitor()
-        : _impl(new DirectoryMonitorImpl())
-    {
-    }
-
-
-    DirectoryMonitor::DirectoryMonitor(DirectoryMonitor&& other) noexcept
-        : _impl(std::move(other._impl))
-    {
-    }
-
-    DirectoryMonitor::DirectoryMonitor(std::unique_ptr< DirectoryMonitorImpl >&& impl) noexcept
-        : _impl(std::move(impl))
-    {
-    }
-
     DirectoryMonitor::~DirectoryMonitor() {
         Stop();
     }
+    DirectoryMonitor::DirectoryMonitor(DirectoryMonitor&& other) noexcept = default;
+    DirectoryMonitor& DirectoryMonitor::operator=(DirectoryMonitor&& other) noexcept = default;
 
-    DirectoryMonitor& DirectoryMonitor::operator=(DirectoryMonitor&& other) noexcept {
-        assert(this != &other);
-        _impl = std::move(other._impl);
-        return *this;
+    DirectoryMonitor::DirectoryMonitor()
+        : impl_(new Impl())
+    {
     }
 
     bool DirectoryMonitor::Start(
-        Owner* owner,
+        Callback callback,
         const std::string& path
     ) {
+        if (impl_ == nullptr) {
+            return;
+        }
         Stop();
-        if (!_impl->stopSignal.Initialize()) {
+        if (!impl_->stopSignal.Initialize()) {
             return false;
         }
-        _impl->dirHandle = open(path.c_str(), O_EVTONLY);
-        if (_impl->dirHandle < 0) {
+        impl_->dirHandle = open(path.c_str(), O_EVTONLY);
+        if (impl_->dirHandle < 0) {
             return false;
         }
-        _impl->stopSignal.Clear();
-        _impl->owner = owner;
-        _impl->kqueueHandle = kqueue();
-        if (_impl->kqueueHandle < 0) {
-            (void)close(_impl->dirHandle);
-            _impl->dirHandle = -1;
+        impl_->stopSignal.Clear();
+        impl_->callback = callback;
+        impl_->kqueueHandle = kqueue();
+        if (impl_->kqueueHandle < 0) {
+            (void)close(impl_->dirHandle);
+            impl_->dirHandle = -1;
             return false;
         }
-        _impl->worker = std::thread(&DirectoryMonitorImpl::Run, _impl.get());
+        impl_->worker = std::thread(&Impl::Run, impl_.get());
         return true;
     }
     
     void DirectoryMonitor::Stop() {
-        if (!_impl->worker.joinable()) {
+        if (impl_ == nullptr) {
             return;
         }
-        _impl->stopSignal.Set();
-        _impl->worker.join();
-        (void)close(_impl->kqueueHandle);
-        _impl->kqueueHandle = -1;
-        (void)close(_impl->dirHandle);
-        _impl->dirHandle = -1;
+        if (!impl_->worker.joinable()) {
+            return;
+        }
+        impl_->stopSignal.Set();
+        impl_->worker.join();
+        (void)close(impl_->kqueueHandle);
+        impl_->kqueueHandle = -1;
+        (void)close(impl_->dirHandle);
+        impl_->dirHandle = -1;
     }
     
 }

@@ -7,22 +7,21 @@
  * Copyright (c) 2016 by Richard Walters
  */
 
-#include "../Time.hpp"
-
 #include <mach/mach.h>
 #include <mach/mach_time.h>
+#include <SystemAbstractions/Time.hpp>
 
 namespace SystemAbstractions {
 
     /**
      * This is the Mach-specific state for the Time class.
      */
-    struct TimeImpl {
+    struct Time::Impl {
         double scale = 0.0;
     };
 
     Time::Time()
-        : _impl(new TimeImpl())
+        : impl_(new Impl())
     {
     }
 
@@ -30,12 +29,12 @@ namespace SystemAbstractions {
     }
 
     double Time::GetTime() {
-        if (_impl->scale == 0.0) {
+        if (impl_->scale == 0.0) {
             mach_timebase_info_data_t timebaseInfo;
             (void)mach_timebase_info(&timebaseInfo);
-            _impl->scale = timebaseInfo.numer / (1e9 * timebaseInfo.denom);
+            impl_->scale = timebaseInfo.numer / (1e9 * timebaseInfo.denom);
         }
-        return (double)mach_absolute_time() * _impl->scale;
+        return (double)mach_absolute_time() * impl_->scale;
     }
 
 }
