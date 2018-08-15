@@ -9,11 +9,11 @@
 
 #include <condition_variable>
 #include <functional>
+#include <fstream>
 #include <gtest/gtest.h>
 #include <mutex>
 #include <SystemAbstractions/DirectoryMonitor.hpp>
 #include <SystemAbstractions/File.hpp>
-#include <fstream>
 
 /**
  * This is a helper used with a directory monitor to
