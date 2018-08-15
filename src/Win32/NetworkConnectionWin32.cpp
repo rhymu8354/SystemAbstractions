@@ -228,6 +228,10 @@ namespace SystemAbstractions {
                 if (amountSent == SOCKET_ERROR) {
                     const auto wsaLastError = WSAGetLastError();
                     if (wsaLastError != WSAEWOULDBLOCK) {
+                        diagnosticsSender.SendDiagnosticInformationString(
+                            1,
+                            "connection with " + GetPeerName() + " closed abruptly by peer"
+                        );
                         Close(CloseProcedure::ImmediateDoNotStopProcessor);
                         brokenDelegate(false);
                         diagnosticsSender.SendDiagnosticInformationString(0, "processor breaking due to send error");
