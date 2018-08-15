@@ -160,7 +160,7 @@ namespace SystemAbstractions {
         if (WSAEventSelect(platform->sock, platform->socketEvent, FD_READ | FD_WRITE | FD_CLOSE) != 0) {
             diagnosticsSender.SendDiagnosticInformationFormatted(
                 SystemAbstractions::DiagnosticsSender::Levels::ERROR,
-                "error in WSAEventSelect for FD_READ (%d)",
+                "error in WSAEventSelect (%d)",
                 WSAGetLastError()
             );
             return false;
