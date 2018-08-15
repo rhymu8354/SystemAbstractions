@@ -12,6 +12,7 @@
 #include <functional>
 #include <gtest/gtest.h>
 #include <mutex>
+#include <inttypes.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string>
@@ -431,6 +432,7 @@ struct NetworkConnectionTests
     }
 
     virtual void TearDown() {
+        diagnosticsUnsubscribeDelegate();
 #if _WIN32
         if (wsaStarted) {
             (void)WSACleanup();
@@ -946,6 +948,7 @@ TEST_F(NetworkConnectionTests, ReceiveCloseGracefully) {
     );
     ASSERT_TRUE(client.Connect(0x7F000001, serverPort));
     serverAccept.join();
+    const auto serverConnectionPort = client.GetPeerPort();
     auto clientOwnerCopy = clientOwner;
     (void)client.Process(
         [clientOwnerCopy](const std::vector< uint8_t >& message){
@@ -1010,6 +1013,27 @@ TEST_F(NetworkConnectionTests, ReceiveCloseGracefully) {
     // that the connection is broken.
     ASSERT_TRUE(clientOwner->AwaitDisconnection());
     EXPECT_FALSE(clientOwner->connectionBrokenGracefully);
+    const auto serverSideId = SystemAbstractions::sprintf(
+        "127.0.0.1:%" PRIu16,
+        serverConnectionPort
+    );
+    ASSERT_EQ(
+        (std::vector< std::string >{
+            SystemAbstractions::sprintf(
+                "NetworkConnection[1]: connection with %s closed gracefully by peer",
+                serverSideId.c_str()
+            ),
+            SystemAbstractions::sprintf(
+                "NetworkConnection[1]: closing connection with %s",
+                serverSideId.c_str()
+            ),
+            SystemAbstractions::sprintf(
+                "NetworkConnection[1]: closed connection with %s",
+                serverSideId.c_str()
+            ),
+        }),
+        diagnosticMessages
+    );
 }
 
 TEST_F(NetworkConnectionTests, InitiateCloseAbruptly) {
@@ -1105,6 +1129,7 @@ TEST_F(NetworkConnectionTests, InitiateCloseAbruptly) {
             (int)bytesToReceive,
             MSG_WAITALL
         );
+        EXPECT_FALSE(bytesReceived == 0);
         if (bytesReceived <= 0) {
             break;
         }
@@ -1178,6 +1203,7 @@ TEST_F(NetworkConnectionTests, ReceiveCloseAbruptly) {
     );
     ASSERT_TRUE(client.Connect(0x7F000001, serverPort));
     serverAccept.join();
+    const auto serverConnectionPort = client.GetPeerPort();
     auto clientOwnerCopy = clientOwner;
     (void)client.Process(
         [clientOwnerCopy](const std::vector< uint8_t >& message){
@@ -1229,4 +1255,21 @@ TEST_F(NetworkConnectionTests, ReceiveCloseAbruptly) {
     // Verify client receives the abrupt close notification.
     EXPECT_TRUE(clientOwner->AwaitDisconnection());
     EXPECT_FALSE(clientOwner->connectionBrokenGracefully);
+    const auto serverSideId = SystemAbstractions::sprintf(
+        "127.0.0.1:%" PRIu16,
+        serverConnectionPort
+    );
+    ASSERT_EQ(
+        (std::vector< std::string >{
+            SystemAbstractions::sprintf(
+                "NetworkConnection[1]: connection with %s closed abruptly by peer",
+                serverSideId.c_str()
+            ),
+            SystemAbstractions::sprintf(
+                "NetworkConnection[1]: closed connection with %s",
+                serverSideId.c_str()
+            ),
+        }),
+        diagnosticMessages
+    );
 }

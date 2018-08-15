@@ -89,6 +89,10 @@ namespace SystemAbstractions {
             );
             return false;
         }
+        LINGER linger;
+        linger.l_onoff = 1;
+        linger.l_linger = 0;
+        (void)setsockopt(platform->sock, SOL_SOCKET, SO_LINGER, (const char*)&linger, sizeof(linger));
         if (bind(platform->sock, (struct sockaddr*)&socketAddress, sizeof(socketAddress)) != 0) {
             diagnosticsSender.SendDiagnosticInformationFormatted(
                 SystemAbstractions::DiagnosticsSender::Levels::ERROR,
@@ -193,9 +197,12 @@ namespace SystemAbstractions {
                     if (wsaLastError == WSAEWOULDBLOCK) {
                         wait = true;
                     } else {
+                        diagnosticsSender.SendDiagnosticInformationString(
+                            1,
+                            "connection with " + GetPeerName() + " closed abruptly by peer"
+                        );
                         Close(CloseProcedure::ImmediateDoNotStopProcessor);
                         brokenDelegate(false);
-                        diagnosticsSender.SendDiagnosticInformationString(0, "processor breaking due to recv error");
                         break;
                     }
                 } else if (amountReceived > 0) {
@@ -206,7 +213,7 @@ namespace SystemAbstractions {
                 } else {
                     diagnosticsSender.SendDiagnosticInformationString(
                         1,
-                        "connection with " + GetPeerName() + " closed by peer"
+                        "connection with " + GetPeerName() + " closed gracefully by peer"
                     );
                     platform->peerClosed = true;
                     brokenDelegate(true);
