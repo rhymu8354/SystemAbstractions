@@ -886,9 +886,6 @@ TEST_F(NetworkConnectionTests, InitiateCloseGracefully) {
 }
 
 TEST_F(NetworkConnectionTests, ReceiveCloseGracefully) {
-    // Let's see all diagnostic messages as they happen.
-    printDiagnosticMessages = true;
-
     // Set up a connection-oriented socket to receive
     // a connection from the unit under test.
     auto server = socket(AF_INET, SOCK_STREAM, 0);
