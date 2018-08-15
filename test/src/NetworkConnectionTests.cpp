@@ -138,7 +138,7 @@ namespace {
         /**
          * This is a function to call when the connection is closed.
          */
-        std::function< void() > connectionBrokenDelegate = false;
+        std::function< void() > connectionBrokenDelegate;
 
         // Methods
 
