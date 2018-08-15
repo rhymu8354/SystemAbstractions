@@ -250,7 +250,7 @@ namespace {
                 [this](const std::vector< uint8_t >& message){
                     NetworkConnectionMessageReceived(message);
                 },
-                [this]{
+                [this](bool){
                     NetworkConnectionBroken();
                 }
             );

@@ -13,9 +13,11 @@
 #include <gtest/gtest.h>
 #include <mutex>
 #include <stdint.h>
+#include <stdio.h>
 #include <string>
 #include <SystemAbstractions/NetworkConnection.hpp>
 #include <SystemAbstractions/NetworkEndpoint.hpp>
+#include <SystemAbstractions/StringExtensions.hpp>
 #include <thread>
 #include <vector>
 
@@ -136,9 +138,20 @@ namespace {
         bool connectionBroken = false;
 
         /**
-         * This is a function to call when the connection is closed.
+         * This flag indicates whether or not a connection
+         * to the network endpoint has been broken gracefully.
          */
-        std::function< void() > connectionBrokenDelegate;
+        bool connectionBrokenGracefully = false;
+
+        /**
+         * This is a function to call when the connection is closed.
+         *
+         * @param[in] graceful
+         *     This indicates whether or not the peer of connection
+         *     has closed the connection gracefully (meaning we can
+         *     continue to send our data back to the peer).
+         */
+        std::function< void(bool graceful) > connectionBrokenDelegate;
 
         // Methods
 
@@ -264,8 +277,8 @@ namespace {
                 [this](const std::vector< uint8_t >& message){
                     NetworkConnectionMessageReceived(message);
                 },
-                [this]{
-                    NetworkConnectionBroken();
+                [this](bool graceful){
+                    NetworkConnectionBroken(graceful);
                 }
             );
         }
@@ -314,14 +327,20 @@ namespace {
         /**
          * This is the callback issued whenever
          * the connection is broken.
+         *
+         * @param[in] graceful
+         *     This indicates whether or not the peer of connection
+         *     has closed the connection gracefully (meaning we can
+         *     continue to send our data back to the peer).
          */
-        void NetworkConnectionBroken() {
+        void NetworkConnectionBroken(bool graceful) {
             if (connectionBrokenDelegate != nullptr) {
-                connectionBrokenDelegate();
+                connectionBrokenDelegate(graceful);
             }
             {
                 std::unique_lock< decltype(mutex) > lock(mutex);
                 connectionBroken = true;
+                connectionBrokenGracefully = graceful;
                 condition.notify_all();
             }
         }
@@ -344,6 +363,35 @@ struct NetworkConnectionTests
      */
     bool wsaStarted = false;
 
+    /**
+     * This is the unit under test.
+     */
+    SystemAbstractions::NetworkConnection client;
+
+    /**
+     * This is used to capture callbacks from the unit under test.
+     */
+    std::shared_ptr< Owner > clientOwner = std::make_shared< Owner >();
+
+    /**
+     * These are the diagnostic messages that have been
+     * received from the unit under test.
+     */
+    std::vector< std::string > diagnosticMessages;
+
+    /**
+     * This is the delegate obtained when subscribing
+     * to receive diagnostic messages from the unit under test.
+     * It's called to terminate the subscription.
+     */
+    SystemAbstractions::DiagnosticsSender::UnsubscribeDelegate diagnosticsUnsubscribeDelegate;
+
+    /**
+     * If this flag is set, we will print all received diagnostic
+     * messages, in addition to storing them.
+     */
+    bool printDiagnosticMessages = false;
+
     // Methods
 
     // ::testing::Test
@@ -355,6 +403,31 @@ struct NetworkConnectionTests
             wsaStarted = true;
         }
 #endif /* _WIN32 */
+        diagnosticsUnsubscribeDelegate = client.SubscribeToDiagnostics(
+            [this](
+                std::string senderName,
+                size_t level,
+                std::string message
+            ){
+                diagnosticMessages.push_back(
+                    SystemAbstractions::sprintf(
+                        "%s[%zu]: %s",
+                        senderName.c_str(),
+                        level,
+                        message.c_str()
+                    )
+                );
+                if (printDiagnosticMessages) {
+                    printf(
+                        "%s[%zu]: %s\n",
+                        senderName.c_str(),
+                        level,
+                        message.c_str()
+                    );
+                }
+            },
+            1
+        );
     }
 
     virtual void TearDown() {
@@ -394,7 +467,6 @@ TEST_F(NetworkConnectionTests, EstablishConnection) {
             0
         )
     );
-    SystemAbstractions::NetworkConnection client;
     ASSERT_FALSE(client.IsConnected());
     ASSERT_TRUE(client.Connect(0x7F000001, server.GetBoundPort()));
     {
@@ -418,7 +490,7 @@ TEST_F(NetworkConnectionTests, EstablishConnection) {
 
 TEST_F(NetworkConnectionTests, SendingMessage) {
     SystemAbstractions::NetworkEndpoint server;
-    Owner serverConnectionOwner, clientConnectionOwner;
+    Owner serverConnectionOwner;
     std::vector< std::shared_ptr< SystemAbstractions::NetworkConnection > > clients;
     std::condition_variable_any callbackCondition;
     std::mutex callbackMutex;
@@ -437,8 +509,8 @@ TEST_F(NetworkConnectionTests, SendingMessage) {
                 [&serverConnectionOwner](const std::vector< uint8_t >& message){
                     serverConnectionOwner.NetworkConnectionMessageReceived(message);
                 },
-                [&serverConnectionOwner]{
-                    serverConnectionOwner.NetworkConnectionBroken();
+                [&serverConnectionOwner](bool graceful){
+                    serverConnectionOwner.NetworkConnectionBroken(graceful);
                 }
             )
         );
@@ -460,15 +532,15 @@ TEST_F(NetworkConnectionTests, SendingMessage) {
             0
         )
     );
-    SystemAbstractions::NetworkConnection client;
     ASSERT_TRUE(client.Connect(0x7F000001, server.GetBoundPort()));
+    auto clientOwnerCopy = clientOwner;
     ASSERT_TRUE(
         client.Process(
-            [&clientConnectionOwner](const std::vector< uint8_t >& message){
-                clientConnectionOwner.NetworkConnectionMessageReceived(message);
+            [clientOwnerCopy](const std::vector< uint8_t >& message){
+                clientOwnerCopy->NetworkConnectionMessageReceived(message);
             },
-            [&clientConnectionOwner]{
-                clientConnectionOwner.NetworkConnectionBroken();
+            [clientOwnerCopy](bool graceful){
+                clientOwnerCopy->NetworkConnectionBroken(graceful);
             }
         )
     );
@@ -481,7 +553,7 @@ TEST_F(NetworkConnectionTests, SendingMessage) {
 
 TEST_F(NetworkConnectionTests, ReceivingMessage) {
     SystemAbstractions::NetworkEndpoint server;
-    Owner serverConnectionOwner, clientConnectionOwner;
+    Owner serverConnectionOwner;
     std::vector< std::shared_ptr< SystemAbstractions::NetworkConnection > > clients;
     std::condition_variable_any callbackCondition;
     std::mutex callbackMutex;
@@ -500,8 +572,8 @@ TEST_F(NetworkConnectionTests, ReceivingMessage) {
                 [&serverConnectionOwner](const std::vector< uint8_t >& message){
                     serverConnectionOwner.NetworkConnectionMessageReceived(message);
                 },
-                [&serverConnectionOwner]{
-                    serverConnectionOwner.NetworkConnectionBroken();
+                [&serverConnectionOwner](bool graceful){
+                    serverConnectionOwner.NetworkConnectionBroken(graceful);
                 }
             )
         );
@@ -523,15 +595,15 @@ TEST_F(NetworkConnectionTests, ReceivingMessage) {
             0
         )
     );
-    SystemAbstractions::NetworkConnection client;
     ASSERT_TRUE(client.Connect(0x7F000001, server.GetBoundPort()));
+    auto clientOwnerCopy = clientOwner;
     ASSERT_TRUE(
         client.Process(
-            [&clientConnectionOwner](const std::vector< uint8_t >& message){
-                clientConnectionOwner.NetworkConnectionMessageReceived(message);
+            [clientOwnerCopy](const std::vector< uint8_t >& message){
+                clientOwnerCopy->NetworkConnectionMessageReceived(message);
             },
-            [&clientConnectionOwner]{
-                clientConnectionOwner.NetworkConnectionBroken();
+            [clientOwnerCopy](bool graceful){
+                clientOwnerCopy->NetworkConnectionBroken(graceful);
             }
         )
     );
@@ -550,13 +622,13 @@ TEST_F(NetworkConnectionTests, ReceivingMessage) {
         );
     }
     clients[0]->SendMessage(messageAsVector);
-    ASSERT_TRUE(clientConnectionOwner.AwaitStream(messageAsVector.size()));
-    ASSERT_EQ(messageAsVector, clientConnectionOwner.streamReceived);
+    ASSERT_TRUE(clientOwner->AwaitStream(messageAsVector.size()));
+    ASSERT_EQ(messageAsVector, clientOwner->streamReceived);
 }
 
 TEST_F(NetworkConnectionTests, Close) {
     SystemAbstractions::NetworkEndpoint server;
-    Owner serverConnectionOwner, clientConnectionOwner;
+    Owner serverConnectionOwner;
     std::vector< std::shared_ptr< SystemAbstractions::NetworkConnection > > clients;
     std::condition_variable_any callbackCondition;
     std::mutex callbackMutex;
@@ -575,8 +647,8 @@ TEST_F(NetworkConnectionTests, Close) {
                 [&serverConnectionOwner](const std::vector< uint8_t >& message){
                     serverConnectionOwner.NetworkConnectionMessageReceived(message);
                 },
-                [&serverConnectionOwner]{
-                    serverConnectionOwner.NetworkConnectionBroken();
+                [&serverConnectionOwner](bool graceful){
+                    serverConnectionOwner.NetworkConnectionBroken(graceful);
                 }
             )
         );
@@ -598,15 +670,15 @@ TEST_F(NetworkConnectionTests, Close) {
             0
         )
     );
-    SystemAbstractions::NetworkConnection client;
     ASSERT_TRUE(client.Connect(0x7F000001, server.GetBoundPort()));
+    auto clientOwnerCopy = clientOwner;
     ASSERT_TRUE(
         client.Process(
-            [&clientConnectionOwner](const std::vector< uint8_t >& message){
-                clientConnectionOwner.NetworkConnectionMessageReceived(message);
+            [clientOwnerCopy](const std::vector< uint8_t >& message){
+                clientOwnerCopy->NetworkConnectionMessageReceived(message);
             },
-            [&clientConnectionOwner]{
-                clientConnectionOwner.NetworkConnectionBroken();
+            [clientOwnerCopy](bool graceful){
+                clientOwnerCopy->NetworkConnectionBroken(graceful);
             }
         )
     );
@@ -632,7 +704,7 @@ TEST_F(NetworkConnectionTests, Close) {
 
 TEST_F(NetworkConnectionTests, CloseDuringBrokenConnectionCallback) {
     SystemAbstractions::NetworkEndpoint server;
-    Owner serverConnectionOwner, clientConnectionOwner;
+    Owner serverConnectionOwner;
     std::vector< std::shared_ptr< SystemAbstractions::NetworkConnection > > clients;
     std::condition_variable_any callbackCondition;
     std::mutex callbackMutex;
@@ -651,8 +723,8 @@ TEST_F(NetworkConnectionTests, CloseDuringBrokenConnectionCallback) {
                 [&serverConnectionOwner](const std::vector< uint8_t >& message){
                     serverConnectionOwner.NetworkConnectionMessageReceived(message);
                 },
-                [&serverConnectionOwner]{
-                    serverConnectionOwner.NetworkConnectionBroken();
+                [&serverConnectionOwner](bool graceful){
+                    serverConnectionOwner.NetworkConnectionBroken(graceful);
                 }
             )
         );
@@ -674,15 +746,15 @@ TEST_F(NetworkConnectionTests, CloseDuringBrokenConnectionCallback) {
             0
         )
     );
-    SystemAbstractions::NetworkConnection client;
-    clientConnectionOwner.connectionBrokenDelegate = [&client]{ client.Close(); };
+    clientOwner->connectionBrokenDelegate = [this](bool){ client.Close(); };
     (void)client.Connect(0x7F000001, server.GetBoundPort());
+    auto clientOwnerCopy = clientOwner;
     (void)client.Process(
-        [&clientConnectionOwner](const std::vector< uint8_t >& message){
-            clientConnectionOwner.NetworkConnectionMessageReceived(message);
+        [clientOwnerCopy](const std::vector< uint8_t >& message){
+            clientOwnerCopy->NetworkConnectionMessageReceived(message);
         },
-        [&clientConnectionOwner]{
-            clientConnectionOwner.NetworkConnectionBroken();
+        [clientOwnerCopy](bool graceful){
+            clientOwnerCopy->NetworkConnectionBroken(graceful);
         }
     );
     {
@@ -698,10 +770,10 @@ TEST_F(NetworkConnectionTests, CloseDuringBrokenConnectionCallback) {
         );
     }
     clients[0]->Close();
-    clientConnectionOwner.AwaitDisconnection();
+    clientOwner->AwaitDisconnection();
 }
 
-TEST_F(NetworkConnectionTests, CloseGracefully) {
+TEST_F(NetworkConnectionTests, InitiateCloseGracefully) {
     // Set up a connection-oriented socket to receive
     // a connection from the unit under test.
     auto server = socket(AF_INET, SOCK_STREAM, 0);
@@ -735,7 +807,6 @@ TEST_F(NetworkConnectionTests, CloseGracefully) {
     ASSERT_TRUE(listen(server, SOMAXCONN) == 0);
 
     // Have unit under test connect to the server.
-    SystemAbstractions::NetworkConnection client;
     SOCKET serverConnection;
     std::shared_ptr< SOCKET > serverConnectionReference(
         &serverConnection,
@@ -763,13 +834,13 @@ TEST_F(NetworkConnectionTests, CloseGracefully) {
     );
     ASSERT_TRUE(client.Connect(0x7F000001, serverPort));
     serverAccept.join();
-    Owner clientOwner;
+    auto clientOwnerCopy = clientOwner;
     (void)client.Process(
-        [&clientOwner](const std::vector< uint8_t >& message){
-            clientOwner.NetworkConnectionMessageReceived(message);
+        [clientOwnerCopy](const std::vector< uint8_t >& message){
+            clientOwnerCopy->NetworkConnectionMessageReceived(message);
         },
-        [&clientOwner]{
-            clientOwner.NetworkConnectionBroken();
+        [clientOwnerCopy](bool graceful){
+            clientOwnerCopy->NetworkConnectionBroken(graceful);
         }
     );
 
@@ -801,7 +872,7 @@ TEST_F(NetworkConnectionTests, CloseGracefully) {
 
     // Verify unit under test has not yet indicated
     // that the connection is broken.
-    ASSERT_FALSE(clientOwner.connectionBroken);
+    ASSERT_FALSE(clientOwner->connectionBroken);
 
     // Close the server connection and verify the connection
     // is finally broken.
@@ -811,10 +882,13 @@ TEST_F(NetworkConnectionTests, CloseGracefully) {
 #else /* POSIX */
     serverConnection = -1;
 #endif /* _WIN32 or POSIX */
-    ASSERT_TRUE(clientOwner.AwaitDisconnection());
+    ASSERT_TRUE(clientOwner->AwaitDisconnection());
 }
 
-TEST_F(NetworkConnectionTests, CloseAbruptly) {
+TEST_F(NetworkConnectionTests, ReceiveCloseGracefully) {
+    // Let's see all diagnostic messages as they happen.
+    printDiagnosticMessages = true;
+
     // Set up a connection-oriented socket to receive
     // a connection from the unit under test.
     auto server = socket(AF_INET, SOCK_STREAM, 0);
@@ -848,7 +922,6 @@ TEST_F(NetworkConnectionTests, CloseAbruptly) {
     ASSERT_TRUE(listen(server, SOMAXCONN) == 0);
 
     // Have unit under test connect to the server.
-    SystemAbstractions::NetworkConnection client;
     SOCKET serverConnection;
     std::shared_ptr< SOCKET > serverConnectionReference(
         &serverConnection,
@@ -876,13 +949,140 @@ TEST_F(NetworkConnectionTests, CloseAbruptly) {
     );
     ASSERT_TRUE(client.Connect(0x7F000001, serverPort));
     serverAccept.join();
-    Owner clientOwner;
+    auto clientOwnerCopy = clientOwner;
     (void)client.Process(
-        [&clientOwner](const std::vector< uint8_t >& message){
-            clientOwner.NetworkConnectionMessageReceived(message);
+        [clientOwnerCopy](const std::vector< uint8_t >& message){
+            clientOwnerCopy->NetworkConnectionMessageReceived(message);
         },
-        [&clientOwner]{
-            clientOwner.NetworkConnectionBroken();
+        [clientOwnerCopy](bool graceful){
+            clientOwnerCopy->NetworkConnectionBroken(graceful);
+        }
+    );
+
+    // Queue up to send a large amount of data to the server.
+    std::vector< uint8_t > data(10000000, 'X');
+    client.SendMessage(data);
+
+    // Issue a graceful close from the server.
+#if _WIN32
+    (void)shutdown(serverConnection, SD_SEND);
+#else /* POSIX */
+    (void)shutdown(serverConnection, SHUT_WR);
+#endif /* _WIN32 or POSIX */
+
+    // Verify client receives the graceful close notification.
+    EXPECT_TRUE(clientOwner->AwaitDisconnection());
+    EXPECT_TRUE(clientOwner->connectionBrokenGracefully);
+    clientOwner->connectionBroken = false;
+    clientOwner->connectionBrokenGracefully = false;
+
+    // Close the client end of the connection.
+    client.Close(true);
+
+    // Verify client connection is not broken until all the
+    // data is sent.
+    std::vector< uint8_t > buffer(100000);
+    size_t totalBytesReceived = 0;
+    while (totalBytesReceived < data.size()) {
+        const auto bytesToReceive = std::min(
+            buffer.size(),
+            data.size() - totalBytesReceived
+        );
+        const auto bytesReceived = recv(
+            serverConnection,
+            (char*) buffer.data(),
+            (int)bytesToReceive,
+            MSG_WAITALL
+        );
+        ASSERT_FALSE(bytesReceived <= 0) << totalBytesReceived << " recv returned: " << bytesReceived;
+        totalBytesReceived += bytesReceived;
+    }
+
+    // Verify the server closes its end after sending
+    // the last message.
+    const auto bytesToReceive = buffer.size();
+    const auto bytesReceived = recv(
+        serverConnection,
+        (char*) buffer.data(),
+        (int)bytesToReceive,
+        MSG_WAITALL
+    );
+    EXPECT_TRUE(bytesReceived == 0) << bytesReceived;
+
+    // Verify unit under test receives the indication
+    // that the connection is broken.
+    ASSERT_TRUE(clientOwner->AwaitDisconnection());
+    EXPECT_FALSE(clientOwner->connectionBrokenGracefully);
+}
+
+TEST_F(NetworkConnectionTests, InitiateCloseAbruptly) {
+    // Set up a connection-oriented socket to receive
+    // a connection from the unit under test.
+    auto server = socket(AF_INET, SOCK_STREAM, 0);
+    std::shared_ptr< SOCKET > serverReference(
+        &server,
+        [&server](SOCKET* s){
+#if _WIN32
+            if (server != INVALID_SOCKET) {
+#else /* POSIX */
+            if (server >= 0) {
+#endif /* _WIN32 or POSIX */
+                closesocket(server);
+            }
+        }
+    );
+#if _WIN32
+    ASSERT_FALSE(server == INVALID_SOCKET);
+#else /* POSIX */
+    ASSERT_FALSE(server < 0);
+#endif /* _WIN32 or POSIX */
+    struct sockaddr_in serverAddress;
+    (void)memset(&serverAddress, 0, sizeof(serverAddress));
+    serverAddress.sin_family = AF_INET;
+    serverAddress.IPV4_ADDRESS_IN_SOCKADDR = 0;
+    serverAddress.sin_port = 0;
+    ASSERT_TRUE(bind(server, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) == 0);
+    SOCKADDR_LENGTH_TYPE serverAddressLength = sizeof(serverAddress);
+    uint16_t serverPort;
+    ASSERT_TRUE(getsockname(server, (struct sockaddr*)&serverAddress, &serverAddressLength) == 0);
+    serverPort = ntohs(serverAddress.sin_port);
+    ASSERT_TRUE(listen(server, SOMAXCONN) == 0);
+
+    // Have unit under test connect to the server.
+    SOCKET serverConnection;
+    std::shared_ptr< SOCKET > serverConnectionReference(
+        &serverConnection,
+        [&serverConnection](SOCKET* s){
+#if _WIN32
+            if (serverConnection != INVALID_SOCKET) {
+#else /* POSIX */
+            if (serverConnection >= 0) {
+#endif /* _WIN32 or POSIX */
+                closesocket(serverConnection);
+            }
+        }
+    );
+    std::thread serverAccept(
+        [server, &serverConnection]{
+            struct sockaddr_in clientAddress;
+            SOCKADDR_LENGTH_TYPE clientAddressLength = sizeof(clientAddress);
+            serverConnection = accept(server, (struct sockaddr*)&clientAddress, &clientAddressLength);
+        #if _WIN32
+            ASSERT_FALSE(serverConnection == INVALID_SOCKET);
+        #else /* POSIX */
+            ASSERT_FALSE(serverConnection < 0);
+        #endif /* _WIN32 or POSIX */
+        }
+    );
+    ASSERT_TRUE(client.Connect(0x7F000001, serverPort));
+    serverAccept.join();
+    auto clientOwnerCopy = clientOwner;
+    (void)client.Process(
+        [clientOwnerCopy](const std::vector< uint8_t >& message){
+            clientOwnerCopy->NetworkConnectionMessageReceived(message);
+        },
+        [clientOwnerCopy](bool graceful){
+            clientOwnerCopy->NetworkConnectionBroken(graceful);
         }
     );
 
@@ -917,5 +1117,5 @@ TEST_F(NetworkConnectionTests, CloseAbruptly) {
 
     // Verify unit under test has indicated
     // that the connection is broken.
-    EXPECT_TRUE(clientOwner.AwaitDisconnection());
+    EXPECT_TRUE(clientOwner->AwaitDisconnection());
 }

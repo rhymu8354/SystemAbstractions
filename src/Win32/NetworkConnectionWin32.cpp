@@ -176,36 +176,45 @@ namespace SystemAbstractions {
         bool wait = true;
         while (!platform->processorStop) {
             if (wait) {
+                diagnosticsSender.SendDiagnosticInformationString(0, "processor going to sleep");
                 processingLock.unlock();
                 (void)WaitForMultipleObjects(2, handles, FALSE, INFINITE);
                 processingLock.lock();
             }
-            buffer.resize(MAXIMUM_READ_SIZE);
-            const int amountReceived = recv(platform->sock, (char*)&buffer[0], (int)buffer.size(), 0);
-            if (amountReceived == SOCKET_ERROR) {
-                const auto wsaLastError = WSAGetLastError();
-                if (wsaLastError == WSAEWOULDBLOCK) {
-                    wait = true;
-                } else {
-                    Close(CloseProcedure::ImmediateDoNotStopProcessor);
-                    brokenDelegate();
-                    break;
-                }
-            } else if (amountReceived > 0) {
-                wait = false;
-                buffer.resize((size_t)amountReceived);
-                messageReceivedDelegate(buffer);
+            diagnosticsSender.SendDiagnosticInformationString(0, "processor woke up");
+            if (platform->peerClosed) {
+                wait = true;
             } else {
-                diagnosticsSender.SendDiagnosticInformationString(
-                    0,
-                    "connection with " + GetPeerName() + " closed by peer"
-                );
-                platform->peerClosed = true;
-                brokenDelegate();
-                break;
+                buffer.resize(MAXIMUM_READ_SIZE);
+                diagnosticsSender.SendDiagnosticInformationString(0, "processor trying to read");
+                const int amountReceived = recv(platform->sock, (char*)&buffer[0], (int)buffer.size(), 0);
+                if (amountReceived == SOCKET_ERROR) {
+                    const auto wsaLastError = WSAGetLastError();
+                    if (wsaLastError == WSAEWOULDBLOCK) {
+                        wait = true;
+                    } else {
+                        Close(CloseProcedure::ImmediateDoNotStopProcessor);
+                        brokenDelegate(false);
+                        diagnosticsSender.SendDiagnosticInformationString(0, "processor breaking due to recv error");
+                        break;
+                    }
+                } else if (amountReceived > 0) {
+                    diagnosticsSender.SendDiagnosticInformationString(0, "processor wrote something");
+                    wait = false;
+                    buffer.resize((size_t)amountReceived);
+                    messageReceivedDelegate(buffer);
+                } else {
+                    diagnosticsSender.SendDiagnosticInformationString(
+                        0,
+                        "connection with " + GetPeerName() + " closed by peer"
+                    );
+                    platform->peerClosed = true;
+                    brokenDelegate(true);
+                }
             }
             const auto outputQueueLength = platform->outputQueue.GetBytesQueued();
             if (outputQueueLength > 0) {
+                diagnosticsSender.SendDiagnosticInformationString(0, "processor trying to write");
                 const auto writeSize = (int)std::min(outputQueueLength, MAXIMUM_WRITE_SIZE);
                 buffer = platform->outputQueue.Peek(writeSize);
                 const int amountSent = send(platform->sock, (const char*)&buffer[0], writeSize, 0);
@@ -213,20 +222,24 @@ namespace SystemAbstractions {
                     const auto wsaLastError = WSAGetLastError();
                     if (wsaLastError != WSAEWOULDBLOCK) {
                         Close(CloseProcedure::ImmediateDoNotStopProcessor);
-                        brokenDelegate();
+                        brokenDelegate(false);
+                        diagnosticsSender.SendDiagnosticInformationString(0, "processor breaking due to send error");
                         break;
                     }
                 } else if (amountSent > 0) {
+                    diagnosticsSender.SendDiagnosticInformationString(0, "processor wrote something");
                     (void)platform->outputQueue.Drop(amountSent);
                     if (
                         (amountSent == writeSize)
                         && (platform->outputQueue.GetBytesQueued() > 0)
                     ) {
+                        diagnosticsSender.SendDiagnosticInformationString(0, "processor has more to write");
                         wait = false;
                     }
                 } else {
                     Close(CloseProcedure::ImmediateDoNotStopProcessor);
-                    brokenDelegate();
+                    brokenDelegate(false);
+                    diagnosticsSender.SendDiagnosticInformationString(0, "processor breaking due to send returning 0");
                     break;
                 }
             }
@@ -234,15 +247,18 @@ namespace SystemAbstractions {
                 (platform->outputQueue.GetBytesQueued() == 0)
                 && platform->closing
             ) {
+                diagnosticsSender.SendDiagnosticInformationString(0, "processor closing and done sending");
                 if (!platform->shutdownSent) {
                     shutdown(platform->sock, SD_SEND);
                     platform->shutdownSent = true;
                 }
                 if (platform->peerClosed) {
+                    diagnosticsSender.SendDiagnosticInformationString(0, "processor closing connection immediately");
                     CloseImmediately();
                 }
             }
         }
+        diagnosticsSender.SendDiagnosticInformationString(0, "processor returning due to being told to stop");
     }
 
     bool NetworkConnection::Impl::IsConnected() const {
@@ -285,10 +301,9 @@ namespace SystemAbstractions {
             0,
             "closed connection with " + GetPeerName()
         );
-        if (!platform->peerClosed) {
-            if (brokenDelegate != nullptr) {
-                brokenDelegate();
-            }
+        diagnosticsSender.SendDiagnosticInformationString(0, "processor closing connection immediately");
+        if (brokenDelegate != nullptr) {
+            brokenDelegate(false);
         }
     }
 
