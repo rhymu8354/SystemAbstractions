@@ -300,6 +300,7 @@ namespace SystemAbstractions {
                     1,
                     "closing connection with " + GetPeerName()
                 );
+                (void)SetEvent(platform->processorStateChangeEvent);
             } else {
                 CloseImmediately();
             }

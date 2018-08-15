@@ -20,6 +20,7 @@
 #include <SystemAbstractions/NetworkEndpoint.hpp>
 #include <SystemAbstractions/StringExtensions.hpp>
 #include <thread>
+#include <time.h>
 #include <vector>
 
 #ifdef _WIN32
@@ -45,6 +46,7 @@
 #define IPV4_ADDRESS_IN_SOCKADDR sin_addr.S_un.S_addr
 #define SOCKADDR_LENGTH_TYPE int
 #else /* POSIX */
+#include <fcntl.h>
 #include <netinet/ip.h>
 #include <sys/socket.h>
 #define IPV4_ADDRESS_IN_SOCKADDR sin_addr.s_addr
@@ -775,7 +777,7 @@ TEST_F(NetworkConnectionTests, CloseDuringBrokenConnectionCallback) {
     clientOwner->AwaitDisconnection();
 }
 
-TEST_F(NetworkConnectionTests, InitiateCloseGracefully) {
+TEST_F(NetworkConnectionTests, InitiateCloseGracefullyWithDataQueued) {
     // Set up a connection-oriented socket to receive
     // a connection from the unit under test.
     auto server = socket(AF_INET, SOCK_STREAM, 0);
@@ -1230,28 +1232,6 @@ TEST_F(NetworkConnectionTests, ReceiveCloseAbruptly) {
 #endif /* _WIN32 or POSIX */
     (void)closesocket(serverConnection);
 
-    // Verify client connection is broken before all the
-    // data is sent.
-    std::vector< uint8_t > buffer(100000);
-    size_t totalBytesReceived = 0;
-    while (totalBytesReceived < data.size()) {
-        const auto bytesToReceive = std::min(
-            buffer.size(),
-            data.size() - totalBytesReceived
-        );
-        const auto bytesReceived = recv(
-            serverConnection,
-            (char*) buffer.data(),
-            (int)bytesToReceive,
-            MSG_WAITALL
-        );
-        if (bytesReceived <= 0) {
-            break;
-        }
-        totalBytesReceived += bytesReceived;
-    }
-    EXPECT_LT(totalBytesReceived, data.size()) << totalBytesReceived;
-
     // Verify client receives the abrupt close notification.
     EXPECT_TRUE(clientOwner->AwaitDisconnection());
     EXPECT_FALSE(clientOwner->connectionBrokenGracefully);
@@ -1272,4 +1252,130 @@ TEST_F(NetworkConnectionTests, ReceiveCloseAbruptly) {
         }),
         diagnosticMessages
     );
+}
+
+TEST_F(NetworkConnectionTests, InitiateCloseGracefullyNoDataQueued) {
+    // Set up a connection-oriented socket to receive
+    // a connection from the unit under test.
+    auto server = socket(AF_INET, SOCK_STREAM, 0);
+    std::shared_ptr< SOCKET > serverReference(
+        &server,
+        [&server](SOCKET* s){
+#if _WIN32
+            if (server != INVALID_SOCKET) {
+#else /* POSIX */
+            if (server >= 0) {
+#endif /* _WIN32 or POSIX */
+                closesocket(server);
+            }
+        }
+    );
+#if _WIN32
+    ASSERT_FALSE(server == INVALID_SOCKET);
+#else /* POSIX */
+    ASSERT_FALSE(server < 0);
+#endif /* _WIN32 or POSIX */
+    struct sockaddr_in serverAddress;
+    (void)memset(&serverAddress, 0, sizeof(serverAddress));
+    serverAddress.sin_family = AF_INET;
+    serverAddress.IPV4_ADDRESS_IN_SOCKADDR = 0;
+    serverAddress.sin_port = 0;
+    ASSERT_TRUE(bind(server, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) == 0);
+    SOCKADDR_LENGTH_TYPE serverAddressLength = sizeof(serverAddress);
+    uint16_t serverPort;
+    ASSERT_TRUE(getsockname(server, (struct sockaddr*)&serverAddress, &serverAddressLength) == 0);
+    serverPort = ntohs(serverAddress.sin_port);
+    ASSERT_TRUE(listen(server, SOMAXCONN) == 0);
+
+    // Have unit under test connect to the server.
+    SOCKET serverConnection;
+    std::shared_ptr< SOCKET > serverConnectionReference(
+        &serverConnection,
+        [&serverConnection](SOCKET* s){
+#if _WIN32
+            if (serverConnection != INVALID_SOCKET) {
+#else /* POSIX */
+            if (serverConnection >= 0) {
+#endif /* _WIN32 or POSIX */
+                closesocket(serverConnection);
+            }
+        }
+    );
+    std::thread serverAccept(
+        [server, &serverConnection]{
+            struct sockaddr_in clientAddress;
+            SOCKADDR_LENGTH_TYPE clientAddressLength = sizeof(clientAddress);
+            serverConnection = accept(server, (struct sockaddr*)&clientAddress, &clientAddressLength);
+        #if _WIN32
+            ASSERT_FALSE(serverConnection == INVALID_SOCKET);
+        #else /* POSIX */
+            ASSERT_FALSE(serverConnection < 0);
+        #endif /* _WIN32 or POSIX */
+        }
+    );
+    ASSERT_TRUE(client.Connect(0x7F000001, serverPort));
+    serverAccept.join();
+    auto clientOwnerCopy = clientOwner;
+    (void)client.Process(
+        [clientOwnerCopy](const std::vector< uint8_t >& message){
+            clientOwnerCopy->NetworkConnectionMessageReceived(message);
+        },
+        [clientOwnerCopy](bool graceful){
+            clientOwnerCopy->NetworkConnectionBroken(graceful);
+        }
+    );
+
+    // Issue a graceful close on the client.
+    client.Close(true);
+
+    // Verify that the server side detects the graceful close.
+#if _WIN32
+    u_long blockingMode = 1;
+    (void)ioctlsocket(serverConnection, FIONBIO, &blockingMode);
+#else /* POSIX */
+    int flags = fcntl(serverConnection, F_GETFL, 0);
+    flags |= O_NONBLOCK;
+    (void)fcntl(serverConnection, F_SETFL, flags);
+#endif /* _WIN32 or POSIX */
+    bool wouldBlock = true;
+    const auto startTime = time(NULL);
+    while (wouldBlock) {
+        wouldBlock = false;
+        ASSERT_FALSE(time(NULL) - startTime > 1);
+        std::vector< uint8_t > buffer(100000);
+        const auto bytesReceived = recv(
+            serverConnection,
+            (char*)buffer.data(),
+            (int)buffer.size(),
+            0
+        );
+#if _WIN32
+        if (bytesReceived == SOCKET_ERROR) {
+            const auto wsaLastError = WSAGetLastError();
+            if (wsaLastError == WSAEWOULDBLOCK) {
+                wouldBlock = true;
+            }
+        }
+#else /* POSIX */
+        if (bytesReceived < 0) {
+            if (errno == EWOULDBLOCK) {
+                wouldBlock = true;
+            }
+        }
+#endif /* _WIN32 or POSIX */
+    }
+
+    // Verify unit under test has not yet indicated
+    // that the connection is broken.
+    ASSERT_FALSE(clientOwner->connectionBroken);
+
+    // Close the server connection and verify the connection
+    // is finally broken.
+    (void)closesocket(serverConnection);
+#if _WIN32
+    serverConnection = INVALID_SOCKET;
+#else /* POSIX */
+    serverConnection = -1;
+#endif /* _WIN32 or POSIX */
+    ASSERT_TRUE(clientOwner->AwaitDisconnection());
 }
