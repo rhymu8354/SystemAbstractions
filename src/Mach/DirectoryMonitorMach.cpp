@@ -81,7 +81,7 @@ namespace SystemAbstractions {
         }
     };
 
-    DirectoryMonitor::~DirectoryMonitor() {
+    DirectoryMonitor::~DirectoryMonitor() noexcept {
         Stop();
     }
     DirectoryMonitor::DirectoryMonitor(DirectoryMonitor&& other) noexcept = default;
@@ -97,7 +97,7 @@ namespace SystemAbstractions {
         const std::string& path
     ) {
         if (impl_ == nullptr) {
-            return;
+            return false;
         }
         Stop();
         if (!impl_->stopSignal.Initialize()) {
