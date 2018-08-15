@@ -205,7 +205,7 @@ namespace SystemAbstractions {
                     messageReceivedDelegate(buffer);
                 } else {
                     diagnosticsSender.SendDiagnosticInformationString(
-                        0,
+                        1,
                         "connection with " + GetPeerName() + " closed by peer"
                     );
                     platform->peerClosed = true;
@@ -286,7 +286,7 @@ namespace SystemAbstractions {
             if (procedure == CloseProcedure::Graceful) {
                 platform->closing = true;
                 diagnosticsSender.SendDiagnosticInformationString(
-                    0,
+                    1,
                     "closing connection with " + GetPeerName()
                 );
             } else {
@@ -298,10 +298,9 @@ namespace SystemAbstractions {
     void NetworkConnection::Impl::CloseImmediately() {
         platform->CloseImmediately();
         diagnosticsSender.SendDiagnosticInformationString(
-            0,
+            1,
             "closed connection with " + GetPeerName()
         );
-        diagnosticsSender.SendDiagnosticInformationString(0, "processor closing connection immediately");
         if (brokenDelegate != nullptr) {
             brokenDelegate(false);
         }
