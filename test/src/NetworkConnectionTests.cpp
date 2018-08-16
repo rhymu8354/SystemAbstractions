@@ -1227,8 +1227,10 @@ TEST_F(NetworkConnectionTests, ReceiveCloseAbruptly) {
     linger.l_linger = 0;
     (void)setsockopt(serverConnection, SOL_SOCKET, SO_LINGER, (const char*)&linger, sizeof(linger));
 #else /* POSIX */
-    // TODO: Figure out what (if anything?) we need to do
-    // to ensure that closing the socket is immediate (abrupt).
+    struct linger linger;
+    linger.l_onoff = 1;
+    linger.l_linger = 0;
+    (void)setsockopt(serverConnection, SOL_SOCKET, SO_LINGER, &linger, sizeof(linger));
 #endif /* _WIN32 or POSIX */
     (void)closesocket(serverConnection);
 

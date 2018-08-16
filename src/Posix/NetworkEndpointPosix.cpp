@@ -218,6 +218,10 @@ namespace SystemAbstractions {
                             );
                         }
                     } else {
+                        struct linger linger;
+                        linger.l_onoff = 1;
+                        linger.l_linger = 0;
+                        (void)setsockopt(client, SOL_SOCKET, SO_LINGER, &linger, sizeof(linger));
                         uint32_t boundIpv4Address = 0;
                         uint16_t boundPort = 0;
                         struct sockaddr_in boundAddress;

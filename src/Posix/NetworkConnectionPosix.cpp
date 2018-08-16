@@ -60,6 +60,10 @@ namespace SystemAbstractions {
             );
             return false;
         }
+        struct linger linger;
+        linger.l_onoff = 1;
+        linger.l_linger = 0;
+        (void)setsockopt(platform->sock, SOL_SOCKET, SO_LINGER, &linger, sizeof(linger));
         if (bind(platform->sock, (struct sockaddr*)&socketAddress, (socklen_t)sizeof(socketAddress)) != 0) {
             diagnosticsSender.SendDiagnosticInformationFormatted(
                 SystemAbstractions::DiagnosticsSender::Levels::ERROR,
@@ -153,25 +157,34 @@ namespace SystemAbstractions {
                 }
             }
             wait = true;
-            buffer.resize(MAXIMUM_READ_SIZE);
-            const auto amountReceived = recv(platform->sock, (char*)&buffer[0], (int)buffer.size(), MSG_NOSIGNAL | MSG_DONTWAIT);
-            if (amountReceived < 0) {
-                if (errno != EWOULDBLOCK) {
-                    Close(CloseProcedure::ImmediateDoNotStopProcessor);
-                    brokenDelegate();
-                    break;
-                }
-            } else if (amountReceived > 0) {
-                buffer.resize((size_t)amountReceived);
-                messageReceivedDelegate(buffer);
+            if (platform->peerClosed) {
+                wait = true;
             } else {
-                diagnosticsSender.SendDiagnosticInformationString(
-                    0,
-                    "connection with " + GetPeerName() + " closed by peer"
-                );
-                platform->peerClosed = true;
-                brokenDelegate();
-                break;
+                buffer.resize(MAXIMUM_READ_SIZE);
+                const auto amountReceived = recv(platform->sock, (char*)&buffer[0], (int)buffer.size(), MSG_NOSIGNAL | MSG_DONTWAIT);
+                if (amountReceived < 0) {
+                    if (errno == EWOULDBLOCK) {
+                        wait = true;
+                    } else {
+                        diagnosticsSender.SendDiagnosticInformationString(
+                            1,
+                            "connection with " + GetPeerName() + " closed abruptly by peer"
+                        );
+                        Close(CloseProcedure::ImmediateDoNotStopProcessor);
+                        break;
+                    }
+                } else if (amountReceived > 0) {
+                    buffer.resize((size_t)amountReceived);
+                    wait = false;
+                    messageReceivedDelegate(buffer);
+                } else {
+                    diagnosticsSender.SendDiagnosticInformationString(
+                        1,
+                        "connection with " + GetPeerName() + " closed gracefully by peer"
+                    );
+                    platform->peerClosed = true;
+                    brokenDelegate(true);
+                }
             }
             const auto outputQueueLength = platform->outputQueue.GetBytesQueued();
             if (outputQueueLength > 0) {
@@ -180,8 +193,11 @@ namespace SystemAbstractions {
                 const auto amountSent = send(platform->sock, (const char*)&buffer[0], writeSize, MSG_NOSIGNAL | MSG_DONTWAIT);
                 if (amountSent < 0) {
                     if (errno != EWOULDBLOCK) {
+                        diagnosticsSender.SendDiagnosticInformationString(
+                            1,
+                            "connection with " + GetPeerName() + " closed abruptly by peer"
+                        );
                         Close(CloseProcedure::ImmediateDoNotStopProcessor);
-                        brokenDelegate();
                         break;
                     }
                 } else if (amountSent > 0) {
@@ -194,7 +210,6 @@ namespace SystemAbstractions {
                     }
                 } else {
                     Close(CloseProcedure::ImmediateDoNotStopProcessor);
-                    brokenDelegate();
                     break;
                 }
             }
@@ -238,9 +253,10 @@ namespace SystemAbstractions {
             if (procedure == CloseProcedure::Graceful) {
                 platform->closing = true;
                 diagnosticsSender.SendDiagnosticInformationString(
-                    0,
+                    1,
                     "closing connection with " + GetPeerName()
                 );
+                platform->processorStateChangeSignal.Set();
             } else {
                 CloseImmediately();
             }
@@ -250,13 +266,11 @@ namespace SystemAbstractions {
     void NetworkConnection::Impl::CloseImmediately() {
         platform->CloseImmediately();
         diagnosticsSender.SendDiagnosticInformationString(
-            0,
+            1,
             "closed connection with " + GetPeerName()
         );
-        if (!platform->peerClosed) {
-            if (brokenDelegate != nullptr) {
-                brokenDelegate();
-            }
+        if (brokenDelegate != nullptr) {
+            brokenDelegate(false);
         }
     }
 
