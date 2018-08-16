@@ -202,7 +202,6 @@ namespace SystemAbstractions {
                             "connection with " + GetPeerName() + " closed abruptly by peer"
                         );
                         Close(CloseProcedure::ImmediateDoNotStopProcessor);
-                        brokenDelegate(false);
                         break;
                     }
                 } else if (amountReceived > 0) {
@@ -233,7 +232,6 @@ namespace SystemAbstractions {
                             "connection with " + GetPeerName() + " closed abruptly by peer"
                         );
                         Close(CloseProcedure::ImmediateDoNotStopProcessor);
-                        brokenDelegate(false);
                         diagnosticsSender.SendDiagnosticInformationString(0, "processor breaking due to send error");
                         break;
                     }
@@ -249,7 +247,6 @@ namespace SystemAbstractions {
                     }
                 } else {
                     Close(CloseProcedure::ImmediateDoNotStopProcessor);
-                    brokenDelegate(false);
                     diagnosticsSender.SendDiagnosticInformationString(0, "processor breaking due to send returning 0");
                     break;
                 }
