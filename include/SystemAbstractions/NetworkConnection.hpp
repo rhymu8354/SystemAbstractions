@@ -205,13 +205,6 @@ namespace SystemAbstractions {
         // Private properties
     private:
         /**
-         * This is the type of structure that contains the private
-         * properties of the instance.  It is defined in the implementation
-         * and declared here to ensure that it is scoped inside the class.
-         */
-        struct Impl;
-
-        /**
          * This contains the private properties of the instance.
          */
         std::unique_ptr< Impl > impl_;
