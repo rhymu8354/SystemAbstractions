@@ -23,8 +23,8 @@
 namespace SystemAbstractions {
 
     /**
-     * This structure contains the private properties of the
-     * NetworkConnectionPlatform class.
+     * This structure contains the platform-specific properties of the
+     * NetworkConnection class.
      */
     struct NetworkConnection::Platform {
         // Properties
