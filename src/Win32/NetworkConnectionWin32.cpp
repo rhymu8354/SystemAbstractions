@@ -321,10 +321,11 @@ namespace SystemAbstractions {
         bool wsaStarted = false;
         const std::unique_ptr< WSADATA, std::function< void(WSADATA*) > > wsaData(
             new WSADATA,
-            [&wsaStarted](WSADATA*){
+            [&wsaStarted](WSADATA* p){
                 if (wsaStarted) {
                     (void)WSACleanup();
                 }
+                delete p;
             }
         );
         wsaStarted = !WSAStartup(MAKEWORD(2, 0), wsaData.get());
