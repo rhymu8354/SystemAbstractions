@@ -1381,3 +1381,10 @@ TEST_F(NetworkConnectionTests, InitiateCloseGracefullyNoDataQueued) {
 #endif /* _WIN32 or POSIX */
     ASSERT_TRUE(clientOwner->AwaitDisconnection());
 }
+
+TEST_F(NetworkConnectionTests, GetAddressOfHost) {
+    EXPECT_EQ(0x7f000001, SystemAbstractions::NetworkConnection::GetAddressOfHost("localhost"));
+    EXPECT_EQ(0x7f000001, SystemAbstractions::NetworkConnection::GetAddressOfHost("127.0.0.1"));
+    EXPECT_EQ(0x08080808, SystemAbstractions::NetworkConnection::GetAddressOfHost("8.8.8.8"));
+    EXPECT_EQ(0, SystemAbstractions::NetworkConnection::GetAddressOfHost(".example"));
+}

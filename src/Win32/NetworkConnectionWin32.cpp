@@ -29,9 +29,11 @@
 #include "NetworkConnectionWin32.hpp"
 
 #include <algorithm>
+#include <functional>
 #include <inttypes.h>
 #include <mutex>
 #include <stdint.h>
+#include <string.h>
 #include <thread>
 
 namespace {
@@ -312,6 +314,38 @@ namespace SystemAbstractions {
         );
         if (brokenDelegate != nullptr) {
             brokenDelegate(false);
+        }
+    }
+
+    uint32_t NetworkConnection::Impl::GetAddressOfHost(const std::string& host) {
+        bool wsaStarted = false;
+        const std::unique_ptr< WSADATA, std::function< void(WSADATA*) > > wsaData(
+            new WSADATA,
+            [&wsaStarted](WSADATA*){
+                if (wsaStarted) {
+                    (void)WSACleanup();
+                }
+            }
+        );
+        wsaStarted = !WSAStartup(MAKEWORD(2, 0), wsaData.get());
+        struct addrinfo hints;
+        (void)memset(&hints, 0, sizeof(hints));
+        hints.ai_family = AF_INET;
+        struct addrinfo* rawResults;
+        if (getaddrinfo(host.c_str(), NULL, &hints, &rawResults) != 0) {
+            return 0;
+        }
+        std::unique_ptr< struct addrinfo, std::function< void(struct addrinfo*) > > results(
+            rawResults,
+            [](struct addrinfo* p){
+                freeaddrinfo(p);
+            }
+        );
+        if (results == NULL) {
+            return 0;
+        } else {
+            struct sockaddr_in* ipAddress = (struct sockaddr_in*)results->ai_addr;
+            return ntohl(ipAddress->sin_addr.S_un.S_addr);
         }
     }
 

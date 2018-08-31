@@ -74,6 +74,10 @@ namespace SystemAbstractions {
         );
     }
 
+    uint32_t NetworkConnection::GetAddressOfHost(const std::string& host) {
+        return Impl::GetAddressOfHost(host);
+    }
+
     std::string NetworkConnection::Impl::GetPeerName() const {
         return SystemAbstractions::sprintf(
             "%" PRIu8 ".%" PRIu8 ".%" PRIu8 ".%" PRIu8 ":%" PRIu16,

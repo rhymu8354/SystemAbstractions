@@ -202,6 +202,20 @@ namespace SystemAbstractions {
          */
         void Close(bool clean = false);
 
+        /**
+         * This is a helper free function which determines the IPv4
+         * address of a host having the given name (which could just
+         * be an IPv4 address formatted as a string).
+         *
+         * @return
+         *     The IPv4 address of the host having the given name is returned.
+         *
+         * @retval 0
+         *     This is returned if the IPv4 address of the host having
+         *     the given name could not be determined.
+         */
+        static uint32_t GetAddressOfHost(const std::string& host);
+
         // Private properties
     private:
         /**

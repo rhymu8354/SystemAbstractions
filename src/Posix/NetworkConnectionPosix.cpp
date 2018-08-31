@@ -274,6 +274,28 @@ namespace SystemAbstractions {
         }
     }
 
+    uint32_t NetworkConnection::Impl::GetAddressOfHost(const std::string& host) {
+        struct addrinfo hints;
+        (void)memset(&hints, 0, sizeof(hints));
+        hints.ai_family = AF_INET;
+        struct addrinfo* rawResults;
+        if (getaddrinfo(host.c_str(), NULL, &hints, &rawResults) != 0) {
+            return 0;
+        }
+        std::unique_ptr< struct addrinfo, std::function< void(struct addrinfo*) > > results(
+            rawResults,
+            [](struct addrinfo* p){
+                freeaddrinfo(p);
+            }
+        );
+        if (results == NULL) {
+            return 0;
+        } else {
+            struct sockaddr_in* ipAddress = (struct sockaddr_in*)results->ifa_addr;
+            return ntohl(ipAddress->sin_addr.s_add);
+        }
+    }
+
     std::shared_ptr< NetworkConnection > NetworkConnection::Platform::MakeConnectionFromExistingSocket(
         int sock,
         uint32_t boundAddress,
