@@ -257,8 +257,8 @@ namespace SystemAbstractions {
                 (platform->outputQueue.GetBytesQueued() == 0)
                 && platform->closing
             ) {
-                diagnosticsSender.SendDiagnosticInformationString(0, "processor closing and done sending");
                 if (!platform->shutdownSent) {
+                    diagnosticsSender.SendDiagnosticInformationString(0, "processor closing and done sending");
                     shutdown(platform->sock, SD_SEND);
                     platform->shutdownSent = true;
                 }
