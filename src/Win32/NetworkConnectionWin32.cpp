@@ -207,7 +207,7 @@ namespace SystemAbstractions {
                         break;
                     }
                 } else if (amountReceived > 0) {
-                    diagnosticsSender.SendDiagnosticInformationString(0, "processor wrote something");
+                    diagnosticsSender.SendDiagnosticInformationString(0, "processor read something");
                     wait = false;
                     buffer.resize((size_t)amountReceived);
                     messageReceivedDelegate(buffer);
