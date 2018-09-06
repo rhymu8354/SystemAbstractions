@@ -26,7 +26,7 @@ namespace SystemAbstractions {
         int rng;
     };
 
-    CryptoRandom::~CryptoRandom() {
+    CryptoRandom::~CryptoRandom() noexcept {
         (void)close(impl_->rng);
     }
 

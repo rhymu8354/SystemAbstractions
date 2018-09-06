@@ -19,7 +19,8 @@ int main(int argc, char* argv[]) {
     (void)fputs(testLine.c_str(), f);
     (void)fclose(f);
     if (args[1] == "crash") {
-        *((int*)NULL) = 0;
+        volatile int* null = (int*)0;
+        *null = 0;
     }
     return EXIT_SUCCESS;
 }

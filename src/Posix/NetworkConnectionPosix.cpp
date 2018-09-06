@@ -43,7 +43,7 @@ namespace SystemAbstractions {
     {
     }
 
-    NetworkConnection::Impl::~Impl() {
+    NetworkConnection::Impl::~Impl() noexcept {
         Close(CloseProcedure::ImmediateAndStopProcessor);
     }
 

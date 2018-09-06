@@ -48,7 +48,7 @@ namespace SystemAbstractions {
     }
 
 
-    NetworkEndpoint::Impl::~Impl() {
+    NetworkEndpoint::Impl::~Impl() noexcept {
         Close(true);
     }
 

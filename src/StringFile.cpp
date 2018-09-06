@@ -41,8 +41,7 @@ namespace SystemAbstractions {
         impl_->value.assign(initialValue.begin(), initialValue.end());
     }
 
-    StringFile::~StringFile() {
-    }
+    StringFile::~StringFile() noexcept = default;
 
     StringFile::operator std::string() const {
         return std::string(impl_->value.begin(), impl_->value.end());

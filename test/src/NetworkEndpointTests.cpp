@@ -695,8 +695,6 @@ TEST_F(NetworkEndpointTests, MultipleConnections) {
     SOCKADDR_LENGTH_TYPE sender2AddressLength = sizeof(sender2Address);
     ASSERT_TRUE(getsockname(sender1, (struct sockaddr*)&sender1Address, &sender1AddressLength) == 0);
     ASSERT_TRUE(getsockname(sender2, (struct sockaddr*)&sender2Address, &sender2AddressLength) == 0);
-    const auto port1 = ntohs(sender1Address.sin_port);
-    const auto port2 = ntohs(sender2Address.sin_port);
 
     // Set up the NetworkEndpoint.
     SystemAbstractions::NetworkEndpoint endpoint;

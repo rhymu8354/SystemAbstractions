@@ -106,7 +106,7 @@ TEST_F(FileTests, BasicFileMethods) {
     ASSERT_FALSE(file.IsExisting());
 
     // Check that we can move the file while it's not open.
-    file = std::move(SystemAbstractions::File(testFilePath));
+    file = SystemAbstractions::File(testFilePath);
     ASSERT_TRUE(file.Create());
     file.Close();
     ASSERT_TRUE(file.IsExisting());
@@ -135,7 +135,7 @@ TEST_F(FileTests, BasicFileMethods) {
     ASSERT_FALSE(file.IsExisting());
 
     // Check that we can copy a file.
-    file = std::move(SystemAbstractions::File(testFilePath));
+    file = SystemAbstractions::File(testFilePath);
     ASSERT_TRUE(file.Create());
     const std::string testString = "Hello, World\r\n";
     ASSERT_EQ(testString.length(), file.Write(testString.data(), testString.length()));

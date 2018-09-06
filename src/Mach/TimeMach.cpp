@@ -25,8 +25,7 @@ namespace SystemAbstractions {
     {
     }
 
-    Time::~Time() {
-    }
+    Time::~Time() noexcept = default;
 
     double Time::GetTime() {
         if (impl_->scale == 0.0) {
