@@ -16,6 +16,7 @@
 #include <arpa/inet.h>
 #include <assert.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <ifaddrs.h>
 #include <inttypes.h>
 #include <memory>
@@ -159,6 +160,7 @@ namespace SystemAbstractions {
         platform->processorStateChangeSignal.Clear();
 
         // If accepting connections, tell socket to start accepting.
+        // Otherwise, make socket non-blocking.
         if (mode == NetworkEndpoint::Mode::Connection) {
             if (listen(platform->sock, SOMAXCONN) != 0) {
                 diagnosticsSender.SendDiagnosticInformationFormatted(
@@ -168,6 +170,10 @@ namespace SystemAbstractions {
                 );
                 return false;
             }
+        } else {
+            int flags = fcntl(platform->sock, F_GETFL, 0);
+            flags |= O_NONBLOCK;
+            (void)fcntl(platform->sock, F_SETFL, flags);
         }
         diagnosticsSender.SendDiagnosticInformationFormatted(
             0,
@@ -222,6 +228,9 @@ namespace SystemAbstractions {
                         linger.l_onoff = 1;
                         linger.l_linger = 0;
                         (void)setsockopt(client, SOL_SOCKET, SO_LINGER, &linger, sizeof(linger));
+                        int flags = fcntl(client, F_GETFL, 0);
+                        flags |= O_NONBLOCK;
+                        (void)fcntl(client, F_SETFL, flags);
                         uint32_t boundIpv4Address = 0;
                         uint16_t boundPort = 0;
                         struct sockaddr_in boundAddress;
@@ -247,7 +256,7 @@ namespace SystemAbstractions {
                         platform->sock,
                         &buffer[0],
                         buffer.size(),
-                        MSG_NOSIGNAL | MSG_DONTWAIT,
+                        MSG_NOSIGNAL,
                         (struct sockaddr*)&peerAddress,
                         &peerAddressSize
                     );
@@ -281,7 +290,7 @@ namespace SystemAbstractions {
                     platform->sock,
                     &packet.body[0],
                     packet.body.size(),
-                    MSG_NOSIGNAL | MSG_DONTWAIT,
+                    MSG_NOSIGNAL,
                     (const sockaddr*)&peerAddress,
                     sizeof(peerAddress)
                 );

@@ -92,6 +92,9 @@ namespace SystemAbstractions {
             boundAddress = ntohl(socketAddress.sin_addr.s_addr);
             boundPort = ntohs(socketAddress.sin_port);
         }
+        int flags = fcntl(platform->sock, F_GETFL, 0);
+        flags |= O_NONBLOCK;
+        (void)fcntl(platform->sock, F_SETFL, flags);
         return true;
     }
 
@@ -165,7 +168,7 @@ namespace SystemAbstractions {
                 wait = true;
             } else {
                 buffer.resize(MAXIMUM_READ_SIZE);
-                const auto amountReceived = recv(platform->sock, (char*)&buffer[0], (int)buffer.size(), MSG_NOSIGNAL | MSG_DONTWAIT);
+                const auto amountReceived = recv(platform->sock, (char*)&buffer[0], (int)buffer.size(), MSG_NOSIGNAL);
                 if (amountReceived < 0) {
                     if (errno == EWOULDBLOCK) {
                         wait = true;
@@ -197,7 +200,7 @@ namespace SystemAbstractions {
             if (outputQueueLength > 0) {
                 const auto writeSize = (int)std::min(outputQueueLength, MAXIMUM_WRITE_SIZE);
                 buffer = platform->outputQueue.Peek(writeSize);
-                const auto amountSent = send(platform->sock, (const char*)&buffer[0], writeSize, MSG_NOSIGNAL | MSG_DONTWAIT);
+                const auto amountSent = send(platform->sock, (const char*)&buffer[0], writeSize, MSG_NOSIGNAL);
                 if (amountSent < 0) {
                     if (errno != EWOULDBLOCK) {
                         diagnosticsSender.SendDiagnosticInformationString(
