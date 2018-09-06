@@ -180,7 +180,10 @@ namespace SystemAbstractions {
         std::vector< uint8_t > buffer;
         std::unique_lock< std::recursive_mutex > processingLock(platform->processingMutex);
         bool wait = true;
-        while (!platform->processorStop) {
+        while (
+            !platform->processorStop
+            && (platform->sock != INVALID_SOCKET)
+        ) {
             if (wait) {
                 diagnosticsSender.SendDiagnosticInformationString(0, "processor going to sleep");
                 processingLock.unlock();
@@ -219,6 +222,9 @@ namespace SystemAbstractions {
                     platform->peerClosed = true;
                     brokenDelegate(true);
                 }
+            }
+            if (platform->sock == INVALID_SOCKET) {
+                break;
             }
             const auto outputQueueLength = platform->outputQueue.GetBytesQueued();
             if (outputQueueLength > 0) {

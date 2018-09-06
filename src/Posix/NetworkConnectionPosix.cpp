@@ -141,7 +141,10 @@ namespace SystemAbstractions {
         std::vector< uint8_t > buffer;
         std::unique_lock< std::recursive_mutex > processingLock(platform->processingMutex);
         bool wait = true;
-        while (!platform->processorStop) {
+        while (
+            !platform->processorStop
+            && (platform->sock >= 0)
+        ) {
             if (wait) {
                 FD_ZERO(&readfds);
                 FD_ZERO(&writefds);
@@ -186,6 +189,9 @@ namespace SystemAbstractions {
                     platform->peerClosed = true;
                     brokenDelegate(true);
                 }
+            }
+            if (platform->sock < 0) {
+                break;
             }
             const auto outputQueueLength = platform->outputQueue.GetBytesQueued();
             if (outputQueueLength > 0) {
