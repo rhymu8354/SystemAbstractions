@@ -15,6 +15,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <inttypes.h>
+#include <netdb.h>
 #include <string.h>
 #include <sys/select.h>
 #include <sys/socket.h>
@@ -291,8 +292,8 @@ namespace SystemAbstractions {
         if (results == NULL) {
             return 0;
         } else {
-            struct sockaddr_in* ipAddress = (struct sockaddr_in*)results->ifa_addr;
-            return ntohl(ipAddress->sin_addr.s_add);
+            struct sockaddr_in* ipAddress = (struct sockaddr_in*)results->ai_addr;
+            return ntohl(ipAddress->sin_addr.s_addr);
         }
     }
 
