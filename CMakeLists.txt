@@ -16,6 +16,7 @@ set(Headers
     include/SystemAbstractions/File.hpp
     include/SystemAbstractions/IFile.hpp
     include/SystemAbstractions/IFileCollection.hpp
+    include/SystemAbstractions/INetworkConnection.hpp
     include/SystemAbstractions/NetworkConnection.hpp
     include/SystemAbstractions/NetworkEndpoint.hpp
     include/SystemAbstractions/StringExtensions.hpp
