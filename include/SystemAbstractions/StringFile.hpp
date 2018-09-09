@@ -25,10 +25,10 @@ namespace SystemAbstractions {
         // Lifecycle management
     public:
         ~StringFile() noexcept;
-        StringFile(const StringFile&) = delete;
-        StringFile(StringFile&&) noexcept = delete;
-        StringFile& operator=(const StringFile&) = delete;
-        StringFile& operator=(StringFile&&) noexcept = delete;
+        StringFile(const StringFile&);
+        StringFile(StringFile&&) noexcept;
+        StringFile& operator=(const StringFile&);
+        StringFile& operator=(StringFile&&) noexcept;
 
         // Public methods
     public:

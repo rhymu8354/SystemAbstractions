@@ -42,6 +42,19 @@ namespace SystemAbstractions {
     }
 
     StringFile::~StringFile() noexcept = default;
+    StringFile::StringFile(const StringFile& other)
+        : impl_(new Impl())
+    {
+        *impl_ = *other.impl_;
+    }
+    StringFile::StringFile(StringFile&&) noexcept = default;
+    StringFile& StringFile::operator=(const StringFile& other) {
+        if (&other != this) {
+            *impl_ = *other.impl_;
+        }
+        return *this;
+    }
+    StringFile& StringFile::operator=(StringFile&&) noexcept = default;
 
     StringFile::operator std::string() const {
         return std::string(impl_->value.begin(), impl_->value.end());

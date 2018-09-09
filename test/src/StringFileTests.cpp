@@ -334,3 +334,43 @@ TEST(StringFileTests, Remove) {
     ASSERT_EQ(0, sf.GetPosition());
     ASSERT_EQ("", (std::string)sf);
 }
+
+TEST(StringFileTests, CopyConstructor) {
+    SystemAbstractions::StringFile original("Hello, World");
+    original.SetPosition(7);
+    SystemAbstractions::StringFile copy(original);
+    SystemAbstractions::IFile::Buffer buffer(5);
+    (void)copy.Read(buffer);
+    ASSERT_EQ("World", std::string(buffer.begin(), buffer.end()));
+    ASSERT_EQ(7, original.GetPosition());
+}
+
+TEST(StringFileTests, MoveConstructor) {
+    SystemAbstractions::StringFile original("Hello, World");
+    original.SetPosition(7);
+    SystemAbstractions::StringFile copy(std::move(original));
+    SystemAbstractions::IFile::Buffer buffer(5);
+    (void)copy.Read(buffer);
+    ASSERT_EQ("World", std::string(buffer.begin(), buffer.end()));
+}
+
+TEST(StringFileTests, CopyAssignment) {
+    SystemAbstractions::StringFile original("Hello, World");
+    original.SetPosition(7);
+    SystemAbstractions::StringFile copy;
+    copy = original;
+    SystemAbstractions::IFile::Buffer buffer(5);
+    (void)copy.Read(buffer);
+    ASSERT_EQ("World", std::string(buffer.begin(), buffer.end()));
+    ASSERT_EQ(7, original.GetPosition());
+}
+
+TEST(StringFileTests, MoveAssignment) {
+    SystemAbstractions::StringFile original("Hello, World");
+    original.SetPosition(7);
+    SystemAbstractions::StringFile copy;
+    copy = std::move(original);
+    SystemAbstractions::IFile::Buffer buffer(5);
+    (void)copy.Read(buffer);
+    ASSERT_EQ("World", std::string(buffer.begin(), buffer.end()));
+}
