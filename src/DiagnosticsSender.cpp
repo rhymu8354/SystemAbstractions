@@ -4,14 +4,17 @@
  * This module contains the implementation of the
  * SystemAbstractions::DiagnosticsSender class.
  *
- * Copyright (c) 2014-2016 by Richard Walters
+ * © 2014-2018 by Richard Walters
  */
 
 #include <SystemAbstractions/DiagnosticsSender.hpp>
 #include <SystemAbstractions/StringExtensions.hpp>
 
 #include <algorithm>
+#include <deque>
 #include <limits>
+#include <map>
+#include <mutex>
 
 namespace {
 

@@ -10,11 +10,9 @@
  */
 
 #include <functional>
-#include <map>
 #include <memory>
-#include <mutex>
-#include <deque>
 #include <stdarg.h>
+#include <stddef.h>
 #include <string>
 
 namespace SystemAbstractions {
