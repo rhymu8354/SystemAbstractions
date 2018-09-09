@@ -104,6 +104,18 @@ namespace SystemAbstractions {
         );
 
         /**
+         * This method returns a function which can be used to subscribe
+         * the sender to diagnostic messages published by another sender,
+         * in order to chain them together.
+         *
+         * @return
+         *     A function is returned which can be used to subscribe
+         *     the sender to diagnostic messages published by another sender,
+         *     in order to chain them together.
+         */
+        DiagnosticMessageDelegate Chain();
+
+        /**
          * This method returns the lowest of all the minimum desired
          * message levels for all current subscribers.
          *

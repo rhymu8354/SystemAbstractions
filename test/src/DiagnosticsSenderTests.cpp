@@ -145,3 +145,30 @@ TEST(DiagnosticsSenderTests, FormattedMessage) {
         })
     );
 }
+
+TEST(DiagnosticsSenderTests, Chaining) {
+    SystemAbstractions::DiagnosticsSender outer("outer");
+    SystemAbstractions::DiagnosticsSender inner("inner");
+    std::vector< ReceivedMessage > receivedMessages;
+    (void)outer.SubscribeToDiagnostics(
+        [&receivedMessages](
+            std::string senderName,
+            size_t level,
+            std::string message
+        ){
+            receivedMessages.emplace_back(
+                senderName,
+                level,
+                message
+            );
+        }
+    );
+    (void)inner.SubscribeToDiagnostics(outer.Chain());
+    inner.SendDiagnosticInformationFormatted(0, "The answer is %d.", 42);
+    ASSERT_EQ(
+        receivedMessages,
+        (std::vector< ReceivedMessage >{
+            { "outer", 0, "inner: The answer is 42." },
+        })
+    );
+}

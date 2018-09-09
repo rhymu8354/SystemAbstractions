@@ -148,6 +148,19 @@ namespace SystemAbstractions {
         };
     }
 
+    auto DiagnosticsSender::Chain() -> DiagnosticMessageDelegate {
+        return [this](
+            std::string senderName,
+            size_t level,
+            std::string message
+        ){
+            SendDiagnosticInformationString(
+                level,
+                senderName + ": " + message
+            );
+        };
+    }
+
     size_t DiagnosticsSender::GetMinLevel() const {
         return impl_->minLevel;
     }
