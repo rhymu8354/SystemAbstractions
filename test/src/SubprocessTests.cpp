@@ -188,6 +188,22 @@ TEST_F(SubprocessTests, StartSubprocess) {
     ASSERT_TRUE(AwaitTestAreaChanged());
 }
 
+#ifdef _WIN32
+TEST_F(SubprocessTests, StartSubprocessWithFileExtension) {
+    Owner owner;
+    SystemAbstractions::Subprocess child;
+    ASSERT_TRUE(
+        child.StartChild(
+            SystemAbstractions::File::GetExeParentDirectory() + "/MockSubprocessProgram.exe",
+            {"Hello, World", "exit"},
+            [&owner]{ owner.SubprocessChildExited(); },
+            [&owner]{ owner.SubprocessChildCrashed(); }
+        )
+    );
+    ASSERT_TRUE(AwaitTestAreaChanged());
+}
+#endif /* _WIN32 */
+
 TEST_F(SubprocessTests, Exit) {
     Owner owner;
     SystemAbstractions::Subprocess child;

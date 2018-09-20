@@ -161,7 +161,12 @@ namespace SystemAbstractions {
         }
 
         // Add file extension because that part is platform-specific.
-        program += ".exe";
+        if (
+            (program.length() < 4)
+            || (program.substr(program.length() - 4) != ".exe")
+        ) {
+            program += ".exe";
+        }
 
         std::vector< std::string > childArgs;
         childArgs.push_back("child");
