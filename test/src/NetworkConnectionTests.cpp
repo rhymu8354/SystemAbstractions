@@ -1015,24 +1015,11 @@ TEST_F(NetworkConnectionTests, ReceiveCloseGracefully) {
     // that the connection is broken.
     ASSERT_TRUE(clientOwner->AwaitDisconnection());
     EXPECT_FALSE(clientOwner->connectionBrokenGracefully);
-    const auto serverSideId = SystemAbstractions::sprintf(
-        "127.0.0.1:%" PRIu16,
-        serverConnectionPort
-    );
     ASSERT_EQ(
         (std::vector< std::string >{
-            SystemAbstractions::sprintf(
-                "NetworkConnection[1]: connection with %s closed gracefully by peer",
-                serverSideId.c_str()
-            ),
-            SystemAbstractions::sprintf(
-                "NetworkConnection[1]: closing connection with %s",
-                serverSideId.c_str()
-            ),
-            SystemAbstractions::sprintf(
-                "NetworkConnection[1]: closed connection with %s",
-                serverSideId.c_str()
-            ),
+            "NetworkConnection[1]: connection closed gracefully by peer",
+            "NetworkConnection[1]: closing connection",
+            "NetworkConnection[1]: closed connection",
         }),
         diagnosticMessages
     );
@@ -1237,20 +1224,10 @@ TEST_F(NetworkConnectionTests, ReceiveCloseAbruptly) {
     // Verify client receives the abrupt close notification.
     EXPECT_TRUE(clientOwner->AwaitDisconnection());
     EXPECT_FALSE(clientOwner->connectionBrokenGracefully);
-    const auto serverSideId = SystemAbstractions::sprintf(
-        "127.0.0.1:%" PRIu16,
-        serverConnectionPort
-    );
     ASSERT_EQ(
         (std::vector< std::string >{
-            SystemAbstractions::sprintf(
-                "NetworkConnection[1]: connection with %s closed abruptly by peer",
-                serverSideId.c_str()
-            ),
-            SystemAbstractions::sprintf(
-                "NetworkConnection[1]: closed connection with %s",
-                serverSideId.c_str()
-            ),
+            "NetworkConnection[1]: connection closed abruptly by peer",
+            "NetworkConnection[1]: closed connection",
         }),
         diagnosticMessages
     );

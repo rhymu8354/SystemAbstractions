@@ -77,15 +77,4 @@ namespace SystemAbstractions {
         return Impl::GetAddressOfHost(host);
     }
 
-    std::string NetworkConnection::Impl::GetPeerName() const {
-        return SystemAbstractions::sprintf(
-            "%" PRIu8 ".%" PRIu8 ".%" PRIu8 ".%" PRIu8 ":%" PRIu16,
-            (uint8_t)((peerAddress >> 24) & 0xFF),
-            (uint8_t)((peerAddress >> 16) & 0xFF),
-            (uint8_t)((peerAddress >> 8) & 0xFF),
-            (uint8_t)(peerAddress & 0xFF),
-            peerPort
-        );
-    }
-
 }

@@ -182,16 +182,6 @@ namespace SystemAbstractions {
         void CloseImmediately();
 
         /**
-         * This method returns a string representation of the address
-         * of the peer of the connection.
-         *
-         * @return
-         *     A string representation of the address
-         *     of the peer of the connection is returned.
-         */
-        std::string GetPeerName() const;
-
-        /**
          * This is a helper free function which determines the IPv4
          * address of a host having the given name (which could just
          * be an IPv4 address formatted as a string).

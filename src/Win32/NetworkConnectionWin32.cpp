@@ -204,7 +204,7 @@ namespace SystemAbstractions {
                     } else {
                         diagnosticsSender.SendDiagnosticInformationString(
                             1,
-                            "connection with " + GetPeerName() + " closed abruptly by peer"
+                            "connection closed abruptly by peer"
                         );
                         Close(CloseProcedure::ImmediateDoNotStopProcessor);
                         break;
@@ -217,7 +217,7 @@ namespace SystemAbstractions {
                 } else {
                     diagnosticsSender.SendDiagnosticInformationString(
                         1,
-                        "connection with " + GetPeerName() + " closed gracefully by peer"
+                        "connection closed gracefully by peer"
                     );
                     platform->peerClosed = true;
                     brokenDelegate(true);
@@ -237,7 +237,7 @@ namespace SystemAbstractions {
                     if (wsaLastError != WSAEWOULDBLOCK) {
                         diagnosticsSender.SendDiagnosticInformationString(
                             1,
-                            "connection with " + GetPeerName() + " closed abruptly by peer"
+                            "connection closed abruptly by peer"
                         );
                         Close(CloseProcedure::ImmediateDoNotStopProcessor);
                         diagnosticsSender.SendDiagnosticInformationString(0, "processor breaking due to send error");
@@ -303,7 +303,7 @@ namespace SystemAbstractions {
                 platform->closing = true;
                 diagnosticsSender.SendDiagnosticInformationString(
                     1,
-                    "closing connection with " + GetPeerName()
+                    "closing connection"
                 );
                 (void)SetEvent(platform->processorStateChangeEvent);
             } else {
@@ -316,7 +316,7 @@ namespace SystemAbstractions {
         platform->CloseImmediately();
         diagnosticsSender.SendDiagnosticInformationString(
             1,
-            "closed connection with " + GetPeerName()
+            "closed connection"
         );
         if (brokenDelegate != nullptr) {
             brokenDelegate(false);
