@@ -84,7 +84,7 @@ namespace SystemAbstractions {
         }
     };
 
-    DirectoryMonitor::~DirectoryMonitor() {
+    DirectoryMonitor::~DirectoryMonitor() noexcept {
         Stop();
     }
     DirectoryMonitor::DirectoryMonitor(DirectoryMonitor&& other) noexcept = default;

@@ -23,7 +23,7 @@ namespace SystemAbstractions {
     {
     }
 
-    Time::~Time() {
+    Time::~Time() noexcept {
     }
 
     double Time::GetTime() {

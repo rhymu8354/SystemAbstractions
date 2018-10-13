@@ -23,7 +23,7 @@ namespace SystemAbstractions {
     {
     }
 
-    Clipboard::~Clipboard() {
+    Clipboard::~Clipboard() noexcept {
     }
 
     void Clipboard::Copy(const std::string& s) {
