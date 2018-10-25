@@ -1,7 +1,7 @@
 /**
  * @file FileWin32.cpp
  *
- * This module contains the Win32 specific part of the 
+ * This module contains the Win32 specific part of the
  * implementation of the SystemAbstractions::File class.
  *
  * © 2013-2018 by Richard Walters
