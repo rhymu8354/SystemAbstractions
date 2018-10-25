@@ -39,20 +39,6 @@ namespace {
 
 namespace SystemAbstractions {
 
-    std::string GetUserHomeDirectoryPath() {
-        auto suggestedBufferSize = sysconf(_SC_GETPW_R_SIZE_MAX);
-        const size_t bufferSize = ((suggestedBufferSize < 0) ? 65536 : suggestedBufferSize);
-        std::vector< char > buffer(bufferSize);
-        struct passwd pwd;
-        struct passwd* resultEntry;
-        (void)getpwuid_r(getuid(), &pwd, &buffer[0], bufferSize, &resultEntry);
-        if (resultEntry == NULL) {
-            return "";
-        } else {
-            return pwd.pw_dir;
-        }
-    }
-
     File::Impl::~Impl() noexcept = default;
     File::Impl::Impl(Impl&&) noexcept = default;
     File::Impl& File::Impl::operator=(Impl&&) = default;
@@ -206,6 +192,20 @@ namespace SystemAbstractions {
     bool File::IsAbsolutePath(const std::string& path) {
         static std::regex AbsolutePathRegex("[~/].*");
         return std::regex_match(path, AbsolutePathRegex);
+    }
+
+    std::string File::GetUserHomeDirectory() {
+        auto suggestedBufferSize = sysconf(_SC_GETPW_R_SIZE_MAX);
+        const size_t bufferSize = ((suggestedBufferSize < 0) ? 65536 : suggestedBufferSize);
+        std::vector< char > buffer(bufferSize);
+        struct passwd pwd;
+        struct passwd* resultEntry;
+        (void)getpwuid_r(getuid(), &pwd, &buffer[0], bufferSize, &resultEntry);
+        if (resultEntry == NULL) {
+            return "";
+        } else {
+            return pwd.pw_dir;
+        }
     }
 
     void File::ListDirectory(const std::string& directory, std::vector< std::string >& list) {

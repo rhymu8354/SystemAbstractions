@@ -31,15 +31,6 @@ namespace SystemAbstractions {
         bool writeAccess = false;
     };
 
-    /**
-     * This is a helper function that returns the home directory path
-     * of the current user.
-     *
-     * @return
-     *     The home directory path of the current user is returned.
-     */
-    std::string GetUserHomeDirectoryPath();
-
 }
 
 #endif /* SYSTEM_ABSTRACTIONS_FILE_POSIX_HPP */

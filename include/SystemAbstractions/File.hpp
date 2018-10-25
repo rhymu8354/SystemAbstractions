@@ -177,6 +177,14 @@ namespace SystemAbstractions {
         static std::string GetResourceFilePath(const std::string& name);
 
         /**
+         * This method returns the path to the user's home directory.
+         *
+         * @return
+         *     The path to the user's home directory is returned.
+         */
+        static std::string GetUserHomeDirectory();
+
+        /**
          * This method returns the directory containing the application's
          * local per user configuration files.
          *

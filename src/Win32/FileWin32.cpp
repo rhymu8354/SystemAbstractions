@@ -243,6 +243,16 @@ namespace SystemAbstractions {
         return SystemAbstractions::sprintf("%s/%s", GetExeParentDirectory().c_str(), name.c_str());
     }
 
+    std::string File::GetUserHomeDirectory() {
+        PWSTR pathWide;
+        if (SHGetKnownFolderPath(FOLDERID_Profile, 0, NULL, &pathWide) != S_OK) {
+            return "";
+        }
+        std::string pathNarrow(SystemAbstractions::wcstombs(pathWide));
+        CoTaskMemFree(pathWide);
+        return pathNarrow;
+    }
+
     std::string File::GetLocalPerUserConfigDirectory(const std::string& nameKey) {
         PWSTR pathWide;
         if (SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, NULL, &pathWide) != S_OK) {

@@ -84,11 +84,11 @@ namespace SystemAbstractions {
     }
 
     std::string File::GetLocalPerUserConfigDirectory(const std::string& nameKey) {
-        return SystemAbstractions::sprintf("%s/Library/Application Support/%s", GetUserHomeDirectoryPath().c_str(), nameKey.c_str());
+        return SystemAbstractions::sprintf("%s/Library/Application Support/%s", GetUserHomeDirectory().c_str(), nameKey.c_str());
     }
 
     std::string File::GetUserSavedGamesDirectory(const std::string& nameKey) {
-        return SystemAbstractions::sprintf("%s/Library/Application Support/%s/Saved Games", GetUserHomeDirectoryPath().c_str(), nameKey.c_str());
+        return SystemAbstractions::sprintf("%s/Library/Application Support/%s/Saved Games", GetUserHomeDirectory().c_str(), nameKey.c_str());
     }
 
 }
