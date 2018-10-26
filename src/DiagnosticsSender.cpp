@@ -80,6 +80,8 @@ namespace SystemAbstractions {
      * This holds the private properties of the DiagnosticsSender class.
      */
     struct DiagnosticsSender::Impl {
+        // Properties
+
         /**
          * This is the name of the sender, provided in all
          * messages published from the sender.
@@ -114,6 +116,37 @@ namespace SystemAbstractions {
          * This is used to synchronize access to this object.
          */
         mutable std::mutex mutex;
+
+        // Methods
+
+        /**
+         * This method publishes a static diagnostic message.
+         *
+         * @param[in] level
+         *     This is used to filter out less-important information.
+         *     The level is higher the more important the information is.
+         *
+         * @param[in] message
+         *     This is the content of the message.
+         */
+        void SendDiagnosticInformationString(size_t level, std::string message) const {
+            if (level < minLevel) {
+                return;
+            }
+            std::lock_guard< decltype(mutex) > lock(mutex);
+            if (!contextStack.empty()) {
+                std::string contextChain;
+                for (auto context: contextStack) {
+                    contextChain = contextChain + context + ": ";
+                }
+                message = contextChain + message;
+            }
+            for (auto subscriber: subscribers) {
+                if (level >= subscriber.second.minLevel) {
+                    subscriber.second.delegate(name, level, message);
+                }
+            }
+        }
     };
 
     DiagnosticsSender::~DiagnosticsSender() noexcept = default;
@@ -121,7 +154,7 @@ namespace SystemAbstractions {
     DiagnosticsSender& DiagnosticsSender::operator=(DiagnosticsSender&&) noexcept = default;
 
     DiagnosticsSender::DiagnosticsSender(std::string name)
-        : impl_(new Impl())
+        : impl_(std::make_shared< Impl >())
     {
         impl_->name = name;
     }
@@ -131,30 +164,40 @@ namespace SystemAbstractions {
         const auto subscriptionToken = impl_->nextSubscriptionToken++;
         impl_->subscribers[subscriptionToken] = { delegate, minLevel };
         impl_->minLevel = std::min(impl_->minLevel, minLevel);
-        return [this, subscriptionToken]{
-            std::lock_guard< std::mutex > lock(impl_->mutex);
-            auto subscription = impl_->subscribers.find(subscriptionToken);
-            if (subscription == impl_->subscribers.end()) {
+        std::weak_ptr< Impl > implWeak(impl_);
+        return [implWeak, subscriptionToken]{
+            const auto impl = implWeak.lock();
+            if (impl == nullptr) {
+                return;
+            }
+            std::lock_guard< std::mutex > lock(impl->mutex);
+            auto subscription = impl->subscribers.find(subscriptionToken);
+            if (subscription == impl->subscribers.end()) {
                 return;
             }
             Subscription oldSubscription(subscription->second);
-            (void)impl_->subscribers.erase(subscription);
-            if (oldSubscription.minLevel == impl_->minLevel) {
-                impl_->minLevel = std::numeric_limits< size_t >::max();
-                for (auto subscriber: impl_->subscribers) {
-                    impl_->minLevel = std::min(impl_->minLevel, subscriber.second.minLevel);
+            (void)impl->subscribers.erase(subscription);
+            if (oldSubscription.minLevel == impl->minLevel) {
+                impl->minLevel = std::numeric_limits< size_t >::max();
+                for (auto subscriber: impl->subscribers) {
+                    impl->minLevel = std::min(impl->minLevel, subscriber.second.minLevel);
                 }
             }
         };
     }
 
     auto DiagnosticsSender::Chain() -> DiagnosticMessageDelegate {
-        return [this](
+        std::weak_ptr< Impl > implWeak(impl_);
+        return [implWeak](
             std::string senderName,
             size_t level,
             std::string message
         ){
-            SendDiagnosticInformationString(
+            const auto impl = implWeak.lock();
+            if (impl == nullptr) {
+                return;
+            }
+            impl->SendDiagnosticInformationString(
                 level,
                 senderName + ": " + message
             );
@@ -166,22 +209,7 @@ namespace SystemAbstractions {
     }
 
     void DiagnosticsSender::SendDiagnosticInformationString(size_t level, std::string message) const {
-        if (level < impl_->minLevel) {
-            return;
-        }
-        std::lock_guard< std::mutex > lock(impl_->mutex);
-        if (!impl_->contextStack.empty()) {
-            std::string contextChain;
-            for (auto context: impl_->contextStack) {
-                contextChain = contextChain + context + ": ";
-            }
-            message = contextChain + message;
-        }
-        for (auto subscriber: impl_->subscribers) {
-            if (level >= subscriber.second.minLevel) {
-                subscriber.second.delegate(impl_->name, level, message);
-            }
-        }
+        impl_->SendDiagnosticInformationString(level, message);
     }
 
     void DiagnosticsSender::SendDiagnosticInformationFormatted(size_t level, const char* format, ...) const {
@@ -192,7 +220,7 @@ namespace SystemAbstractions {
         va_start(args, format);
         const std::string message = SystemAbstractions::vsprintf(format, args);
         va_end(args);
-        SendDiagnosticInformationString(level, message);
+        impl_->SendDiagnosticInformationString(level, message);
     }
 
     void DiagnosticsSender::PushContext(std::string context) {

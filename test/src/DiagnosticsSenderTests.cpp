@@ -172,3 +172,50 @@ TEST(DiagnosticsSenderTests, Chaining) {
         })
     );
 }
+
+TEST(DiagnosticsSenderTests, UnsubscribeAfterSenderDestroyed) {
+    std::unique_ptr< SystemAbstractions::DiagnosticsSender > sender(new SystemAbstractions::DiagnosticsSender("sender"));
+    std::vector< ReceivedMessage > receivedMessages;
+    const auto unsubscribe = sender->SubscribeToDiagnostics(
+        [&receivedMessages](
+            std::string senderName,
+            size_t level,
+            std::string message
+        ){
+            receivedMessages.emplace_back(
+                senderName,
+                level,
+                message
+            );
+        }
+    );
+    sender.reset();
+    unsubscribe();
+}
+
+TEST(DiagnosticsSenderTests, PublishAfterChainedSenderDestroyed) {
+    std::unique_ptr< SystemAbstractions::DiagnosticsSender > outer(new SystemAbstractions::DiagnosticsSender("outer"));
+    SystemAbstractions::DiagnosticsSender inner("inner");
+    std::vector< ReceivedMessage > receivedMessages;
+    (void)outer->SubscribeToDiagnostics(
+        [&receivedMessages](
+            std::string senderName,
+            size_t level,
+            std::string message
+        ){
+            receivedMessages.emplace_back(
+                senderName,
+                level,
+                message
+            );
+        }
+    );
+    (void)inner.SubscribeToDiagnostics(outer->Chain());
+    outer.reset();
+    inner.SendDiagnosticInformationFormatted(0, "The answer is %d.", 42);
+    ASSERT_EQ(
+        receivedMessages,
+        (std::vector< ReceivedMessage >{
+        })
+    );
+}
