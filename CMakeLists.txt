@@ -19,6 +19,7 @@ set(Headers
     include/SystemAbstractions/INetworkConnection.hpp
     include/SystemAbstractions/NetworkConnection.hpp
     include/SystemAbstractions/NetworkEndpoint.hpp
+    include/SystemAbstractions/Service.hpp
     include/SystemAbstractions/StringExtensions.hpp
     include/SystemAbstractions/StringFile.hpp
     include/SystemAbstractions/Subprocess.hpp
@@ -53,6 +54,7 @@ if(MSVC)
         src/Win32/NetworkConnectionWin32.hpp
         src/Win32/NetworkEndpointWin32.cpp
         src/Win32/NetworkEndpointWin32.hpp
+        src/Win32/ServiceWin32.cpp
         src/Win32/SubprocessWin32.cpp
         src/Win32/TargetInfoWin32.cpp
         src/Win32/TimeWin32.cpp
@@ -95,6 +97,7 @@ if(UNIX)
         src/Posix/NetworkEndpointPosix.hpp
         src/Posix/PipeSignal.cpp
         src/Posix/PipeSignal.hpp
+        src/Posix/ServicePosix.cpp
         src/Posix/SubprocessPosix.cpp
         src/Posix/TimePosix.cpp
     )
