@@ -1,7 +1,7 @@
 /**
- * @file ServicePosix.cpp
+ * @file ServiceMach.cpp
  *
- * This module contains the POSIX implementation of the
+ * This module contains the Mach implementation of the
  * SystemAbstractions::Service class.
  *
  * © 2018 by Richard Walters

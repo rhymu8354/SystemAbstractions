@@ -70,6 +70,7 @@ elseif(APPLE)
         src/Mach/DirectoryMonitorMach.cpp
         src/Mach/DynamicLibraryMach.cpp
         src/Mach/FileMach.cpp
+        src/Mach/ServiceMach.cpp
         src/Mach/TargetInfoMach.cpp
         src/Mach/TimeMach.cpp
     )
@@ -79,6 +80,7 @@ elseif(UNIX)
         src/Linux/DirectoryMonitorLinux.cpp
         src/Linux/DynamicLibraryLinux.cpp
         src/Linux/FileLinux.cpp
+        src/Linux/ServiceLinux.cpp
         src/Linux/TargetInfoLinux.cpp
         src/Linux/TimeLinux.cpp
     )
@@ -97,7 +99,6 @@ if(UNIX)
         src/Posix/NetworkEndpointPosix.hpp
         src/Posix/PipeSignal.cpp
         src/Posix/PipeSignal.hpp
-        src/Posix/ServicePosix.cpp
         src/Posix/SubprocessPosix.cpp
         src/Posix/TimePosix.cpp
     )
