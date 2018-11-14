@@ -7,6 +7,7 @@
  * © 2018 by Richard Walters
  */
 
+#include <future>
 #include <signal.h>
 #include <SystemAbstractions/Service.hpp>
 #include <thread>
@@ -41,30 +42,47 @@ namespace SystemAbstractions {
      */
     struct Service::Impl {
         /**
+         * This is used to tell the worker thread to stop early (before the
+         * "shutDown" flag is set.
+         */
+        std::promise< void > stopWorker;
+
+        /**
          * This points back to the instance's interface.
          */
         Service* instance;
 
         /**
-         * This runs PollShutdown as a worker thread.
+         * This runs PollShutDown as a worker thread.
          */
         std::thread worker;
 
         /**
-         * This method runs as a worker thread, polling the "shutdown" flag
+         * This method runs as a worker thread, polling the "shutDown" flag
          * until it's set or the thread is told to stop.
          */
-        void PollShutdown() {
+        void PollShutDown() {
+            const auto workerToldToStop = stopWorker.get_future();
             while (!shutDown) {
-                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                if (workerToldToStop.wait_for(std::chrono::milliseconds(100)) == std::future_status::ready) {
+                    break;
+                }
             }
             instance->Stop();
         }
     };
 
     Service::~Service() noexcept = default;
-    Service::Service(Service&&) noexcept = default;
-    Service& Service::operator=(Service&&) noexcept = default;
+    Service::Service(Service&& other) noexcept
+        : impl_(std::move(other.impl_))
+    {
+        impl_->instance = this;
+    }
+    Service& Service::operator=(Service&& other) noexcept {
+        impl_ = std::move(other.impl_);
+        impl_->instance = this;
+        return *this;
+    }
 
     Service::Service()
         : impl_(new Impl())
@@ -74,8 +92,9 @@ namespace SystemAbstractions {
 
     int Service::Start() {
         const auto previousInterruptHandler = signal(SIGTERM, InterruptHandler);
-        impl_->worker = std::thread(&Impl::PollShutdown, impl_.get());
+        impl_->worker = std::thread(&Impl::PollShutDown, impl_.get());
         const int result = Run();
+        impl_->stopWorker.set_value();
         impl_->worker.join();
         (void)signal(SIGTERM, previousInterruptHandler);
         return result;
