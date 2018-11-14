@@ -11,6 +11,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 namespace SystemAbstractions {
 
@@ -36,15 +37,23 @@ namespace SystemAbstractions {
         Service();
 
         /**
-         * This method should be called in the context of the main thread
-         * and/or function of the service, to hook into the operating system.
-         * It does not return until the service should be terminated.
+         * This method should be called from the main program of the service,
+         * to hook into the operating system.  It does not return until the
+         * service should be terminated.
+         *
+         * @param[in] argc
+         *     This is the number of command-line arguments given
+         *     to the program.
+         *
+         * @param[in] argv
+         *     This points to an array of pointers to the command-line
+         *     arguments given to the program.
          *
          * @return
          *     The exit code that should be returned from the main function
          *     of the program is returned.
          */
-        int Start();
+        int Start(int argc, char* argv[]);
 
         // Protected methods
     protected:
@@ -52,6 +61,9 @@ namespace SystemAbstractions {
          * This method is called within in the context of the main thread
          * and/or function of the service, to perform the work of the service.
          * The method should not return until the service is to be stopped.
+         *
+         * @param[in] args
+         *     These are the command-line arguments provided to the service.
          *
          * @note
          *     If the service starts any worker threads, those worker threads
@@ -61,7 +73,7 @@ namespace SystemAbstractions {
          *     The exit code that should be returned from the main function
          *     of the program is returned.
          */
-        virtual int Run() = 0;
+        virtual int Run(const std::vector< std::string >& args) = 0;
 
         /**
          * This method is called to tell the service to stop.  The service

@@ -90,10 +90,10 @@ namespace SystemAbstractions {
         impl_->instance = this;
     }
 
-    int Service::Start() {
+    int Service::Start(int argc, char* argv[]) {
         const auto previousInterruptHandler = signal(SIGTERM, InterruptHandler);
         impl_->worker = std::thread(&Impl::PollShutDown, impl_.get());
-        const int result = Run();
+        const int result = Run({argv, argv + argc});
         impl_->stopWorker.set_value();
         impl_->worker.join();
         (void)signal(SIGTERM, previousInterruptHandler);

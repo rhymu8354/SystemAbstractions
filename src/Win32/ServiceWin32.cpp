@@ -37,6 +37,11 @@ namespace SystemAbstractions {
      * the Service class.
      */
     struct Service::Impl {
+        /**
+         * This is the handle provided by RegisterServiceCtrlHandlerExA and
+         * used to tell the service control manager whenver the status of the
+         * server is changed.
+         */
         SERVICE_STATUS_HANDLE serviceStatusHandle;
 
         /**
@@ -81,7 +86,7 @@ namespace SystemAbstractions {
          *     to the service.
          */
         static VOID WINAPI ServiceMain(DWORD dwArgc, LPSTR* lpszArgv) {
-            instance->impl_->Main();
+            instance->impl_->Main({lpszArgv, lpszArgv + dwArgc});
         }
 
         /**
@@ -92,8 +97,11 @@ namespace SystemAbstractions {
          * registration.
          *
          * This method does not return until the service has stopped.
+         *
+         * @param[in] args
+         *     These are the command-line arguments provided to the service.
          */
-        void Main() {
+        void Main(const std::vector< std::string >& args) {
             serviceStatusHandle = RegisterServiceCtrlHandlerExA(
                 instance->GetServiceName().c_str(),
                 ServiceControlHandler,
@@ -101,7 +109,7 @@ namespace SystemAbstractions {
             );
             serviceStatus.dwCurrentState = SERVICE_RUNNING;
             ReportServiceStatus();
-            const auto runResult = instance->Run();
+            const auto runResult = instance->Run(args);
             if (runResult == 0) {
                 serviceStatus.dwWin32ExitCode = NO_ERROR;
             } else {
@@ -186,7 +194,7 @@ namespace SystemAbstractions {
         impl_->serviceStatus.dwWin32ExitCode = NO_ERROR;
     }
 
-    int Service::Start() {
+    int Service::Start(int argc, char* argv[]) {
         instance = this;
         return impl_->Run();
     }
