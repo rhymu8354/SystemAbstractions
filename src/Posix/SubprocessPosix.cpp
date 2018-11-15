@@ -25,6 +25,17 @@
 
 namespace {
 
+    /**
+     * This function returns a vector that contains the characters in the given
+     * string, plus a null character at the end.
+     *
+     * @param[in] s
+     *     This is the string to convert into a vector.
+     *
+     * @return
+     *     A vector that contains the characters in the given string, plus
+     *     a null character at the end, is returned.
+     */
     std::vector< char > VectorFromString(const std::string& s) {
         std::vector< char > v(s.length() + 1);
         for (size_t i = 0; i < s.length(); ++i) {
