@@ -86,7 +86,7 @@ namespace SystemAbstractions {
          *     to the service.
          */
         static VOID WINAPI ServiceMain(DWORD dwArgc, LPSTR* lpszArgv) {
-            instance->impl_->Main({lpszArgv, lpszArgv + dwArgc});
+            instance->impl_->Main();
         }
 
         /**
@@ -97,11 +97,8 @@ namespace SystemAbstractions {
          * registration.
          *
          * This method does not return until the service has stopped.
-         *
-         * @param[in] args
-         *     These are the command-line arguments provided to the service.
          */
-        void Main(const std::vector< std::string >& args) {
+        void Main() {
             serviceStatusHandle = RegisterServiceCtrlHandlerExA(
                 instance->GetServiceName().c_str(),
                 ServiceControlHandler,
@@ -109,7 +106,7 @@ namespace SystemAbstractions {
             );
             serviceStatus.dwCurrentState = SERVICE_RUNNING;
             ReportServiceStatus();
-            const auto runResult = instance->Run(args);
+            const auto runResult = instance->Run();
             if (runResult == 0) {
                 serviceStatus.dwWin32ExitCode = NO_ERROR;
             } else {
@@ -194,7 +191,7 @@ namespace SystemAbstractions {
         impl_->serviceStatus.dwWin32ExitCode = NO_ERROR;
     }
 
-    int Service::Start(int argc, char* argv[]) {
+    int Service::Main() {
         instance = this;
         return impl_->Run();
     }
