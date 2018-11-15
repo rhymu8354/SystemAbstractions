@@ -263,17 +263,20 @@ TEST_F(SubprocessTests, Crash) {
 }
 
 TEST_F(SubprocessTests, Detached) {
-    Owner owner;
-    SystemAbstractions::Subprocess child;
+    // Start the detached process.
     std::vector< std::string > args{
         "detached",
     };
-    const auto reportedPid = child.StartDetached(
+    const auto reportedPid = SystemAbstractions::Subprocess::StartDetached(
         SystemAbstractions::File::GetExeParentDirectory() + "/MockSubprocessProgram",
         args
     );
     ASSERT_NE(0, reportedPid);
+
+    // Wait a short period of time so that we don't race the detached process.
     std::this_thread::sleep_for(std::chrono::milliseconds(250));
+
+    // Verify process ID matches what the detached process says it has.
     const std::string pidFilePath = testAreaPath + "/pid";
     FILE* pidFile = fopen(pidFilePath.c_str(), "r");
     ASSERT_FALSE(pidFile == NULL);
@@ -282,6 +285,9 @@ TEST_F(SubprocessTests, Detached) {
     (void)fclose(pidFile);
     ASSERT_EQ(1, pidScanResult);
     EXPECT_EQ(pid, reportedPid);
+
+    // Verify command-line arguments given to the detached process match what
+    // it says it received.
     std::ifstream foo(testAreaPath + "/foo.txt");
     ASSERT_TRUE(foo.is_open());
     std::vector< std::string > lines;
@@ -296,7 +302,10 @@ TEST_F(SubprocessTests, Detached) {
         }
     }
     EXPECT_EQ(args, lines);
+
 #ifndef _WIN32
+    // Linux targets also know what file handles are open, so check to make
+    // sure none are in the detached process.
     SystemAbstractions::File handlesReport(testAreaPath + "/handles");
     ASSERT_TRUE(handlesReport.Open());
     std::vector< char > handles(handlesReport.GetSize());
