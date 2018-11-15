@@ -8,11 +8,15 @@
  */
 
 #include <condition_variable>
+#include <fstream>
 #include <gtest/gtest.h>
 #include <mutex>
+#include <string>
 #include <SystemAbstractions/Subprocess.hpp>
 #include <SystemAbstractions/DirectoryMonitor.hpp>
 #include <SystemAbstractions/File.hpp>
+#include <thread>
+#include <vector>
 
 namespace {
 
@@ -247,4 +251,40 @@ TEST_F(SubprocessTests, Crash) {
     );
     ASSERT_TRUE(owner.AwaitCrashed());
     ASSERT_FALSE(owner.exited);
+}
+
+TEST_F(SubprocessTests, Detached) {
+    Owner owner;
+    SystemAbstractions::Subprocess child;
+    std::vector< std::string > args{
+        "detached",
+    };
+    ASSERT_TRUE(
+        child.StartChild(
+            SystemAbstractions::File::GetExeParentDirectory() + "/MockSubprocessProgram",
+            args
+        )
+    );
+    std::this_thread::sleep_for(std::chrono::milliseconds(250));
+    std::ifstream foo(testAreaPath + "/foo.txt");
+    ASSERT_TRUE(foo.is_open());
+    std::vector< std::string > lines;
+    while (!foo.eof() && !foo.fail()) {
+        std::string line;
+        (void)std::getline(foo, line);
+        if (
+            !line.empty()
+            || !foo.eof()
+        ) {
+            lines.push_back(std::move(line));
+        }
+    }
+    EXPECT_EQ(args, lines);
+#ifndef _WIN32
+    SystemAbstractions::File handlesReport(testAreaPath + "/handles");
+    ASSERT_TRUE(handlesReport.Open());
+    std::vector< char > handles(handlesReport.GetSize());
+    (void)handlesReport.Read(handles.data(), handles.size());
+    EXPECT_EQ(0, handles.size()) << std::string(handles.begin(), handles.end());
+#endif /* _WIN32 */
 }

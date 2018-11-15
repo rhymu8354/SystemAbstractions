@@ -48,6 +48,22 @@ namespace {
     }
 
     /**
+     * This function closes all file handles currently open in the process.
+     */
+    void CloseAll() {
+        std::vector< std::string > fds;
+        const std::string fdsDir("/proc/self/fd/");
+        SystemAbstractions::File::ListDirectory(fdsDir, fds);
+        for (const auto& fd: fds) {
+            const auto fdNumString = fd.substr(fdsDir.length());
+            int fdNum;
+            if (sscanf(fdNumString.c_str(), "%d", &fdNum) == 1) {
+                (void)close(fdNum);
+            }
+        }
+    }
+
+    /**
      * This function closes all file handles currently open in the process,
      * except for the given one.
      *
@@ -212,7 +228,7 @@ namespace SystemAbstractions {
             for (size_t i = 0; i < childArgs.size(); ++i) {
                 argv[i] = &childArgs[i][0];
             }
-            argv[childArgs.size() + 1] = NULL;
+            argv[childArgs.size()] = NULL;
             (void)execv(program.c_str(), &argv[0]);
             (void)exit(-1);
         } else if (impl_->child < 0) {
@@ -224,6 +240,40 @@ namespace SystemAbstractions {
         (void)close(pipeEnds[1]);
         impl_->worker = std::thread(&Impl::MonitorChild, impl_.get());
         return true;
+    }
+
+    bool Subprocess::StartChild(
+        std::string program,
+        const std::vector< std::string >& args
+    ) {
+        std::vector< std::vector< char > > childArgs;
+        childArgs.push_back(VectorFromString(program));
+        for (const auto arg: args) {
+            childArgs.push_back(VectorFromString(arg));
+        }
+        const auto child = fork();
+        if (child == 0) {
+            CloseAll();
+            (void)setsid();
+            const auto grandchild = fork();
+            if (grandchild == 0) {
+                std::vector< char* > argv(childArgs.size() + 1);
+                for (size_t i = 0; i < childArgs.size(); ++i) {
+                    argv[i] = &childArgs[i][0];
+                }
+                argv[childArgs.size()] = NULL;
+                (void)execv(program.c_str(), &argv[0]);
+                (void)exit(-1);
+            } else if (grandchild < 0) {
+                exit(-1);
+            }
+            exit(0);
+        } else if (child < 0) {
+            return false;
+        }
+        int childStatus;
+        (void)waitpid(child, &childStatus, 0);
+        return (WEXITSTATUS(childStatus) == 0);
     }
 
     bool Subprocess::ContactParent(std::vector< std::string >& args) {

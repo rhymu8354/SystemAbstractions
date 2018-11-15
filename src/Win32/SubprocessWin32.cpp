@@ -23,6 +23,65 @@
 #include <stdint.h>
 #include <thread>
 
+namespace {
+
+    /**
+     * This function construct the command line of a program with an argument
+     * list.  The rules for quoting are a bit complex.  For more information
+     * see http://daviddeley.com/autohotkey/parameters/parameters.htm
+     *
+     * @param[in] program
+     *     This is the path and name of the program.
+     *
+     * @param[in] args
+     *     These are the arguments to pass to the program.
+     *
+     * @return
+     *     The constructed command line is returned.
+     */
+    std::vector< char > MakeCommandLine(
+        const std::string& program,
+        const std::vector< std::string >& args
+    ) {
+        std::vector< char > commandLine;
+        if (program.find_first_of('"') == std::string::npos) {
+            commandLine.insert(commandLine.end(), program.begin(), program.end());
+        } else {
+            commandLine.push_back('"');
+            commandLine.insert(commandLine.end(), program.begin(), program.end());
+            commandLine.push_back('"');
+        }
+        for (const auto arg: args) {
+            commandLine.push_back(' ');
+            if (arg.find_first_of(" \t\n\v\"") == std::string::npos) {
+                commandLine.insert(commandLine.end(), arg.begin(), arg.end());
+            } else {
+                commandLine.push_back('"');
+                int slashCount = 0;
+                for (int i = 0; i < arg.length(); ++i) {
+                    if (arg[i] == '\\') {
+                        ++slashCount;
+                    } else {
+                        commandLine.insert(commandLine.end(), slashCount, '\\');
+                        if (arg[i] == '"') {
+                            commandLine.insert(commandLine.end(), slashCount + 1, '\\');
+                        }
+                        commandLine.push_back(arg[i]);
+                        slashCount = 0;
+                    }
+                }
+                if (slashCount > 0) {
+                    commandLine.insert(commandLine.end(), slashCount * 2, '\\');
+                }
+                commandLine.push_back('"');
+            }
+        }
+        commandLine.push_back(0);
+        return commandLine;
+    }
+
+}
+
 namespace SystemAbstractions {
 
     /**
@@ -173,43 +232,7 @@ namespace SystemAbstractions {
         childArgs.push_back(SystemAbstractions::sprintf("%" PRIu64, (uint64_t)childPipe));
         childArgs.insert(childArgs.end(), args.begin(), args.end());
 
-        // Construct command line of program from argument list.
-        // The rules for quoting are a bit complex.  For more information
-        // see http://daviddeley.com/autohotkey/parameters/parameters.htm
-        std::vector< char > commandLine;
-        if (program.find_first_of('"') == std::string::npos) {
-            commandLine.insert(commandLine.end(), program.begin(), program.end());
-        } else {
-            commandLine.push_back('"');
-            commandLine.insert(commandLine.end(), program.begin(), program.end());
-            commandLine.push_back('"');
-        }
-        for (const auto arg: childArgs) {
-            commandLine.push_back(' ');
-            if (arg.find_first_of(" \t\n\v\"") == std::string::npos) {
-                commandLine.insert(commandLine.end(), arg.begin(), arg.end());
-            } else {
-                commandLine.push_back('"');
-                int slashCount = 0;
-                for (int i = 0; i < arg.length(); ++i) {
-                    if (arg[i] == '\\') {
-                        ++slashCount;
-                    } else {
-                        commandLine.insert(commandLine.end(), slashCount, '\\');
-                        if (arg[i] == '"') {
-                            commandLine.insert(commandLine.end(), slashCount + 1, '\\');
-                        }
-                        commandLine.push_back(arg[i]);
-                        slashCount = 0;
-                    }
-                }
-                if (slashCount > 0) {
-                    commandLine.insert(commandLine.end(), slashCount * 2, '\\');
-                }
-                commandLine.push_back('"');
-            }
-        }
-        commandLine.push_back(0);
+        auto commandLine = MakeCommandLine(program, childArgs);
 
         // Launch program.
         STARTUPINFOA si;
@@ -238,6 +261,45 @@ namespace SystemAbstractions {
         impl_->child = pi.hProcess;
         (void)CloseHandle(childPipe);
         impl_->worker = std::thread(&Impl::MonitorChild, impl_.get());
+        return true;
+    }
+
+    bool Subprocess::StartChild(
+        std::string program,
+        const std::vector< std::string >& args
+    ) {
+        // Add file extension because that part is platform-specific.
+        if (
+            (program.length() < 4)
+            || (program.substr(program.length() - 4) != ".exe")
+        ) {
+            program += ".exe";
+        }
+
+        auto commandLine = MakeCommandLine(program, args);
+
+        // Launch program.
+        STARTUPINFOA si;
+        (void)memset(&si, 0, sizeof(si));
+        si.cb = sizeof(si);
+        PROCESS_INFORMATION pi;
+        if (
+            CreateProcessA(
+                program.c_str(),
+                &commandLine[0],
+                NULL,
+                NULL,
+                FALSE,
+                0,
+                NULL,
+                NULL,
+                &si,
+                &pi
+            ) == 0
+        ) {
+            return false;
+        }
+        (void)CloseHandle(pi.hProcess);
         return true;
     }
 

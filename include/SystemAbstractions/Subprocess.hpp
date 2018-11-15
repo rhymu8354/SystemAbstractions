@@ -78,6 +78,27 @@ namespace SystemAbstractions {
         );
 
         /**
+         * This method starts a subprocess completely detached from the
+         * parent, as in there is no line of communication.
+         *
+         * @param[in] program
+         *     This is the path and name of the program to
+         *     run in the subprocess.
+         *
+         * @param[in] args
+         *     These are the command-line arguments to pass to
+         *     the subprocess.
+         *
+         * @return
+         *     An indication of whether or not the child process
+         *     was started successfully is returned.
+         */
+        static bool StartChild(
+            std::string program,
+            const std::vector< std::string >& args
+        );
+
+        /**
          * This is the function called by the subprocess
          * in order to establish a link of communication back
          * to the parent process, so that the parent process
