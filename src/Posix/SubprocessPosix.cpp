@@ -12,11 +12,14 @@
 #include <inttypes.h>
 #include <signal.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <sys/select.h>
+#include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <SystemAbstractions/File.hpp>
 #include <SystemAbstractions/Subprocess.hpp>
 #include <SystemAbstractions/StringExtensions.hpp>
 #include <thread>
@@ -42,6 +45,29 @@ namespace {
             v[i] = s[i];
         }
         return v;
+    }
+
+    /**
+     * This function closes all file handles currently open in the process,
+     * except for the given one.
+     *
+     * @param[in] keepOpen
+     *     This is the file handle to keep open.
+     */
+    void CloseAllExcept(int keepOpen) {
+        std::vector< std::string > fds;
+        const std::string fdsDir("/proc/self/fd/");
+        SystemAbstractions::File::ListDirectory(fdsDir, fds);
+        for (const auto& fd: fds) {
+            const auto fdNumString = fd.substr(fdsDir.length());
+            int fdNum;
+            if (
+                (sscanf(fdNumString.c_str(), "%d", &fdNum) == 1)
+                && (fdNum != keepOpen)
+            ) {
+                (void)close(fdNum);
+            }
+        }
     }
 
 }
@@ -181,7 +207,7 @@ namespace SystemAbstractions {
         // Launch program.
         impl_->child = fork();
         if (impl_->child == 0) {
-            (void)close(pipeEnds[0]);
+            CloseAllExcept(pipeEnds[1]);
             std::vector< char* > argv(childArgs.size() + 1);
             for (size_t i = 0; i < childArgs.size(); ++i) {
                 argv[i] = &childArgs[i][0];

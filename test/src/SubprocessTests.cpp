@@ -204,6 +204,25 @@ TEST_F(SubprocessTests, StartSubprocessWithFileExtension) {
 }
 #endif /* _WIN32 */
 
+#ifndef _WIN32
+TEST_F(SubprocessTests, FileHandlesNotInherited) {
+    Owner owner;
+    SystemAbstractions::Subprocess child;
+    child.StartChild(
+        SystemAbstractions::File::GetExeParentDirectory() + "/MockSubprocessProgram",
+        {"Hello, World", "handles"},
+        [&owner]{ owner.SubprocessChildExited(); },
+        [&owner]{ owner.SubprocessChildCrashed(); }
+    );
+    (void)owner.AwaitExited();
+    SystemAbstractions::File handlesReport(testAreaPath + "/handles");
+    ASSERT_TRUE(handlesReport.Open());
+    std::vector< char > handles(handlesReport.GetSize());
+    (void)handlesReport.Read(handles.data(), handles.size());
+    EXPECT_EQ(0, handles.size()) << std::string(handles.begin(), handles.end());
+}
+#endif /* not _WIN32 */
+
 TEST_F(SubprocessTests, Exit) {
     Owner owner;
     SystemAbstractions::Subprocess child;
