@@ -25,7 +25,9 @@ int main(int argc, char* argv[]) {
         (args.size() >= 1)
         && (args[0] == "child")
     ) {
+#ifndef _WIN32
         pipeToParentFdPath = "/proc/self/fd/" + args[1];
+#endif /* not _WIN32 */
         if (!parent.ContactParent(args)) {
             return EXIT_FAILURE;
         }
