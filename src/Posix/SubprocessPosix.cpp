@@ -198,7 +198,7 @@ namespace SystemAbstractions {
     {
     }
 
-    bool Subprocess::StartChild(
+    unsigned int Subprocess::StartChild(
         std::string program,
         const std::vector< std::string >& args,
         std::function< void() > childExited,
@@ -234,18 +234,22 @@ namespace SystemAbstractions {
         } else if (impl_->child < 0) {
             (void)close(pipeEnds[0]);
             (void)close(pipeEnds[1]);
-            return false;
+            return 0;
         }
         impl_->pipe = pipeEnds[0];
         (void)close(pipeEnds[1]);
         impl_->worker = std::thread(&Impl::MonitorChild, impl_.get());
-        return true;
+        return (unsigned int)impl_->child;
     }
 
-    bool Subprocess::StartChild(
+    unsigned int Subprocess::StartDetached(
         std::string program,
         const std::vector< std::string >& args
     ) {
+        int pipeEnds[2];
+        if (pipe(pipeEnds) < 0) {
+            return false;
+        }
         std::vector< std::vector< char > > childArgs;
         childArgs.push_back(VectorFromString(program));
         for (const auto arg: args) {
@@ -253,10 +257,13 @@ namespace SystemAbstractions {
         }
         const auto child = fork();
         if (child == 0) {
-            CloseAll();
+            CloseAllExcept(pipeEnds[1]);
             (void)setsid();
             const auto grandchild = fork();
             if (grandchild == 0) {
+                const auto processId = (unsigned int)grandchild;
+                (void)pipeEnds[1].write(&processId, sizeof(processId));
+                (void)close(pipeEnds[1]);
                 std::vector< char* > argv(childArgs.size() + 1);
                 for (size_t i = 0; i < childArgs.size(); ++i) {
                     argv[i] = &childArgs[i][0];
@@ -269,11 +276,25 @@ namespace SystemAbstractions {
             }
             exit(0);
         } else if (child < 0) {
-            return false;
+            (void)close(pipeEnds[0]);
+            (void)close(pipeEnds[1]);
+            return 0;
         }
+        (void)close(pipeEnds[1]);
         int childStatus;
         (void)waitpid(child, &childStatus, 0);
-        return (WEXITSTATUS(childStatus) == 0);
+        if (WEXITSTATUS(childStatus) != 0) {
+            (void)close(pipeEnds[0]);
+            return 0;
+        }
+        unsigned int detachedProcessId;
+        const auto readAmount = read(pipeEnds[0], &detachedProcessId, sizeof(detachedProcessId));
+        (void)close(pipeEnds[0]);
+        if (readAmount == sizeof(detachedProcessId)) {
+            return detachedProcessId;
+        } else {
+            return 0;
+        }
     }
 
     bool Subprocess::ContactParent(std::vector< std::string >& args) {
@@ -290,6 +311,10 @@ namespace SystemAbstractions {
             return true;
         }
         return false;
+    }
+
+    unsigned int Subprocess::GetCurrentProcessId() {
+        return (unsigned int)getpid();
     }
 
 }

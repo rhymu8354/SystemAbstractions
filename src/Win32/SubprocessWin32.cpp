@@ -201,7 +201,7 @@ namespace SystemAbstractions {
     {
     }
 
-    bool Subprocess::StartChild(
+    unsigned int Subprocess::StartChild(
         std::string program,
         const std::vector< std::string >& args,
         std::function< void() > childExited,
@@ -216,7 +216,7 @@ namespace SystemAbstractions {
         sa.bInheritHandle = TRUE;
         HANDLE childPipe;
         if (CreatePipe(&impl_->pipe, &childPipe, &sa, 0) == FALSE) {
-            return false;
+            return 0;
         }
 
         // Add file extension because that part is platform-specific.
@@ -256,15 +256,15 @@ namespace SystemAbstractions {
             (void)CloseHandle(impl_->pipe);
             impl_->pipe = INVALID_HANDLE_VALUE;
             (void)CloseHandle(childPipe);
-            return false;
+            return 0;
         }
         impl_->child = pi.hProcess;
         (void)CloseHandle(childPipe);
         impl_->worker = std::thread(&Impl::MonitorChild, impl_.get());
-        return true;
+        return (unsigned int)pi.dwProcessId;
     }
 
-    bool Subprocess::StartChild(
+    unsigned int Subprocess::StartDetached(
         std::string program,
         const std::vector< std::string >& args
     ) {
@@ -297,10 +297,10 @@ namespace SystemAbstractions {
                 &pi
             ) == 0
         ) {
-            return false;
+            return 0;
         }
         (void)CloseHandle(pi.hProcess);
-        return true;
+        return (unsigned int)pi.dwProcessId;
     }
 
     bool Subprocess::ContactParent(std::vector< std::string >& args) {
@@ -317,6 +317,10 @@ namespace SystemAbstractions {
             return true;
         }
         return false;
+    }
+
+    unsigned int Subprocess::GetCurrentProcessId() {
+        return (unsigned int)::GetCurrentProcessId();
     }
 
 }

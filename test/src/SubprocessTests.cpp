@@ -11,6 +11,7 @@
 #include <fstream>
 #include <gtest/gtest.h>
 #include <mutex>
+#include <stdio.h>
 #include <string>
 #include <SystemAbstractions/Subprocess.hpp>
 #include <SystemAbstractions/DirectoryMonitor.hpp>
@@ -181,15 +182,23 @@ struct SubprocessTests
 TEST_F(SubprocessTests, StartSubprocess) {
     Owner owner;
     SystemAbstractions::Subprocess child;
-    ASSERT_TRUE(
-        child.StartChild(
-            SystemAbstractions::File::GetExeParentDirectory() + "/MockSubprocessProgram",
-            {"Hello, World", "exit"},
-            [&owner]{ owner.SubprocessChildExited(); },
-            [&owner]{ owner.SubprocessChildCrashed(); }
-        )
+    const auto reportedPid = child.StartChild(
+        SystemAbstractions::File::GetExeParentDirectory() + "/MockSubprocessProgram",
+        {"Hello, World", "exit"},
+        [&owner]{ owner.SubprocessChildExited(); },
+        [&owner]{ owner.SubprocessChildCrashed(); }
     );
+    ASSERT_NE(0, reportedPid);
     ASSERT_TRUE(AwaitTestAreaChanged());
+    std::this_thread::sleep_for(std::chrono::milliseconds(250));
+    const std::string pidFilePath = testAreaPath + "/pid";
+    FILE* pidFile = fopen(pidFilePath.c_str(), "r");
+    ASSERT_FALSE(pidFile == NULL);
+    unsigned int pid;
+    const auto pidScanResult = fscanf(pidFile, "%u", &pid);
+    (void)fclose(pidFile);
+    ASSERT_EQ(1, pidScanResult);
+    EXPECT_EQ(pid, reportedPid);
 }
 
 #ifdef _WIN32
@@ -202,7 +211,7 @@ TEST_F(SubprocessTests, StartSubprocessWithFileExtension) {
             {"Hello, World", "exit"},
             [&owner]{ owner.SubprocessChildExited(); },
             [&owner]{ owner.SubprocessChildCrashed(); }
-        )
+        ) != 0
     );
     ASSERT_TRUE(AwaitTestAreaChanged());
 }
@@ -212,7 +221,7 @@ TEST_F(SubprocessTests, StartSubprocessWithFileExtension) {
 TEST_F(SubprocessTests, FileHandlesNotInherited) {
     Owner owner;
     SystemAbstractions::Subprocess child;
-    child.StartChild(
+    (void)child.StartChild(
         SystemAbstractions::File::GetExeParentDirectory() + "/MockSubprocessProgram",
         {"Hello, World", "handles"},
         [&owner]{ owner.SubprocessChildExited(); },
@@ -230,7 +239,7 @@ TEST_F(SubprocessTests, FileHandlesNotInherited) {
 TEST_F(SubprocessTests, Exit) {
     Owner owner;
     SystemAbstractions::Subprocess child;
-    child.StartChild(
+    (void)child.StartChild(
         SystemAbstractions::File::GetExeParentDirectory() + "/MockSubprocessProgram",
         {"Hello, World", "exit"},
         [&owner]{ owner.SubprocessChildExited(); },
@@ -243,7 +252,7 @@ TEST_F(SubprocessTests, Exit) {
 TEST_F(SubprocessTests, Crash) {
     Owner owner;
     SystemAbstractions::Subprocess child;
-    child.StartChild(
+    (void)child.StartChild(
         SystemAbstractions::File::GetExeParentDirectory() + "/MockSubprocessProgram",
         {"Hello, World", "crash"},
         [&owner]{ owner.SubprocessChildExited(); },
@@ -259,13 +268,20 @@ TEST_F(SubprocessTests, Detached) {
     std::vector< std::string > args{
         "detached",
     };
-    ASSERT_TRUE(
-        child.StartChild(
-            SystemAbstractions::File::GetExeParentDirectory() + "/MockSubprocessProgram",
-            args
-        )
+    const auto reportedPid = child.StartDetached(
+        SystemAbstractions::File::GetExeParentDirectory() + "/MockSubprocessProgram",
+        args
     );
+    ASSERT_NE(0, reportedPid);
     std::this_thread::sleep_for(std::chrono::milliseconds(250));
+    const std::string pidFilePath = testAreaPath + "/pid";
+    FILE* pidFile = fopen(pidFilePath.c_str(), "r");
+    ASSERT_FALSE(pidFile == NULL);
+    unsigned int pid;
+    const auto pidScanResult = fscanf(pidFile, "%u", &pid);
+    (void)fclose(pidFile);
+    ASSERT_EQ(1, pidScanResult);
+    EXPECT_EQ(pid, reportedPid);
     std::ifstream foo(testAreaPath + "/foo.txt");
     ASSERT_TRUE(foo.is_open());
     std::vector< std::string > lines;

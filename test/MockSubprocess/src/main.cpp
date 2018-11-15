@@ -13,6 +13,10 @@
 #endif /* not _WIN32 */
 
 int main(int argc, char* argv[]) {
+    const std::string pidFilePath = SystemAbstractions::File::GetExeParentDirectory() + "/TestArea/pid";
+    auto pidFile = fopen(pidFilePath.c_str(), "w");
+    (void)fprintf(pidFile, "%u", SystemAbstractions::Subprocess::GetCurrentProcessId());
+    (void)fclose(pidFile);
     SystemAbstractions::Subprocess parent;
     std::vector< std::string > args;
     for (int i = 1; i < argc; ++i) {

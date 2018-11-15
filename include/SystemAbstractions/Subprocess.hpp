@@ -67,10 +67,12 @@ namespace SystemAbstractions {
          *     exits abnormally (crashes).
          *
          * @return
-         *     An indication of whether or not the child process
-         *     was started successfully is returned.
+         *     The process ID of the new subprocess is returned.
+         *
+         * @retval 0
+         *     This is returned if the subprocess could not be started.
          */
-        bool StartChild(
+        unsigned int StartChild(
             std::string program,
             const std::vector< std::string >& args,
             std::function< void() > childExited,
@@ -78,22 +80,24 @@ namespace SystemAbstractions {
         );
 
         /**
-         * This method starts a subprocess completely detached from the
-         * parent, as in there is no line of communication.
+         * This method starts a process completely detached from the
+         * current process, as in there is no line of communication.
          *
          * @param[in] program
          *     This is the path and name of the program to
-         *     run in the subprocess.
+         *     run in the process.
          *
          * @param[in] args
          *     These are the command-line arguments to pass to
-         *     the subprocess.
+         *     the process.
          *
          * @return
-         *     An indication of whether or not the child process
-         *     was started successfully is returned.
+         *     The process ID of the new process is returned.
+         *
+         * @retval 0
+         *     This is returned if the process could not be started.
          */
-        static bool StartChild(
+        static unsigned int StartDetached(
             std::string program,
             const std::vector< std::string >& args
         );
@@ -118,6 +122,14 @@ namespace SystemAbstractions {
          *     was able to contact the parent successfully is returned.
          */
         bool ContactParent(std::vector< std::string >& args);
+
+        /**
+         * This function returns the identifier of the current process.
+         *
+         * @return
+         *     The current process identifier is returned.
+         */
+        static unsigned int GetCurrentProcessId();
 
         // Private properties
     private:
