@@ -248,7 +248,7 @@ namespace SystemAbstractions {
     ) {
         int pipeEnds[2];
         if (pipe(pipeEnds) < 0) {
-            return false;
+            return 0;
         }
         std::vector< std::vector< char > > childArgs;
         childArgs.push_back(VectorFromString(program));
@@ -261,8 +261,6 @@ namespace SystemAbstractions {
             (void)setsid();
             const auto grandchild = fork();
             if (grandchild == 0) {
-                const auto processId = (unsigned int)grandchild;
-                (void)pipeEnds[1].write(&processId, sizeof(processId));
                 (void)close(pipeEnds[1]);
                 std::vector< char* > argv(childArgs.size() + 1);
                 for (size_t i = 0; i < childArgs.size(); ++i) {
@@ -274,6 +272,8 @@ namespace SystemAbstractions {
             } else if (grandchild < 0) {
                 exit(-1);
             }
+            const auto processId = (unsigned int)grandchild;
+            (void)write(pipeEnds[1], &processId, sizeof(processId));
             exit(0);
         } else if (child < 0) {
             (void)close(pipeEnds[0]);
