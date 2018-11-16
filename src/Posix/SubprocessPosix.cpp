@@ -317,4 +317,8 @@ namespace SystemAbstractions {
         return (unsigned int)getpid();
     }
 
+    auto Subprocess::GetProcessList() -> std::vector< ProcessInfo > {
+        return {};
+    }
+
 }

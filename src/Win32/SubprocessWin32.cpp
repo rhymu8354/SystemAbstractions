@@ -14,13 +14,13 @@
  */
 #include <Windows.h>
 
-#include <SystemAbstractions/Subprocess.hpp>
-#include <SystemAbstractions/StringExtensions.hpp>
-
 #include <assert.h>
 #include <inttypes.h>
+#include <Psapi.h>
 #include <signal.h>
 #include <stdint.h>
+#include <SystemAbstractions/Subprocess.hpp>
+#include <SystemAbstractions/StringExtensions.hpp>
 #include <thread>
 
 namespace {
@@ -78,6 +78,29 @@ namespace {
         }
         commandLine.push_back(0);
         return commandLine;
+    }
+
+    /**
+     * This function replaces all backslashes with forward slashes
+     * in the given string.
+     *
+     * @param[in] in
+     *     This is the string to fix.
+     *
+     * @return
+     *     A copy of the given string, with all backslashes replaced
+     *     with forward slashes, is returned.
+     */
+    std::string FixPathDelimiters(const std::string& in) {
+        std::string out;
+        for (auto c: in) {
+            if (c == '\\') {
+                out.push_back('/');
+            } else {
+                out.push_back(c);
+            }
+        }
+        return out;
     }
 
 }
@@ -321,6 +344,69 @@ namespace SystemAbstractions {
 
     unsigned int Subprocess::GetCurrentProcessId() {
         return (unsigned int)::GetCurrentProcessId();
+    }
+
+    auto Subprocess::GetProcessList() -> std::vector< ProcessInfo > {
+        std::vector< DWORD > processIds(1024);
+        for (;;) {
+            DWORD bytesNeeded;
+            if (
+                EnumProcesses(
+                    processIds.data(),
+                    (DWORD)(processIds.size() * sizeof(DWORD)),
+                    &bytesNeeded
+                ) == FALSE
+            ) {
+                return {};
+            }
+            if (bytesNeeded == processIds.size() * sizeof(DWORD)) {
+                processIds.resize(processIds.size() * 2);
+            } else {
+                processIds.resize(bytesNeeded / sizeof(DWORD));
+                break;
+            }
+        }
+        std::vector< ProcessInfo > processes;
+        processes.reserve(processIds.size());
+        for (size_t i = 0; i < processIds.size(); ++i) {
+            ProcessInfo process;
+            process.id = (unsigned int)processIds[i];
+            const auto processHandle = OpenProcess(
+                (
+                    PROCESS_QUERY_INFORMATION
+                    | PROCESS_VM_READ
+                ),
+                FALSE,
+                processIds[i]
+            );
+            if (processHandle == NULL) {
+                continue;
+            }
+            HMODULE processModule;
+            DWORD processModuleSize;
+            if (
+                EnumProcessModules(
+                    processHandle,
+                    &processModule,
+                    sizeof(processModule),
+                    &processModuleSize
+                ) == FALSE
+            ) {
+                (void)CloseHandle(processHandle);
+                continue;
+            }
+            std::vector< char > exeImagePath(MAX_PATH + 1);
+            (void)GetModuleFileNameExA(
+                processHandle,
+                processModule,
+                &exeImagePath[0],
+                (DWORD)exeImagePath.size()
+            );
+            process.image = FixPathDelimiters(exeImagePath.data());
+            processes.push_back(std::move(process));
+            (void)CloseHandle(processHandle);
+        }
+        return processes;
     }
 
 }

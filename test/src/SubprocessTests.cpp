@@ -313,3 +313,18 @@ TEST_F(SubprocessTests, Detached) {
     EXPECT_EQ(0, handles.size()) << std::string(handles.begin(), handles.end());
 #endif /* _WIN32 */
 }
+
+TEST_F(SubprocessTests, FindSelf) {
+    const auto processes = SystemAbstractions::Subprocess::GetProcessList();
+    const auto selfPath = SystemAbstractions::File::GetExeImagePath();
+    bool foundSelf = false;
+    for (const auto& process: processes) {
+        if (process.image == selfPath) {
+            if (process.id == SystemAbstractions::Subprocess::GetCurrentProcessId()) {
+                foundSelf = true;
+                break;
+            }
+        }
+    }
+    EXPECT_TRUE(foundSelf);
+}

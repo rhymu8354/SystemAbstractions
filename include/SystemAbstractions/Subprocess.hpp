@@ -21,6 +21,25 @@ namespace SystemAbstractions {
      * and includes means of communicating between the two processes.
      */
     class Subprocess {
+        // Types
+    public:
+        /**
+         * This holds information about an operating system process.
+         */
+        struct ProcessInfo {
+            /**
+             * This is the identifier of the process, assigned by the operating
+             * system.
+             */
+            unsigned int id;
+
+            /**
+             * This is the path to the executable image the process is
+             * executing.
+             */
+            std::string image;
+        };
+
         // Lifecycle Management
     public:
         ~Subprocess() noexcept;
@@ -130,6 +149,16 @@ namespace SystemAbstractions {
          *     The current process identifier is returned.
          */
         static unsigned int GetCurrentProcessId();
+
+        /**
+         * This function gathers information about all the processes currently
+         * running in the system.
+         *
+         * @return
+         *     A collection of structures containing information about each
+         *     process currently running in the system is returned.
+         */
+        static std::vector< ProcessInfo > GetProcessList();
 
         // Private properties
     private:
