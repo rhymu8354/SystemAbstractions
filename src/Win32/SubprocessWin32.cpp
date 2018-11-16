@@ -16,12 +16,17 @@
 
 #include <assert.h>
 #include <inttypes.h>
+#include <IPHlpApi.h>
 #include <Psapi.h>
+#include <map>
+#include <set>
 #include <signal.h>
+#include <stddef.h>
 #include <stdint.h>
 #include <SystemAbstractions/Subprocess.hpp>
 #include <SystemAbstractions/StringExtensions.hpp>
 #include <thread>
+#pragma comment(lib, "IPHlpApi")
 
 namespace {
 
@@ -347,6 +352,7 @@ namespace SystemAbstractions {
     }
 
     auto Subprocess::GetProcessList() -> std::vector< ProcessInfo > {
+        // Gather the identifiers of all currently running processes.
         std::vector< DWORD > processIds(1024);
         for (;;) {
             DWORD bytesNeeded;
@@ -366,6 +372,38 @@ namespace SystemAbstractions {
                 break;
             }
         }
+
+        // Gather collections of network ports currently bound in the system.
+        ULONG requiredTcpTableSize = 4096;
+        std::vector< uint8_t > tcpTableBuffer;
+        ULONG getTcpTableResult;
+        do {
+            tcpTableBuffer.resize(requiredTcpTableSize);
+            getTcpTableResult = GetTcpTable2(
+                (PMIB_TCPTABLE2)tcpTableBuffer.data(),
+                &requiredTcpTableSize,
+                FALSE
+            );
+        } while (getTcpTableResult == ERROR_INSUFFICIENT_BUFFER);
+        std::map< unsigned int, std::set< uint16_t > > tcpServerPorts;
+        if (getTcpTableResult == NO_ERROR) {
+            const auto tcpTable = (PMIB_TCPTABLE2)tcpTableBuffer.data();
+            for (size_t i = 0; i < (size_t)tcpTable->dwNumEntries; ++i) {
+                const auto& tcpTableEntry = tcpTable->table[i];
+                if (tcpTableEntry.dwState == MIB_TCP_STATE_LISTEN) {
+                    (void)tcpServerPorts[(unsigned int)tcpTableEntry.dwOwningPid].insert(
+                        (
+                            (uint16_t)((tcpTableEntry.dwLocalPort >> 8) & 0x00FF)
+                            | (uint16_t)((tcpTableEntry.dwLocalPort << 8) & 0xFF00)
+                        )
+                    );
+                }
+            }
+        }
+
+        // For each process ID, attempt to access the process to get its image
+        // executable path.  If successful, add the process information to the
+        // returned collection.
         std::vector< ProcessInfo > processes;
         processes.reserve(processIds.size());
         for (size_t i = 0; i < processIds.size(); ++i) {
@@ -403,6 +441,10 @@ namespace SystemAbstractions {
                 (DWORD)exeImagePath.size()
             );
             process.image = FixPathDelimiters(exeImagePath.data());
+            auto tcpServerPortsEntry = tcpServerPorts.find(process.id);
+            if (tcpServerPortsEntry != tcpServerPorts.end()) {
+                process.tcpServerPorts = tcpServerPortsEntry->second;
+            }
             processes.push_back(std::move(process));
             (void)CloseHandle(processHandle);
         }

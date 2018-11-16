@@ -11,6 +11,8 @@
 
 #include <functional>
 #include <memory>
+#include <set>
+#include <stdint.h>
 #include <string>
 #include <vector>
 
@@ -38,6 +40,12 @@ namespace SystemAbstractions {
              * executing.
              */
             std::string image;
+
+            /**
+             * These are the TCP port numbers on which the process
+             * is listening for connections.
+             */
+            std::set< uint16_t > tcpServerPorts;
         };
 
         // Lifecycle Management

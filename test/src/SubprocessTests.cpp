@@ -16,6 +16,7 @@
 #include <SystemAbstractions/Subprocess.hpp>
 #include <SystemAbstractions/DirectoryMonitor.hpp>
 #include <SystemAbstractions/File.hpp>
+#include <SystemAbstractions/NetworkEndpoint.hpp>
 #include <thread>
 #include <vector>
 
@@ -314,7 +315,7 @@ TEST_F(SubprocessTests, Detached) {
 #endif /* _WIN32 */
 }
 
-TEST_F(SubprocessTests, FindSelf) {
+TEST_F(SubprocessTests, FindSelfByImagePath) {
     const auto processes = SystemAbstractions::Subprocess::GetProcessList();
     const auto selfPath = SystemAbstractions::File::GetExeImagePath();
     bool foundSelf = false;
@@ -324,6 +325,43 @@ TEST_F(SubprocessTests, FindSelf) {
                 foundSelf = true;
                 break;
             }
+        }
+    }
+    EXPECT_TRUE(foundSelf);
+}
+
+TEST_F(SubprocessTests, FindSelfByTcpServerPort) {
+    SystemAbstractions::NetworkEndpoint tcp;
+    ASSERT_TRUE(
+        tcp.Open(
+            [](
+                std::shared_ptr< SystemAbstractions::NetworkConnection > newConnection
+            ){},
+            [](
+                uint32_t address,
+                uint16_t port,
+                const std::vector< uint8_t >& body
+            ){},
+            SystemAbstractions::NetworkEndpoint::Mode::Connection,
+            0, 0, 0
+        )
+    );
+    const auto processes = SystemAbstractions::Subprocess::GetProcessList();
+    const auto selfPath = SystemAbstractions::File::GetExeImagePath();
+    bool foundSelf = false;
+    for (const auto& process: processes) {
+        for (const auto port: process.tcpServerPorts) {
+            if (port == tcp.GetBoundPort()) {
+                EXPECT_EQ(
+                    SystemAbstractions::Subprocess::GetCurrentProcessId(),
+                    process.id
+                );
+                foundSelf = true;
+                break;
+            }
+        }
+        if (foundSelf) {
+            break;
         }
     }
     EXPECT_TRUE(foundSelf);
