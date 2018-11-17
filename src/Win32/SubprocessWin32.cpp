@@ -318,7 +318,7 @@ namespace SystemAbstractions {
                 NULL,
                 NULL,
                 FALSE,
-                0,
+                DETACHED_PROCESS,
                 NULL,
                 NULL,
                 &si,
