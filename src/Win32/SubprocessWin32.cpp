@@ -451,4 +451,19 @@ namespace SystemAbstractions {
         return processes;
     }
 
+    void Subprocess::Kill(unsigned int id) {
+        const auto processHandle = OpenProcess(
+            (
+                PROCESS_TERMINATE
+            ),
+            FALSE,
+            (DWORD)id
+        );
+        if (processHandle == NULL) {
+            return;
+        }
+        (void)TerminateProcess(processHandle, 255);
+        (void)CloseHandle(processHandle);
+    }
+
 }

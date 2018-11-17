@@ -168,6 +168,14 @@ namespace SystemAbstractions {
          */
         static std::vector< ProcessInfo > GetProcessList();
 
+        /**
+         * This function kills the process with the given identifier.
+         *
+         * @param[in] id
+         *     This is the identifier of the process to kill.
+         */
+        static void Kill(unsigned int id);
+
         // Private properties
     private:
         /**

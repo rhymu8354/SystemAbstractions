@@ -423,4 +423,8 @@ namespace SystemAbstractions {
         return processes;
     }
 
+    void Subprocess::Kill(unsigned int id) {
+        (void)kill(id, SIGKILL);
+    }
+
 }
