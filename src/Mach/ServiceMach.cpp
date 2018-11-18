@@ -27,7 +27,7 @@ namespace SystemAbstractions {
     {
     }
 
-    int Service::Start() {
+    int Service::Main() {
         return 0;
     }
 
