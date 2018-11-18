@@ -950,7 +950,6 @@ TEST_F(NetworkConnectionTests, ReceiveCloseGracefully) {
     );
     ASSERT_TRUE(client.Connect(0x7F000001, serverPort));
     serverAccept.join();
-    const auto serverConnectionPort = client.GetPeerPort();
     auto clientOwnerCopy = clientOwner;
     (void)client.Process(
         [clientOwnerCopy](const std::vector< uint8_t >& message){
@@ -1192,7 +1191,6 @@ TEST_F(NetworkConnectionTests, ReceiveCloseAbruptly) {
     );
     ASSERT_TRUE(client.Connect(0x7F000001, serverPort));
     serverAccept.join();
-    const auto serverConnectionPort = client.GetPeerPort();
     auto clientOwnerCopy = clientOwner;
     (void)client.Process(
         [clientOwnerCopy](const std::vector< uint8_t >& message){
