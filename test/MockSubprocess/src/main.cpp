@@ -1,3 +1,4 @@
+#include <fstream>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
@@ -12,6 +13,11 @@
 #include <vector>
 #endif /* not _WIN32 */
 
+#ifdef __APPLE__
+#include <libproc.h>
+#include <sys/proc_info.h>
+#endif /* __APPLE__ */
+
 int main(int argc, char* argv[]) {
     const std::string pidFilePath = SystemAbstractions::File::GetExeParentDirectory() + "/TestArea/pid";
     auto pidFile = fopen(pidFilePath.c_str(), "w");
@@ -22,16 +28,24 @@ int main(int argc, char* argv[]) {
     for (int i = 1; i < argc; ++i) {
         args.push_back(argv[i]);
     }
-#ifndef _WIN32
+#ifdef _WIN32
+#elif defined(__APPLE__)
+    int pipeToParentFd;
+#else /* Linux */
     std::string pipeToParentFdPath;
-#endif /* not _WIN32 */
+#endif /* various platforms */
     if (
         (args.size() >= 1)
         && (args[0] == "child")
     ) {
-#ifndef _WIN32
+#ifdef _WIN32
+#elif defined(__APPLE__)
+        if (sscanf(args[1].c_str(), "%d", &pipeToParentFd) != 1) {
+            return EXIT_FAILURE;
+        }
+#else /* Linux */
         pipeToParentFdPath = "/proc/self/fd/" + args[1];
-#endif /* not _WIN32 */
+#endif /* various platforms */
         if (!parent.ContactParent(args)) {
             return EXIT_FAILURE;
         }
@@ -39,7 +53,24 @@ int main(int argc, char* argv[]) {
         (args.size() >= 1)
         && (args[0] == "detached")
     ) {
-#ifndef _WIN32
+#ifdef _WIN32
+#elif defined(__APPLE__)
+        auto bufferSize = proc_pidinfo(getpid(), PROC_PIDLISTFDS, 0, 0, 0);
+        if (bufferSize < 0) {
+            return EXIT_FAILURE;
+        }
+        std::vector< struct proc_fdinfo > fds(bufferSize / sizeof(struct proc_fdinfo));
+        bufferSize = proc_pidinfo(getpid(), PROC_PIDLISTFDS, 0, fds.data(), bufferSize);
+        if (bufferSize < 0) {
+            return EXIT_FAILURE;
+        }
+        std::ofstream report((SystemAbstractions::File::GetExeParentDirectory() + "/TestArea/handles").c_str());
+        fds.resize(bufferSize / sizeof(struct proc_fdinfo));
+        const auto pid = getpid();
+        for (const auto& fd: fds) {
+            report << fd.proc_fd << std::endl;
+        }
+#else /* Linux */
         std::vector< std::string > fds;
         const std::string fdsDir("/proc/self/fd/");
         SystemAbstractions::File::ListDirectory(fdsDir, fds);
@@ -54,7 +85,7 @@ int main(int argc, char* argv[]) {
         (void)handlesReport.Create();
         const auto reportString = report.str();
         (void)handlesReport.Write(reportString.data(), reportString.length());
-#endif /* not _WIN32 */
+#endif /* various platforms */
     } else {
         return EXIT_FAILURE;
     }
@@ -70,11 +101,30 @@ int main(int argc, char* argv[]) {
     ) {
         volatile int* null = (int*)0;
         *null = 0;
-#ifndef _WIN32
     } else if (
         (args.size() >= 2)
         && (args[1] == "handles")
     ) {
+#ifdef _WIN32
+#elif defined(__APPLE__)
+        auto bufferSize = proc_pidinfo(getpid(), PROC_PIDLISTFDS, 0, 0, 0);
+        if (bufferSize < 0) {
+            return EXIT_FAILURE;
+        }
+        std::vector< struct proc_fdinfo > fds(bufferSize / sizeof(struct proc_fdinfo));
+        bufferSize = proc_pidinfo(getpid(), PROC_PIDLISTFDS, 0, fds.data(), bufferSize);
+        if (bufferSize < 0) {
+            return EXIT_FAILURE;
+        }
+        std::ofstream report((SystemAbstractions::File::GetExeParentDirectory() + "/TestArea/handles").c_str());
+        fds.resize(bufferSize / sizeof(struct proc_fdinfo));
+        const auto pid = getpid();
+        for (const auto& fd: fds) {
+            if ((int)fd.proc_fd != pipeToParentFd) {
+                report << fd.proc_fd << std::endl;
+            }
+        }
+#else /* Linux */
         std::vector< std::string > fds;
         const std::string fdsDir("/proc/self/fd/");
         SystemAbstractions::File::ListDirectory(fdsDir, fds);
@@ -92,7 +142,7 @@ int main(int argc, char* argv[]) {
         (void)handlesReport.Create();
         const auto reportString = report.str();
         (void)handlesReport.Write(reportString.data(), reportString.length());
-#endif /* not _WIN32 */
+#endif /* various platforms */
     }
     return EXIT_SUCCESS;
 }

@@ -305,8 +305,8 @@ TEST_F(SubprocessTests, Detached) {
     EXPECT_EQ(args, lines);
 
 #ifndef _WIN32
-    // Linux targets also know what file handles are open, so check to make
-    // sure none are in the detached process.
+    // Linux and Mac targets also know what file handles are open, so check to
+    // make sure none are in the detached process.
     SystemAbstractions::File handlesReport(testAreaPath + "/handles");
     ASSERT_TRUE(handlesReport.Open());
     std::vector< char > handles(handlesReport.GetSize());
