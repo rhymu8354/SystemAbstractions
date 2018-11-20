@@ -161,7 +161,61 @@ public:
     }
 };
 
-#elif defined(APPLE)
+#elif defined(__APPLE__)
+
+/**
+ * This is used to redirect the unit under test to talk
+ * to a mock operating system interface to get to the clipboard.
+ */
+struct MockClipboardOperatingSystemInterface
+    : public ClipboardOperatingSystemInterface
+{
+    // Properties
+
+    /**
+     * This holds onto whatever was last copied into the clipboard.
+     */
+    std::string contents;
+
+    /**
+     * This indicates whether or not the clipboard contains text.
+     */
+    bool hasText = false;
+
+    /**
+     * This captures what operating system calls were made, in what order.
+     */
+    std::vector< std::string > callsInOrder;
+
+    // Methods
+
+    /**
+     * This is the constructor of the class.
+     */
+    MockClipboardOperatingSystemInterface() = default;
+
+    // ClipboardOperatingSystemInterface
+public:
+    virtual void Copy(const std::string& s) override {
+        callsInOrder.push_back("Copy");
+        contents = s;
+        hasText = true;
+    }
+
+    virtual bool HasString() override {
+        callsInOrder.push_back("HasString");
+        return hasText;
+    }
+
+    virtual std::string PasteString() override {
+        callsInOrder.push_back("PasteString");
+        if (hasText) {
+            return contents;
+        } else {
+            return "";
+        }
+    }
+};
 
 #else /* POSIX */
 
@@ -272,7 +326,7 @@ TEST_F(ClipboardTests, Copy) {
         }),
         mockClipboard.callsInOrder
     );
-#elif defined(APPLE)
+#elif defined(__APPLE__)
     ASSERT_TRUE(false) << "test does not work with APPLE yet";
 #else /* Linux */
     ASSERT_EQ(
@@ -300,7 +354,7 @@ TEST_F(ClipboardTests, Paste) {
         }),
         mockClipboard.callsInOrder
     );
-#elif defined(APPLE)
+#elif defined(__APPLE__)
     ASSERT_TRUE(false) << "test does not work with APPLE yet";
 #else /* Linux */
     ASSERT_EQ(
@@ -331,7 +385,7 @@ TEST_F(ClipboardTests, HasString) {
         }),
         mockClipboard.callsInOrder
     );
-#elif defined(APPLE)
+#elif defined(__APPLE__)
     ASSERT_TRUE(false) << "test does not work with APPLE yet";
 #else /* Linux */
     ASSERT_EQ(

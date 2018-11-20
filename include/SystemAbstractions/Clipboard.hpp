@@ -16,7 +16,7 @@
 
 #ifdef _WIN32
 #include <Windows.h>
-#elif defined(APPLE)
+#elif defined(__APPLE__)
 #else /* Linux */
 #endif /* various platforms */
 
@@ -38,7 +38,11 @@ public:
     );
     virtual BOOL CloseClipboard();
 
-#elif defined(APPLE)
+#elif defined(__APPLE__)
+
+    virtual void Copy(const std::string& s);
+    virtual bool HasString();
+    virtual std::string PasteString();
 
 #else /* Linux */
 
