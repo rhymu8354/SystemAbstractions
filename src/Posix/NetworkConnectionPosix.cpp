@@ -243,7 +243,7 @@ namespace SystemAbstractions {
     }
 
     void NetworkConnection::Impl::SendMessage(const std::vector< uint8_t >& message) {
-        std::unique_lock< std::recursive_mutex > processingLock(platform->processingMutex);
+        std::lock_guard< decltype(platform->processingMutex) > lock(platform->processingMutex);
         platform->outputQueue.Enqueue(message);
         platform->processorStateChangeSignal.Set();
     }
@@ -258,7 +258,7 @@ namespace SystemAbstractions {
             platform->processorStateChangeSignal.Set();
             platform->processor.join();
         }
-        std::unique_lock< std::recursive_mutex > processingLock(platform->processingMutex);
+        std::lock_guard< decltype(platform->processingMutex) > lock(platform->processingMutex);
         if (platform->sock >= 0) {
             if (procedure == CloseProcedure::Graceful) {
                 platform->closing = true;
