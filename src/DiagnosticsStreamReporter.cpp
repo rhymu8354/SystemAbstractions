@@ -7,6 +7,7 @@
  * © 2014-2018 by Richard Walters
  */
 
+#include <mutex>
 #include <SystemAbstractions/DiagnosticsStreamReporter.hpp>
 #include <SystemAbstractions/Time.hpp>
 
@@ -17,17 +18,20 @@ namespace SystemAbstractions {
         FILE* error
     ) {
         auto time = std::make_shared< Time >();
+        auto mutex = std::make_shared< std::mutex >();
         double timeReference = time->GetTime();
         return [
             output,
             error,
             time,
+            mutex,
             timeReference
         ](
             std::string senderName,
             size_t level,
             std::string message
         ) {
+            std::lock_guard< std::mutex > lock(*mutex);
             FILE* destination;
             std::string prefix;
             if (level >= DiagnosticsSender::Levels::ERROR) {
