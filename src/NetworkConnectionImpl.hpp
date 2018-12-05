@@ -171,8 +171,12 @@ namespace SystemAbstractions {
          * @param[in] procedure
          *     This indicates the procedure to follow in order
          *     to close the connection.
+         *
+         * @return
+         *     An indication of whether or not the broken connection delegate
+         *     should called is returned.
          */
-        void Close(CloseProcedure procedure);
+        bool Close(CloseProcedure procedure);
 
         /**
          * This helper method is called from various places to standardize

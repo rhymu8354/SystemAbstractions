@@ -55,7 +55,9 @@ namespace {
 namespace SystemAbstractions {
 
     NetworkConnection::Impl::~Impl() {
-        Close(CloseProcedure::ImmediateAndStopProcessor);
+        if (Close(CloseProcedure::ImmediateAndStopProcessor)) {
+            brokenDelegate(false);
+        }
         if (platform->wsaStarted) {
             (void)WSACleanup();
         }
@@ -78,7 +80,9 @@ namespace SystemAbstractions {
     }
 
     bool NetworkConnection::Impl::Connect() {
-        Close(CloseProcedure::ImmediateAndStopProcessor);
+        if (Close(CloseProcedure::ImmediateAndStopProcessor)) {
+            brokenDelegate(false);
+        }
         struct sockaddr_in socketAddress;
         (void)memset(&socketAddress, 0, sizeof(socketAddress));
         socketAddress.sin_family = AF_INET;
@@ -101,7 +105,7 @@ namespace SystemAbstractions {
                 "error in bind (%d)",
                 WSAGetLastError()
             );
-            Close(CloseProcedure::ImmediateDoNotStopProcessor);
+            (void)Close(CloseProcedure::ImmediateDoNotStopProcessor);
             return false;
         }
         (void)memset(&socketAddress, 0, sizeof(socketAddress));
@@ -114,7 +118,7 @@ namespace SystemAbstractions {
                 "error in connect (%d)",
                 WSAGetLastError()
             );
-            Close(CloseProcedure::ImmediateDoNotStopProcessor);
+            (void)Close(CloseProcedure::ImmediateDoNotStopProcessor);
             return false;
         }
         int socketAddressLength = sizeof(socketAddress);
@@ -206,21 +210,29 @@ namespace SystemAbstractions {
                             1,
                             "connection closed abruptly by peer"
                         );
-                        Close(CloseProcedure::ImmediateDoNotStopProcessor);
+                        if (Close(CloseProcedure::ImmediateDoNotStopProcessor)) {
+                            processingLock.unlock();
+                            brokenDelegate(false);
+                            processingLock.lock();
+                        }
                         break;
                     }
                 } else if (amountReceived > 0) {
                     diagnosticsSender.SendDiagnosticInformationString(0, "processor read something");
                     wait = false;
                     buffer.resize((size_t)amountReceived);
+                    processingLock.unlock();
                     messageReceivedDelegate(buffer);
+                    processingLock.lock();
                 } else {
                     diagnosticsSender.SendDiagnosticInformationString(
                         1,
                         "connection closed gracefully by peer"
                     );
                     platform->peerClosed = true;
+                    processingLock.unlock();
                     brokenDelegate(true);
+                    processingLock.lock();
                 }
             }
             if (platform->sock == INVALID_SOCKET) {
@@ -239,7 +251,11 @@ namespace SystemAbstractions {
                             1,
                             "connection closed abruptly by peer"
                         );
-                        Close(CloseProcedure::ImmediateDoNotStopProcessor);
+                        if (Close(CloseProcedure::ImmediateDoNotStopProcessor)) {
+                            processingLock.unlock();
+                            brokenDelegate(false);
+                            processingLock.lock();
+                        }
                         diagnosticsSender.SendDiagnosticInformationString(0, "processor breaking due to send error");
                         break;
                     }
@@ -254,7 +270,11 @@ namespace SystemAbstractions {
                         wait = false;
                     }
                 } else {
-                    Close(CloseProcedure::ImmediateDoNotStopProcessor);
+                    if (Close(CloseProcedure::ImmediateDoNotStopProcessor)) {
+                        processingLock.unlock();
+                        brokenDelegate(false);
+                        processingLock.lock();
+                    }
                     diagnosticsSender.SendDiagnosticInformationString(0, "processor breaking due to send returning 0");
                     break;
                 }
@@ -271,6 +291,11 @@ namespace SystemAbstractions {
                 if (platform->peerClosed) {
                     diagnosticsSender.SendDiagnosticInformationString(0, "processor closing connection immediately");
                     CloseImmediately();
+                    if (brokenDelegate != nullptr) {
+                        processingLock.unlock();
+                        brokenDelegate(false);
+                        processingLock.lock();
+                    }
                 }
             }
         }
@@ -287,7 +312,7 @@ namespace SystemAbstractions {
         (void)SetEvent(platform->processorStateChangeEvent);
     }
 
-    void NetworkConnection::Impl::Close(CloseProcedure procedure) {
+    bool NetworkConnection::Impl::Close(CloseProcedure procedure) {
         if (
             (procedure == CloseProcedure::ImmediateAndStopProcessor)
             && platform->processor.joinable()
@@ -308,8 +333,10 @@ namespace SystemAbstractions {
                 (void)SetEvent(platform->processorStateChangeEvent);
             } else {
                 CloseImmediately();
+                return (brokenDelegate != nullptr);
             }
         }
+        return false;
     }
 
     void NetworkConnection::Impl::CloseImmediately() {
@@ -318,9 +345,6 @@ namespace SystemAbstractions {
             1,
             "closed connection"
         );
-        if (brokenDelegate != nullptr) {
-            brokenDelegate(false);
-        }
     }
 
     uint32_t NetworkConnection::Impl::GetAddressOfHost(const std::string& host) {

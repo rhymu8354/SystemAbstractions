@@ -66,11 +66,15 @@ namespace SystemAbstractions {
     }
 
     void NetworkConnection::Close(bool clean) {
-        impl_->Close(
-            clean
-            ? Impl::CloseProcedure::Graceful
-            : Impl::CloseProcedure::ImmediateAndStopProcessor
-        );
+        if (
+            impl_->Close(
+                clean
+                ? Impl::CloseProcedure::Graceful
+                : Impl::CloseProcedure::ImmediateAndStopProcessor
+            )
+        ) {
+            impl_->brokenDelegate(false);
+        }
     }
 
     uint32_t NetworkConnection::GetAddressOfHost(const std::string& host) {

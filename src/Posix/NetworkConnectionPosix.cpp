@@ -44,11 +44,15 @@ namespace SystemAbstractions {
     }
 
     NetworkConnection::Impl::~Impl() noexcept {
-        Close(CloseProcedure::ImmediateAndStopProcessor);
+        if (Close(CloseProcedure::ImmediateAndStopProcessor)) {
+            brokenDelegate(false);
+        }
     }
 
     bool NetworkConnection::Impl::Connect() {
-        Close(CloseProcedure::ImmediateAndStopProcessor);
+        if (Close(CloseProcedure::ImmediateAndStopProcessor)) {
+            brokenDelegate(false);
+        }
         struct sockaddr_in socketAddress;
         (void)memset(&socketAddress, 0, sizeof(socketAddress));
         socketAddress.sin_family = AF_INET;
@@ -71,7 +75,7 @@ namespace SystemAbstractions {
                 "error in bind: %s",
                 strerror(errno)
             );
-            Close(CloseProcedure::ImmediateDoNotStopProcessor);
+            (void)Close(CloseProcedure::ImmediateDoNotStopProcessor);
             return false;
         }
         (void)memset(&socketAddress, 0, sizeof(socketAddress));
@@ -84,7 +88,7 @@ namespace SystemAbstractions {
                 "error in connect: %s",
                 strerror(errno)
             );
-            Close(CloseProcedure::ImmediateDoNotStopProcessor);
+            (void)Close(CloseProcedure::ImmediateDoNotStopProcessor);
             return false;
         }
         socklen_t socketAddressLength = sizeof(socketAddress);
@@ -177,20 +181,28 @@ namespace SystemAbstractions {
                             1,
                             "connection closed abruptly by peer"
                         );
-                        Close(CloseProcedure::ImmediateDoNotStopProcessor);
+                        if (Close(CloseProcedure::ImmediateDoNotStopProcessor)) {
+                            processingLock.unlock();
+                            brokenDelegate(false);
+                            processingLock.lock();
+                        }
                         break;
                     }
                 } else if (amountReceived > 0) {
                     buffer.resize((size_t)amountReceived);
                     wait = false;
+                    processingLock.unlock();
                     messageReceivedDelegate(buffer);
+                    processingLock.lock();
                 } else {
                     diagnosticsSender.SendDiagnosticInformationString(
                         1,
                         "connection closed gracefully by peer"
                     );
                     platform->peerClosed = true;
+                    processingLock.unlock();
                     brokenDelegate(true);
+                    processingLock.lock();
                 }
             }
             if (platform->sock < 0) {
@@ -207,7 +219,11 @@ namespace SystemAbstractions {
                             1,
                             "connection closed abruptly by peer"
                         );
-                        Close(CloseProcedure::ImmediateDoNotStopProcessor);
+                        if (Close(CloseProcedure::ImmediateDoNotStopProcessor)) {
+                            processingLock.unlock();
+                            brokenDelegate(false);
+                            processingLock.lock();
+                        }
                         break;
                     }
                 } else if (amountSent > 0) {
@@ -219,7 +235,11 @@ namespace SystemAbstractions {
                         wait = false;
                     }
                 } else {
-                    Close(CloseProcedure::ImmediateDoNotStopProcessor);
+                    if (Close(CloseProcedure::ImmediateDoNotStopProcessor)) {
+                        processingLock.unlock();
+                        brokenDelegate(false);
+                        processingLock.lock();
+                    }
                     break;
                 }
             }
@@ -248,7 +268,7 @@ namespace SystemAbstractions {
         platform->processorStateChangeSignal.Set();
     }
 
-    void NetworkConnection::Impl::Close(CloseProcedure procedure) {
+    bool NetworkConnection::Impl::Close(CloseProcedure procedure) {
         if (
             (procedure == CloseProcedure::ImmediateAndStopProcessor)
             && platform->processor.joinable()
@@ -269,8 +289,10 @@ namespace SystemAbstractions {
                 platform->processorStateChangeSignal.Set();
             } else {
                 CloseImmediately();
+                return (brokenDelegate != nullptr);
             }
         }
+        return false;
     }
 
     void NetworkConnection::Impl::CloseImmediately() {
