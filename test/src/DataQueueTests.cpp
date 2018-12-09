@@ -251,3 +251,22 @@ TEST(DataQueueTests, DropFullBufferPlusPartialNextBuffer) {
     EXPECT_EQ(1, q.GetBuffersQueued());
     EXPECT_EQ(3, q.GetBytesQueued());
 }
+
+// This recreates a specific bug in Dequeue, where a local variable
+// tracking the number of remaining bytes in the queue was subtracted
+// by the wrong value, causing the actual number of bytes returned
+// and/or removed to be lower than expected.
+TEST(DataQueueTests, ShortenedDequeueBug) {
+    // Arrange
+    SystemAbstractions::DataQueue q;
+    std::vector< uint8_t > data(10, 'X');
+    q.Enqueue(data);
+    q.Enqueue(data);
+    q.Enqueue(data);
+
+    // Act
+    const auto buffer = q.Peek(30);
+
+    // Assert
+    EXPECT_EQ(30, buffer.size());
+}

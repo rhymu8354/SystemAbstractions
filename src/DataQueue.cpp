@@ -122,7 +122,7 @@ namespace SystemAbstractions {
                     );
                 }
                 numBytesRequested -= bytesToConsume;
-                bytesLeftFromQueue -= numBytesRequested;
+                bytesLeftFromQueue -= bytesToConsume;
                 if (removeData) {
                     nextElement->consumed += bytesToConsume;
                     totalBytes -= bytesToConsume;
