@@ -85,9 +85,6 @@ namespace SystemAbstractions {
             bool removeData
         ) -> Buffer {
             Buffer buffer;
-            if (!returnData) {
-                buffer.reserve(numBytesRequested);
-            }
             auto nextElement = elements.begin();
             auto bytesLeftFromQueue = totalBytes;
             while (
