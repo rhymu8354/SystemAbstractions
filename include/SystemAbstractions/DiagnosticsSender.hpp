@@ -113,7 +113,7 @@ namespace SystemAbstractions {
          *     the sender to diagnostic messages published by another sender,
          *     in order to chain them together.
          */
-        DiagnosticMessageDelegate Chain();
+        DiagnosticMessageDelegate Chain() const;
 
         /**
          * This method returns the lowest of all the minimum desired

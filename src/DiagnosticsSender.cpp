@@ -186,7 +186,7 @@ namespace SystemAbstractions {
         };
     }
 
-    auto DiagnosticsSender::Chain() -> DiagnosticMessageDelegate {
+    auto DiagnosticsSender::Chain() const -> DiagnosticMessageDelegate {
         std::weak_ptr< Impl > implWeak(impl_);
         return [implWeak](
             std::string senderName,
