@@ -55,8 +55,12 @@ namespace {
 namespace SystemAbstractions {
 
     NetworkConnection::Impl::~Impl() {
-        if (Close(CloseProcedure::ImmediateAndStopProcessor)) {
-            brokenDelegate(false);
+        if (platform->processor.joinable()) {
+            if (std::this_thread::get_id() == platform->processor.get_id()) {
+                platform->processor.detach();
+            } else {
+                platform->processor.join();
+            }
         }
         if (platform->wsaStarted) {
             (void)WSACleanup();
@@ -175,7 +179,8 @@ namespace SystemAbstractions {
             );
             return false;
         }
-        platform->processor = std::move(std::thread(&NetworkConnection::Impl::Processor, this));
+        const auto self = shared_from_this();
+        platform->processor = std::thread([self]{ self->Processor(); });
         return true;
     }
 
@@ -316,11 +321,9 @@ namespace SystemAbstractions {
         if (
             (procedure == CloseProcedure::ImmediateAndStopProcessor)
             && platform->processor.joinable()
-            && (std::this_thread::get_id() != platform->processor.get_id())
         ) {
             platform->processorStop = true;
             (void)SetEvent(platform->processorStateChangeEvent);
-            platform->processor.join();
         }
         std::unique_lock< std::recursive_mutex > processingLock(platform->processingMutex);
         if (platform->sock != INVALID_SOCKET) {

@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <condition_variable>
 #include <functional>
+#include <future>
 #include <gtest/gtest.h>
 #include <mutex>
 #include <inttypes.h>
@@ -1362,4 +1363,59 @@ TEST_F(NetworkConnectionTests, GetAddressOfHost) {
     EXPECT_EQ(0x7f000001, SystemAbstractions::NetworkConnection::GetAddressOfHost("127.0.0.1"));
     EXPECT_EQ(0x08080808, SystemAbstractions::NetworkConnection::GetAddressOfHost("8.8.8.8"));
     EXPECT_EQ(0, SystemAbstractions::NetworkConnection::GetAddressOfHost(".example"));
+}
+
+TEST_F(NetworkConnectionTests, ReleaseFromDelegate) {
+    SystemAbstractions::NetworkEndpoint server;
+    const auto clients = std::make_shared< std::vector< std::shared_ptr< SystemAbstractions::NetworkConnection > > >();
+    const auto newConnectionDelegate = [
+        &clients
+    ](
+        std::shared_ptr< SystemAbstractions::NetworkConnection > newConnection
+    ){
+        clients->push_back(newConnection);
+        const std::weak_ptr< std::vector< std::shared_ptr< SystemAbstractions::NetworkConnection > > > weakClients(clients);
+        (void)newConnection->Process(
+            [weakClients](const std::vector< uint8_t >& message){
+                const auto clients = weakClients.lock();
+                if (clients == nullptr) {
+                    return;
+                }
+                clients->clear();
+            },
+            [](bool graceful){
+            }
+        );
+    };
+    const auto packetReceivedDelegate = [](
+        uint32_t address,
+        uint16_t port,
+        const std::vector< uint8_t >& body
+    ){
+    };
+    (void)server.Open(
+        newConnectionDelegate,
+        packetReceivedDelegate,
+        SystemAbstractions::NetworkEndpoint::Mode::Connection,
+        0,
+        0,
+        0
+    );
+    (void)client.Connect(0x7F000001, server.GetBoundPort());
+    const auto closed = std::make_shared< std::promise< void > >();
+    (void)client.Process(
+        [](const std::vector< uint8_t >& message){
+        },
+        [closed](bool graceful){
+            closed->set_value();
+        }
+    );
+    const std::string messageAsString("Hello, World!");
+    const std::vector< uint8_t > messageAsVector(messageAsString.begin(), messageAsString.end());
+    client.SendMessage(messageAsVector);
+    auto wasClosed = closed->get_future();
+    EXPECT_EQ(
+        std::future_status::ready,
+        wasClosed.wait_for(std::chrono::milliseconds(1000))
+    );
 }

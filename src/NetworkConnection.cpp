@@ -15,7 +15,9 @@
 
 namespace SystemAbstractions {
 
-    NetworkConnection::~NetworkConnection() noexcept = default;
+    NetworkConnection::~NetworkConnection() noexcept {
+        Close(false);
+    }
 
     NetworkConnection::NetworkConnection()
         : impl_(new Impl())

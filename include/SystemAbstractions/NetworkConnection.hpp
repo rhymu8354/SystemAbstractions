@@ -95,7 +95,7 @@ namespace SystemAbstractions {
         /**
          * This contains the private properties of the instance.
          */
-        std::unique_ptr< Impl > impl_;
+        std::shared_ptr< Impl > impl_;
     };
 
 }

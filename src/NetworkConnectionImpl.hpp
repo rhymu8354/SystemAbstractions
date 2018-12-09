@@ -22,7 +22,9 @@ namespace SystemAbstractions {
      * This structure contains the private properties of the
      * NetworkConnection class.
      */
-    struct NetworkConnection::Impl {
+    struct NetworkConnection::Impl
+        : public std::enable_shared_from_this< NetworkConnection::Impl >
+    {
         // Types
 
         /**
