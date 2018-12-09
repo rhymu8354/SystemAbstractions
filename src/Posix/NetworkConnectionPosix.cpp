@@ -253,6 +253,11 @@ namespace SystemAbstractions {
                 }
                 if (platform->peerClosed) {
                     CloseImmediately();
+                    if (brokenDelegate != nullptr) {
+                        processingLock.unlock();
+                        brokenDelegate(false);
+                        processingLock.lock();
+                    }
                 }
             }
         }
@@ -301,9 +306,6 @@ namespace SystemAbstractions {
             1,
             "closed connection"
         );
-        if (brokenDelegate != nullptr) {
-            brokenDelegate(false);
-        }
     }
 
     uint32_t NetworkConnection::Impl::GetAddressOfHost(const std::string& host) {
