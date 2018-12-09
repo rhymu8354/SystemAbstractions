@@ -86,14 +86,11 @@ namespace SystemAbstractions {
         ) -> Buffer {
             Buffer buffer;
             auto nextElement = elements.begin();
-            auto bytesLeftFromQueue = totalBytes;
-            while (
-                (numBytesRequested > 0)
-                && (bytesLeftFromQueue > 0)
-            ) {
+            auto bytesLeftFromQueue = std::min(numBytesRequested, totalBytes);
+            while (bytesLeftFromQueue > 0) {
                 if (
                     (nextElement->consumed == 0)
-                    && (nextElement->data.size() == numBytesRequested)
+                    && (nextElement->data.size() == bytesLeftFromQueue)
                     && buffer.empty()
                 ) {
                     if (returnData) {
@@ -105,13 +102,12 @@ namespace SystemAbstractions {
                     }
                     if (removeData) {
                         nextElement = elements.erase(nextElement);
-                        totalBytes -= numBytesRequested;
-                        bytesLeftFromQueue -= numBytesRequested;
+                        totalBytes -= bytesLeftFromQueue;
                     }
                     break;
                 }
                 const auto bytesToConsume = std::min(
-                    numBytesRequested,
+                    bytesLeftFromQueue,
                     nextElement->data.size() - nextElement->consumed
                 );
                 if (returnData) {
@@ -121,7 +117,6 @@ namespace SystemAbstractions {
                         nextElement->data.begin() + nextElement->consumed + bytesToConsume
                     );
                 }
-                numBytesRequested -= bytesToConsume;
                 bytesLeftFromQueue -= bytesToConsume;
                 if (removeData) {
                     nextElement->consumed += bytesToConsume;
