@@ -153,7 +153,7 @@ namespace SystemAbstractions {
         impl_->platform->handle = CreateFileA(
             impl_->path.c_str(),
             GENERIC_READ,
-            FILE_SHARE_READ,
+            FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
             NULL,
             OPEN_EXISTING,
             FILE_ATTRIBUTE_NORMAL,
