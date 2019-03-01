@@ -50,7 +50,7 @@ namespace SystemAbstractions {
          *
          * @param[in] level
          *     This is used to filter out less-important information.
-         *     The level is higher the more important the information is.
+         *     The higher the level, the more important the information is.
          *
          * @param[in] message
          *     This is the content of the message.
