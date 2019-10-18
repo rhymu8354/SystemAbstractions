@@ -275,6 +275,23 @@ namespace SystemAbstractions {
          */
         static std::vector< std::string > GetDirectoryRoots();
 
+        /**
+         * Return the current working directory of the process.
+         *
+         * @return
+         *     The current working directory of the process is returned.
+         */
+        static std::string GetWorkingDirectory();
+
+        /**
+         * Change the current working directory of the process.
+         *
+         * @param[in] workingDirectory
+         *     This is the directory to set as the current working
+         *     directory for the process.
+         */
+        static void SetWorkingDirectory(const std::string& workingDirectory);
+
         // IFile
     public:
         virtual uint64_t GetSize() const override;

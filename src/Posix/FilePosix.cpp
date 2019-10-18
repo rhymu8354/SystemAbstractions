@@ -213,7 +213,7 @@ namespace SystemAbstractions {
         if (
             (directoryWithSeparator.length() > 0)
             && (directoryWithSeparator[directoryWithSeparator.length() - 1] != '/')
-            ) {
+        ) {
             directoryWithSeparator += '/';
         }
         list.clear();
@@ -356,6 +356,16 @@ namespace SystemAbstractions {
 
     std::vector< std::string > File::GetDirectoryRoots() {
         return {"/"};
+    }
+
+    std::string File::GetWorkingDirectory() {
+        std::vector< char > workingDirectory(MAXPATHLEN);
+        (void)getcwd(&workingDirectory[0], workingDirectory.size());
+        return std::string(&workingDirectory[0]);
+    }
+
+    void File::SetWorkingDirectory(const std::string& workingDirectory) {
+        (void)chdir(workingDirectory.c_str());
     }
 
     uint64_t File::GetSize() const {

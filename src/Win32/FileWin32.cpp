@@ -437,6 +437,16 @@ namespace SystemAbstractions {
         }
     }
 
+    std::string File::GetWorkingDirectory() {
+        std::vector< char > workingDirectory(MAX_PATH);
+        (void)GetCurrentDirectoryA((DWORD)workingDirectory.size(), &workingDirectory[0]);
+        return FixPathDelimiters(&workingDirectory[0]);
+    }
+
+    void File::SetWorkingDirectory(const std::string& workingDirectory) {
+        (void)SetCurrentDirectoryA(workingDirectory.c_str());
+    }
+
     uint64_t File::GetSize() const {
         LARGE_INTEGER size;
         if (GetFileSizeEx(impl_->platform->handle, &size) == 0) {

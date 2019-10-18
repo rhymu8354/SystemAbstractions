@@ -27,6 +27,11 @@ struct FileTests
      */
     std::string testAreaPath;
 
+    /**
+     * This is the working directory of the process before each test is run.
+     */
+    std::string originalWorkingDirectory;
+
     // Methods
 
     // ::testing::Test
@@ -34,9 +39,11 @@ struct FileTests
     virtual void SetUp() {
         testAreaPath = SystemAbstractions::File::GetExeParentDirectory() + "/TestArea";
         ASSERT_TRUE(SystemAbstractions::File::CreateDirectory(testAreaPath));
+        originalWorkingDirectory = SystemAbstractions::File::GetWorkingDirectory();
     }
 
     virtual void TearDown() {
+        SystemAbstractions::File::SetWorkingDirectory(originalWorkingDirectory);
         bool failedToDeleteTestArea = true;
         for (size_t i = 0; i < 10; ++i) {
             if (SystemAbstractions::File::DeleteDirectory(testAreaPath)) {
@@ -495,4 +502,19 @@ TEST_F(FileTests, IsAbsolutePath) {
             SystemAbstractions::File::IsAbsolutePath(testVector.path)
         );
     }
+}
+
+TEST_F(FileTests, WorkingDirectory) {
+    SystemAbstractions::File::SetWorkingDirectory(
+        SystemAbstractions::File::GetExeParentDirectory()
+    );
+    EXPECT_EQ(
+        SystemAbstractions::File::GetExeParentDirectory(),
+        SystemAbstractions::File::GetWorkingDirectory()
+    );
+    SystemAbstractions::File::SetWorkingDirectory("TestArea");
+    EXPECT_EQ(
+        testAreaPath,
+        SystemAbstractions::File::GetWorkingDirectory()
+    );
 }
