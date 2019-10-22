@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <string>
 #include <string.h>
+#include <sys/param.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <SystemAbstractions/File.hpp>
