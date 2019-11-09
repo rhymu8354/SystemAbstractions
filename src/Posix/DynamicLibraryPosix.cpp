@@ -12,9 +12,9 @@
 #include <assert.h>
 #include <dlfcn.h>
 #include <string>
+#include <StringExtensions/StringExtensions.hpp>
 #include <sys/param.h>
 #include <SystemAbstractions/DynamicLibrary.hpp>
-#include <SystemAbstractions/StringExtensions.hpp>
 #include <unistd.h>
 #include <vector>
 
@@ -49,7 +49,7 @@ namespace SystemAbstractions {
         std::vector< char > originalPath(MAXPATHLEN);
         (void)getcwd(&originalPath[0], originalPath.size());
         (void)chdir(path.c_str());
-        const auto library = SystemAbstractions::sprintf(
+        const auto library = StringExtensions::sprintf(
             "%s/lib%s.%s",
             path.c_str(),
             name.c_str(),

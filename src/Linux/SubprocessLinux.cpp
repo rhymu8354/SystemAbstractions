@@ -18,6 +18,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
+#include <StringExtensions/StringExtensions.hpp>
 #include <sys/select.h>
 #include <sys/stat.h>
 #include <sys/time.h>
@@ -25,7 +26,6 @@
 #include <sys/wait.h>
 #include <SystemAbstractions/File.hpp>
 #include <SystemAbstractions/Subprocess.hpp>
-#include <SystemAbstractions/StringExtensions.hpp>
 #include <thread>
 #include <unistd.h>
 #include <vector>
@@ -106,7 +106,7 @@ namespace SystemAbstractions {
         for (auto& process: processes) {
             std::vector< std::string > fds;
             const std::string fdsDir(
-                SystemAbstractions::sprintf(
+                StringExtensions::sprintf(
                     "/proc/%u/fd/",
                     process.id
                 )

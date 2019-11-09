@@ -7,14 +7,14 @@
  * © 2014-2018 by Richard Walters
  */
 
-#include <SystemAbstractions/DiagnosticsSender.hpp>
-#include <SystemAbstractions/StringExtensions.hpp>
-
 #include <algorithm>
 #include <deque>
 #include <limits>
 #include <map>
 #include <mutex>
+#include <StringExtensions/StringExtensions.hpp>
+#include <SystemAbstractions/DiagnosticsSender.hpp>
+
 
 namespace {
 
@@ -218,7 +218,7 @@ namespace SystemAbstractions {
         }
         va_list args;
         va_start(args, format);
-        const std::string message = SystemAbstractions::vsprintf(format, args);
+        const std::string message = StringExtensions::vsprintf(format, args);
         va_end(args);
         impl_->SendDiagnosticInformationString(level, message);
     }

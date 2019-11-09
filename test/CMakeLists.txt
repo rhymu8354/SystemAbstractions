@@ -17,7 +17,6 @@ set(Sources
     src/FileTests.cpp
     src/NetworkConnectionTests.cpp
     src/NetworkEndpointTests.cpp
-    src/StringExtensionsTests.cpp
     src/StringFileTests.cpp
     src/SubprocessTests.cpp
 )
@@ -33,6 +32,7 @@ target_compile_definitions(${This} PRIVATE CLIPBOARD_REVEAL_OS_API)
 
 target_link_libraries(${This} PUBLIC
     gtest_main
+    StringExtensions
     SystemAbstractions
 )
 

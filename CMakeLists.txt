@@ -20,7 +20,6 @@ set(Headers
     include/SystemAbstractions/NetworkConnection.hpp
     include/SystemAbstractions/NetworkEndpoint.hpp
     include/SystemAbstractions/Service.hpp
-    include/SystemAbstractions/StringExtensions.hpp
     include/SystemAbstractions/StringFile.hpp
     include/SystemAbstractions/Subprocess.hpp
     include/SystemAbstractions/TargetInfo.hpp
@@ -39,7 +38,6 @@ set(Sources
     src/NetworkConnectionImpl.hpp
     src/NetworkEndpoint.cpp
     src/NetworkEndpointImpl.hpp
-    src/StringExtensions.cpp
     src/StringFile.cpp
     src/SubprocessInternal.hpp
 )
@@ -110,6 +108,10 @@ endif(UNIX)
 add_library(${This} STATIC ${Sources} ${Headers})
 set_target_properties(${This} PROPERTIES
     FOLDER Libraries
+)
+
+target_link_libraries(${This} PUBLIC
+    StringExtensions
 )
 
 if(APPLE)

@@ -26,8 +26,6 @@ The `SystemAbstractions::NetworkConnection` class is an abstraction of a connect
 
 The `SystemAbstractions::NetworkEndpoint` class is an abstraction of a connection-oriented or datagram-oriented "socket" or "socket-like" object representing a service provided by the program that is accessible by other programs and machines on the same network or a remote network.
 
-The `SystemAbstractions::StringExtensions` module contains numerous utilities which extend the standard C++ string class, `std::string`.
-
 The `SystemAbstractions::StringFile` class is an implementation of the `SystemAbstractions::IFile` interface in terms of a string in memory.
 
 The `SystemAbstractions::Subprocess` class is a cross-platform utility for starting a child process and forming a parent-child connection (typically implemented as a pipe or socket in shared memory) in order for the parent process to monitor the child process for when it exits normally or crashes.
@@ -57,6 +55,9 @@ There are two distinct steps in the build process:
 
 * [CMake](https://cmake.org/) version 3.8 or newer
 * C++11 toolchain compatible with CMake for your development platform (e.g. [Visual Studio](https://www.visualstudio.com/) on Windows)
+* [StringExtensions](https://github.com/rhymu8354/StringExtensions.git) - a
+  library containing C++ string-oriented libraries, many of which ought to be
+  in the standard library, but aren't.
 
 ### Build system generation
 

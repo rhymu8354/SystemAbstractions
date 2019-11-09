@@ -10,8 +10,8 @@
 #include "NetworkConnectionImpl.hpp"
 
 #include <inttypes.h>
+#include <StringExtensions/StringExtensions.hpp>
 #include <SystemAbstractions/NetworkConnection.hpp>
-#include <SystemAbstractions/StringExtensions.hpp>
 
 namespace SystemAbstractions {
 

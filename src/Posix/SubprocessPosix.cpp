@@ -20,6 +20,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
+#include <StringExtensions/StringExtensions.hpp>
 #include <sys/select.h>
 #include <sys/stat.h>
 #include <sys/time.h>
@@ -27,7 +28,6 @@
 #include <sys/wait.h>
 #include <SystemAbstractions/File.hpp>
 #include <SystemAbstractions/Subprocess.hpp>
-#include <SystemAbstractions/StringExtensions.hpp>
 #include <thread>
 #include <unistd.h>
 #include <vector>
@@ -182,7 +182,7 @@ namespace SystemAbstractions {
         std::vector< std::vector< char > > childArgs;
         childArgs.emplace_back(VectorFromString(program));
         childArgs.emplace_back(VectorFromString("child"));
-        childArgs.emplace_back(VectorFromString(SystemAbstractions::sprintf("%d", pipeEnds[1])));
+        childArgs.emplace_back(VectorFromString(StringExtensions::sprintf("%d", pipeEnds[1])));
         for (const auto arg: args) {
             childArgs.emplace_back(VectorFromString(arg));
         }

@@ -17,9 +17,9 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string>
+#include <StringExtensions/StringExtensions.hpp>
 #include <SystemAbstractions/NetworkConnection.hpp>
 #include <SystemAbstractions/NetworkEndpoint.hpp>
-#include <SystemAbstractions/StringExtensions.hpp>
 #include <thread>
 #include <time.h>
 #include <vector>
@@ -414,7 +414,7 @@ struct NetworkConnectionTests
                 std::string message
             ){
                 diagnosticMessages.push_back(
-                    SystemAbstractions::sprintf(
+                    StringExtensions::sprintf(
                         "%s[%zu]: %s",
                         senderName.c_str(),
                         level,

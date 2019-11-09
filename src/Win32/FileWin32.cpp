@@ -17,9 +17,6 @@
 
 #include "../FileImpl.hpp"
 
-#include <SystemAbstractions/File.hpp>
-#include <SystemAbstractions/StringExtensions.hpp>
-
 #include <io.h>
 #include <KnownFolders.h>
 #include <memory>
@@ -28,6 +25,8 @@
 #include <Shlwapi.h>
 #include <stddef.h>
 #include <stdio.h>
+#include <StringExtensions/StringExtensions.hpp>
+#include <SystemAbstractions/File.hpp>
 
 // Ensure we link with Windows shell utility libraries.
 #pragma comment(lib, "Shlwapi")
@@ -240,7 +239,7 @@ namespace SystemAbstractions {
     }
 
     std::string File::GetResourceFilePath(const std::string& name) {
-        return SystemAbstractions::sprintf("%s/%s", GetExeParentDirectory().c_str(), name.c_str());
+        return StringExtensions::sprintf("%s/%s", GetExeParentDirectory().c_str(), name.c_str());
     }
 
     std::string File::GetUserHomeDirectory() {
@@ -248,7 +247,7 @@ namespace SystemAbstractions {
         if (SHGetKnownFolderPath(FOLDERID_Profile, 0, NULL, &pathWide) != S_OK) {
             return "";
         }
-        std::string pathNarrow(SystemAbstractions::wcstombs(pathWide));
+        std::string pathNarrow(StringExtensions::wcstombs(pathWide));
         CoTaskMemFree(pathWide);
         return pathNarrow;
     }
@@ -258,9 +257,9 @@ namespace SystemAbstractions {
         if (SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, NULL, &pathWide) != S_OK) {
             return "";
         }
-        std::string pathNarrow(SystemAbstractions::wcstombs(pathWide));
+        std::string pathNarrow(StringExtensions::wcstombs(pathWide));
         CoTaskMemFree(pathWide);
-        return SystemAbstractions::sprintf("%s/%s", pathNarrow.c_str(), nameKey.c_str());
+        return StringExtensions::sprintf("%s/%s", pathNarrow.c_str(), nameKey.c_str());
     }
 
     std::string File::GetUserSavedGamesDirectory(const std::string& nameKey) {
@@ -268,9 +267,9 @@ namespace SystemAbstractions {
         if (SHGetKnownFolderPath(FOLDERID_SavedGames, 0, NULL, &pathWide) != S_OK) {
             return "";
         }
-        std::string pathNarrow(SystemAbstractions::wcstombs(pathWide));
+        std::string pathNarrow(StringExtensions::wcstombs(pathWide));
         CoTaskMemFree(pathWide);
-        return SystemAbstractions::sprintf("%s/%s", pathNarrow.c_str(), nameKey.c_str());
+        return StringExtensions::sprintf("%s/%s", pathNarrow.c_str(), nameKey.c_str());
     }
 
     void File::ListDirectory(const std::string& directory, std::vector< std::string >& list) {

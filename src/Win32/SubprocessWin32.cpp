@@ -23,8 +23,8 @@
 #include <signal.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <StringExtensions/StringExtensions.hpp>
 #include <SystemAbstractions/Subprocess.hpp>
-#include <SystemAbstractions/StringExtensions.hpp>
 #include <thread>
 #pragma comment(lib, "IPHlpApi")
 
@@ -257,7 +257,7 @@ namespace SystemAbstractions {
 
         std::vector< std::string > childArgs;
         childArgs.push_back("child");
-        childArgs.push_back(SystemAbstractions::sprintf("%" PRIu64, (uint64_t)childPipe));
+        childArgs.push_back(StringExtensions::sprintf("%" PRIu64, (uint64_t)childPipe));
         childArgs.insert(childArgs.end(), args.begin(), args.end());
 
         auto commandLine = MakeCommandLine(program, childArgs);
