@@ -230,7 +230,7 @@ TEST_F(SubprocessTests, FileHandlesNotInherited) {
     );
     (void)owner.AwaitExited();
     SystemAbstractions::File handlesReport(testAreaPath + "/handles");
-    ASSERT_TRUE(handlesReport.Open());
+    ASSERT_TRUE(handlesReport.OpenReadOnly());
     std::vector< char > handles(handlesReport.GetSize());
     (void)handlesReport.Read(handles.data(), handles.size());
     EXPECT_EQ(0, handles.size()) << std::string(handles.begin(), handles.end());
@@ -308,7 +308,7 @@ TEST_F(SubprocessTests, Detached) {
     // Linux and Mac targets also know what file handles are open, so check to
     // make sure none are in the detached process.
     SystemAbstractions::File handlesReport(testAreaPath + "/handles");
-    ASSERT_TRUE(handlesReport.Open());
+    ASSERT_TRUE(handlesReport.OpenReadOnly());
     std::vector< char > handles(handlesReport.GetSize());
     (void)handlesReport.Read(handles.data(), handles.size());
     EXPECT_EQ(0, handles.size()) << std::string(handles.begin(), handles.end());

@@ -104,7 +104,7 @@ namespace SystemAbstractions {
         }
     }
 
-    bool File::Open() {
+    bool File::OpenReadOnly() {
         Close();
         impl_->platform->handle = open(impl_->path.c_str(), O_RDONLY);
         impl_->platform->writeAccess = false;
@@ -119,7 +119,7 @@ namespace SystemAbstractions {
         impl_->platform->handle = -1;
     }
 
-    bool File::Create() {
+    bool File::OpenReadWrite() {
         Close();
         impl_->platform->writeAccess = true;
         impl_->platform->handle = open(
@@ -158,14 +158,14 @@ namespace SystemAbstractions {
 
     bool File::Copy(const std::string& destination) {
         if (impl_->platform->handle < 0) {
-            if (!Open()) {
+            if (!OpenReadOnly()) {
                 return false;
             }
         } else {
             SetPosition(0);
         }
         File newFile(destination);
-        if (!newFile.Create()) {
+        if (!newFile.OpenReadWrite()) {
             return false;
         }
         IFile::Buffer buffer(MAX_BLOCK_COPY_SIZE);

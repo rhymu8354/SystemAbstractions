@@ -147,7 +147,7 @@ namespace SystemAbstractions {
         return true;
     }
 
-    bool File::Open() {
+    bool File::OpenReadOnly() {
         Close();
         impl_->platform->handle = CreateFileA(
             impl_->path.c_str(),
@@ -167,7 +167,7 @@ namespace SystemAbstractions {
         impl_->platform->handle = INVALID_HANDLE_VALUE;
     }
 
-    bool File::Create() {
+    bool File::OpenReadWrite() {
         Close();
         bool createPathTried = false;
         while (impl_->platform->handle == INVALID_HANDLE_VALUE) {

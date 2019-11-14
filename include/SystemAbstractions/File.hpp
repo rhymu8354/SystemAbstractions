@@ -67,7 +67,7 @@ namespace SystemAbstractions {
          *     A flag indicating whether or not the method succeeded
          *     is returned.
          */
-        bool Open();
+        bool OpenReadOnly();
 
         /**
          * This method closes the file, applying any changes made to it.
@@ -82,7 +82,7 @@ namespace SystemAbstractions {
          *     A flag indicating whether or not the method succeeded
          *     is returned.
          */
-        bool Create();
+        bool OpenReadWrite();
 
         /**
          * This method destroys the file in the file system.

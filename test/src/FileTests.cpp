@@ -66,18 +66,18 @@ TEST_F(FileTests, BasicFileMethods) {
     SystemAbstractions::File file(testFilePath);
     ASSERT_FALSE(file.IsExisting());
     ASSERT_FALSE(file.IsDirectory());
-    ASSERT_FALSE(file.Open());
+    ASSERT_FALSE(file.OpenReadOnly());
     ASSERT_TRUE(testArea.IsExisting());
     ASSERT_TRUE(testArea.IsDirectory());
 
     // Create file and verify it exists.
-    ASSERT_TRUE(file.Create());
+    ASSERT_TRUE(file.OpenReadWrite());
     ASSERT_TRUE(file.IsExisting());
     ASSERT_FALSE(file.IsDirectory());
     file.Close();
 
     // We should be able to open the file now that it exists.
-    ASSERT_TRUE(file.Open());
+    ASSERT_TRUE(file.OpenReadOnly());
     file.Close();
 
     // Now destroy the file and verify it not longer exists.
@@ -85,7 +85,7 @@ TEST_F(FileTests, BasicFileMethods) {
     ASSERT_FALSE(file.IsExisting());
 
     // Check that we can move the file while it's open.
-    ASSERT_TRUE(file.Create());
+    ASSERT_TRUE(file.OpenReadWrite());
     ASSERT_TRUE(file.IsExisting());
     ASSERT_EQ(testFilePath, file.GetPath());
     {
@@ -114,7 +114,7 @@ TEST_F(FileTests, BasicFileMethods) {
 
     // Check that we can move the file while it's not open.
     file = SystemAbstractions::File(testFilePath);
-    ASSERT_TRUE(file.Create());
+    ASSERT_TRUE(file.OpenReadWrite());
     file.Close();
     ASSERT_TRUE(file.IsExisting());
     ASSERT_EQ(testFilePath, file.GetPath());
@@ -143,7 +143,7 @@ TEST_F(FileTests, BasicFileMethods) {
 
     // Check that we can copy a file.
     file = SystemAbstractions::File(testFilePath);
-    ASSERT_TRUE(file.Create());
+    ASSERT_TRUE(file.OpenReadWrite());
     const std::string testString = "Hello, World\r\n";
     ASSERT_EQ(testString.length(), file.Write(testString.data(), testString.length()));
     {
@@ -151,7 +151,7 @@ TEST_F(FileTests, BasicFileMethods) {
         ASSERT_FALSE(file2.IsExisting());
         ASSERT_TRUE(file.Copy(file2.GetPath()));
         ASSERT_TRUE(file2.IsExisting());
-        ASSERT_TRUE(file2.Open());
+        ASSERT_TRUE(file2.OpenReadOnly());
         SystemAbstractions::IFile::Buffer buffer(file2.GetSize());
         ASSERT_EQ(buffer.size(), file2.Read(buffer));
         ASSERT_EQ(testString, std::string(buffer.begin(), buffer.end()));
@@ -168,7 +168,7 @@ TEST_F(FileTests, DirectoryTests) {
     SystemAbstractions::File testArea(testAreaPath);
     const std::string testFilePath = testAreaPath + "/foo.txt";
     SystemAbstractions::File file(testFilePath);
-    ASSERT_TRUE(file.Create());
+    ASSERT_TRUE(file.OpenReadWrite());
     const std::string testString = "Hello, World\r\n";
     ASSERT_EQ(testString.length(), file.Write(testString.data(), testString.length()));
     SystemAbstractions::File file2(testFilePath + "2");
@@ -182,7 +182,7 @@ TEST_F(FileTests, DirectoryTests) {
     ASSERT_TRUE(sub.IsDirectory());
     const std::string testSubFilePath = subPath + "/bar.txt";
     SystemAbstractions::File file3(testSubFilePath);
-    ASSERT_TRUE(file3.Create());
+    ASSERT_TRUE(file3.OpenReadWrite());
     const std::string testString2 = "Something else!\r\n";
     ASSERT_EQ(testString2.length(), file3.Write(testString2.data(), testString2.length()));
     file3.Close();
@@ -206,7 +206,7 @@ TEST_F(FileTests, DirectoryTests) {
     ASSERT_TRUE(sub2.IsExisting());
     const std::string testSubFilePath2 = subPath2 + "/bar.txt";
     SystemAbstractions::File file4(testSubFilePath2);
-    ASSERT_TRUE(file4.Open());
+    ASSERT_TRUE(file4.OpenReadOnly());
     SystemAbstractions::IFile::Buffer buffer(file4.GetSize());
     ASSERT_EQ(buffer.size(), file4.Read(buffer));
     ASSERT_EQ(testString2, std::string(buffer.begin(), buffer.end()));
@@ -234,7 +234,7 @@ TEST_F(FileTests, RepurposeFileObject) {
 TEST_F(FileTests, WriteAndReadBack) {
     const std::string testFilePath = testAreaPath + "/foo.txt";
     SystemAbstractions::File file(testFilePath);
-    ASSERT_TRUE(file.Create());
+    ASSERT_TRUE(file.OpenReadWrite());
     const std::string testString = "Hello, World!\r\n";
     ASSERT_EQ(
         testString.length(),
@@ -258,7 +258,7 @@ TEST_F(FileTests, WriteAndReadBack) {
 TEST_F(FileTests, ReadBackWithSizeAndOffsets) {
     const std::string testFilePath = testAreaPath + "/foo.txt";
     SystemAbstractions::File file(testFilePath);
-    ASSERT_TRUE(file.Create());
+    ASSERT_TRUE(file.OpenReadWrite());
     const std::string testString = "Hello, World!\r\n";
     (void)file.Write(testString.data(), testString.length());
     file.SetPosition(7);
@@ -276,7 +276,7 @@ TEST_F(FileTests, ReadBackWithSizeAndOffsets) {
 TEST_F(FileTests, ReadAdvancesFilePointer) {
     const std::string testFilePath = testAreaPath + "/foo.txt";
     SystemAbstractions::File file(testFilePath);
-    ASSERT_TRUE(file.Create());
+    ASSERT_TRUE(file.OpenReadWrite());
     const std::string testString = "Hello, World!";
     (void)file.Write(testString.data(), testString.length());
     file.SetPosition(0);
@@ -322,7 +322,7 @@ TEST_F(FileTests, ReadAdvancesFilePointer) {
 TEST_F(FileTests, PeakDoesNotAdvancesFilePointer) {
     const std::string testFilePath = testAreaPath + "/foo.txt";
     SystemAbstractions::File file(testFilePath);
-    ASSERT_TRUE(file.Create());
+    ASSERT_TRUE(file.OpenReadWrite());
     const std::string testString = "Hello, World!\r\n";
     (void)file.Write(testString.data(), testString.length());
     file.SetPosition(0);
@@ -368,7 +368,7 @@ TEST_F(FileTests, PeakDoesNotAdvancesFilePointer) {
 TEST_F(FileTests, GetSize) {
     const std::string testFilePath = testAreaPath + "/foo.txt";
     SystemAbstractions::File file(testFilePath);
-    ASSERT_TRUE(file.Create());
+    ASSERT_TRUE(file.OpenReadWrite());
     const std::string testString = "Hello, World!\r\n";
     ASSERT_EQ(0, file.GetSize());
     (void)file.Write(testString.data(), testString.length());
@@ -378,7 +378,7 @@ TEST_F(FileTests, GetSize) {
 TEST_F(FileTests, SetSize) {
     const std::string testFilePath = testAreaPath + "/foo.txt";
     SystemAbstractions::File file(testFilePath);
-    ASSERT_TRUE(file.Create());
+    ASSERT_TRUE(file.OpenReadWrite());
     const std::string testString = "Hello, World!\r\n";
     (void)file.Write(testString.data(), testString.length());
     ASSERT_TRUE(file.SetSize(5));
@@ -418,7 +418,7 @@ TEST_F(FileTests, SetSize) {
 TEST_F(FileTests, Clone) {
     const std::string testFilePath = testAreaPath + "/foo.txt";
     SystemAbstractions::File file(testFilePath);
-    ASSERT_TRUE(file.Create());
+    ASSERT_TRUE(file.OpenReadWrite());
     const std::string testString = "Hello, World!\r\n";
     (void)file.Write(testString.data(), testString.length());
     file.SetPosition(0);
@@ -443,7 +443,7 @@ TEST_F(FileTests, Clone) {
 TEST_F(FileTests, WriteBeyondEndAndIntoMiddle) {
     const std::string testFilePath = testAreaPath + "/foo.txt";
     SystemAbstractions::File file(testFilePath);
-    ASSERT_TRUE(file.Create());
+    ASSERT_TRUE(file.OpenReadWrite());
     const std::string testString = "Hello, World!\r\n";
     (void)file.Write(testString.data(), 5);
     file.SetPosition(7);

@@ -82,7 +82,7 @@ int main(int argc, char* argv[]) {
             }
         }
         SystemAbstractions::File handlesReport(SystemAbstractions::File::GetExeParentDirectory() + "/TestArea/handles");
-        (void)handlesReport.Create();
+        (void)handlesReport.OpenReadWrite();
         const auto reportString = report.str();
         (void)handlesReport.Write(reportString.data(), reportString.length());
 #endif /* various platforms */
@@ -139,7 +139,7 @@ int main(int argc, char* argv[]) {
             }
         }
         SystemAbstractions::File handlesReport(SystemAbstractions::File::GetExeParentDirectory() + "/TestArea/handles");
-        (void)handlesReport.Create();
+        (void)handlesReport.OpenReadWrite();
         const auto reportString = report.str();
         (void)handlesReport.Write(reportString.data(), reportString.length());
 #endif /* various platforms */
