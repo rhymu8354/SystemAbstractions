@@ -117,10 +117,10 @@ target_link_libraries(${This} PUBLIC
 if(APPLE)
     find_library(AppKit AppKit)
     find_library(CF CoreFoundation)
-    target_link_libraries(${This} ${CF} ${AppKit})
+    target_link_libraries(${This} PUBLIC ${CF} ${AppKit})
 endif(APPLE)
 if(UNIX)
-    target_link_libraries(${This}
+    target_link_libraries(${This} PUBLIC
         pthread
         dl
     )
