@@ -25,24 +25,24 @@ namespace SystemAbstractions {
     };
 
     DynamicLibrary::~DynamicLibrary() {
-        if (_impl == nullptr) {
+        if (impl_ == nullptr) {
             return;
         }
         Unload();
     }
 
     DynamicLibrary::DynamicLibrary(DynamicLibrary&& other) noexcept
-        : _impl(std::move(other._impl))
+        : impl_(std::move(other.impl_))
     {
     }
 
     DynamicLibrary& DynamicLibrary::operator=(DynamicLibrary&& other) noexcept {
-        _impl = std::move(other._impl);
+        impl_ = std::move(other.impl_);
         return *this;
     }
 
     DynamicLibrary::DynamicLibrary()
-        : _impl(new DynamicLibraryImpl())
+        : impl_(new DynamicLibraryImpl())
     {
     }
 
@@ -52,20 +52,20 @@ namespace SystemAbstractions {
         (void)GetCurrentDirectoryA((DWORD)originalPath.size(), &originalPath[0]);
         (void)SetCurrentDirectoryA(path.c_str());
         const auto library = StringExtensions::sprintf("%s/%s.dll", path.c_str(), name.c_str());
-        _impl->libraryHandle = LoadLibraryA(library.c_str());
+        impl_->libraryHandle = LoadLibraryA(library.c_str());
         (void)SetCurrentDirectoryA(&originalPath[0]);
-        return (_impl->libraryHandle != NULL);
+        return (impl_->libraryHandle != NULL);
     }
 
     void DynamicLibrary::Unload() {
-        if (_impl->libraryHandle != NULL) {
-            (void)FreeLibrary(_impl->libraryHandle);
-            _impl->libraryHandle = NULL;
+        if (impl_->libraryHandle != NULL) {
+            (void)FreeLibrary(impl_->libraryHandle);
+            impl_->libraryHandle = NULL;
         }
     }
 
     void* DynamicLibrary::GetProcedure(const std::string& name) {
-        return GetProcAddress(_impl->libraryHandle, name.c_str());
+        return GetProcAddress(impl_->libraryHandle, name.c_str());
     }
 
     std::string DynamicLibrary::GetLastError() {

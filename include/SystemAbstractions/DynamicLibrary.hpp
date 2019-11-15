@@ -94,7 +94,7 @@ namespace SystemAbstractions {
 
         // Private properties
     private:
-        std::unique_ptr< struct DynamicLibraryImpl > _impl;
+        std::unique_ptr< struct DynamicLibraryImpl > impl_;
     };
 
 }

@@ -83,7 +83,7 @@ namespace SystemAbstractions {
         /**
          * This contains the private properties of the instance.
          */
-         std::unique_ptr< struct PipeSignalImpl > _impl;
+         std::unique_ptr< struct PipeSignalImpl > impl_;
     };
 
 }

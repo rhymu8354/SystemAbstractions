@@ -21,18 +21,18 @@
 namespace SystemAbstractions {
 
     DynamicLibrary::DynamicLibrary()
-        : _impl(new DynamicLibraryImpl())
+        : impl_(new DynamicLibraryImpl())
     {
     }
 
 
     DynamicLibrary::DynamicLibrary(DynamicLibrary&& other) noexcept
-        : _impl(std::move(other._impl))
+        : impl_(std::move(other.impl_))
     {
     }
 
     DynamicLibrary::~DynamicLibrary() {
-        if (_impl == nullptr) {
+        if (impl_ == nullptr) {
             return;
         }
         Unload();
@@ -40,7 +40,7 @@ namespace SystemAbstractions {
 
     DynamicLibrary& DynamicLibrary::operator=(DynamicLibrary&& other) noexcept {
         assert(this != &other);
-        _impl = std::move(other._impl);
+        impl_ = std::move(other.impl_);
         return *this;
     }
 
@@ -55,20 +55,20 @@ namespace SystemAbstractions {
             name.c_str(),
             DynamicLibraryImpl::GetDynamicLibraryFileExtension().c_str()
         );
-        _impl->libraryHandle = dlopen(library.c_str(), RTLD_NOW);
+        impl_->libraryHandle = dlopen(library.c_str(), RTLD_NOW);
         (void)chdir(&originalPath[0]);
-        return (_impl->libraryHandle != NULL);
+        return (impl_->libraryHandle != NULL);
     }
 
     void DynamicLibrary::Unload() {
-        if (_impl->libraryHandle != NULL) {
-            (void)dlclose(_impl->libraryHandle);
-            _impl->libraryHandle = NULL;
+        if (impl_->libraryHandle != NULL) {
+            (void)dlclose(impl_->libraryHandle);
+            impl_->libraryHandle = NULL;
         }
     }
 
     void* DynamicLibrary::GetProcedure(const std::string& name) {
-        return dlsym(_impl->libraryHandle, name.c_str());
+        return dlsym(impl_->libraryHandle, name.c_str());
     }
 
     std::string DynamicLibrary::GetLastError() {

@@ -37,44 +37,44 @@ namespace SystemAbstractions {
     };
 
     PipeSignal::PipeSignal()
-        : _impl(new PipeSignalImpl())
+        : impl_(new PipeSignalImpl())
     {
     }
 
     PipeSignal::~PipeSignal() {
-        if (_impl->pipe[1] >= 0) {
-            (void)close(_impl->pipe[1]);
+        if (impl_->pipe[1] >= 0) {
+            (void)close(impl_->pipe[1]);
         }
-        if (_impl->pipe[0] >= 0) {
-            (void)close(_impl->pipe[0]);
+        if (impl_->pipe[0] >= 0) {
+            (void)close(impl_->pipe[0]);
         }
     }
 
     bool PipeSignal::Initialize() {
-        if (_impl->pipe[0] >= 0) {
+        if (impl_->pipe[0] >= 0) {
             return true;
         }
-        if (pipe(_impl->pipe) != 0) {
-            _impl->lastError = strerror(errno);
-            _impl->pipe[0] = -1;
-            _impl->pipe[1] = -1;
+        if (pipe(impl_->pipe) != 0) {
+            impl_->lastError = strerror(errno);
+            impl_->pipe[0] = -1;
+            impl_->pipe[1] = -1;
             return false;
         }
         for (int i = 0; i < 2; ++i) {
-            int flags = fcntl(_impl->pipe[i], F_GETFL, 0);
+            int flags = fcntl(impl_->pipe[i], F_GETFL, 0);
             if (flags < 0) {
-                (void)close(_impl->pipe[0]);
-                (void)close(_impl->pipe[1]);
-                _impl->pipe[0] = -1;
-                _impl->pipe[1] = -1;
+                (void)close(impl_->pipe[0]);
+                (void)close(impl_->pipe[1]);
+                impl_->pipe[0] = -1;
+                impl_->pipe[1] = -1;
                 return false;
             }
             flags |= O_NONBLOCK;
-            if (fcntl(_impl->pipe[i], F_SETFL, flags) < 0) {
-                (void)close(_impl->pipe[0]);
-                (void)close(_impl->pipe[1]);
-                _impl->pipe[0] = -1;
-                _impl->pipe[1] = -1;
+            if (fcntl(impl_->pipe[i], F_SETFL, flags) < 0) {
+                (void)close(impl_->pipe[0]);
+                (void)close(impl_->pipe[1]);
+                impl_->pipe[0] = -1;
+                impl_->pipe[1] = -1;
                 return false;
             }
         }
@@ -82,29 +82,29 @@ namespace SystemAbstractions {
     }
 
     std::string PipeSignal::GetLastError() const {
-        return _impl->lastError;
+        return impl_->lastError;
     }
 
     void PipeSignal::Set() {
         uint8_t token = 46; // '.' character, because why not?
-        (void)write(_impl->pipe[1], &token, 1);
+        (void)write(impl_->pipe[1], &token, 1);
     }
 
     void PipeSignal::Clear() {
         uint8_t token;
-        (void)read(_impl->pipe[0], &token, 1);
+        (void)read(impl_->pipe[0], &token, 1);
     }
 
     bool PipeSignal::IsSet() const {
         fd_set readfds;
         struct timeval timeout = {0};
         FD_ZERO(&readfds);
-        FD_SET(_impl->pipe[0], &readfds);
-        return (select(_impl->pipe[0] + 1, &readfds, NULL, NULL, &timeout) != 0);
+        FD_SET(impl_->pipe[0], &readfds);
+        return (select(impl_->pipe[0] + 1, &readfds, NULL, NULL, &timeout) != 0);
     }
 
     int PipeSignal::GetSelectHandle() const {
-        return _impl->pipe[0];
+        return impl_->pipe[0];
     }
 
 }
