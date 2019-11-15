@@ -467,7 +467,7 @@ TEST_F(NetworkConnectionTests, EstablishConnection) {
             newConnectionDelegate,
             packetReceivedDelegate,
             SystemAbstractions::NetworkEndpoint::Mode::Connection,
-            0,
+            0x7F000001,
             0,
             0
         )
@@ -532,7 +532,7 @@ TEST_F(NetworkConnectionTests, SendingMessage) {
             newConnectionDelegate,
             packetReceivedDelegate,
             SystemAbstractions::NetworkEndpoint::Mode::Connection,
-            0,
+            0x7F000001,
             0,
             0
         )
@@ -595,7 +595,7 @@ TEST_F(NetworkConnectionTests, ReceivingMessage) {
             newConnectionDelegate,
             packetReceivedDelegate,
             SystemAbstractions::NetworkEndpoint::Mode::Connection,
-            0,
+            0x7F000001,
             0,
             0
         )
@@ -670,7 +670,7 @@ TEST_F(NetworkConnectionTests, Close) {
             newConnectionDelegate,
             packetReceivedDelegate,
             SystemAbstractions::NetworkEndpoint::Mode::Connection,
-            0,
+            0x7F000001,
             0,
             0
         )
@@ -746,7 +746,7 @@ TEST_F(NetworkConnectionTests, CloseDuringBrokenConnectionCallback) {
             newConnectionDelegate,
             packetReceivedDelegate,
             SystemAbstractions::NetworkEndpoint::Mode::Connection,
-            0,
+            0x7F000001,
             0,
             0
         )
@@ -1397,7 +1397,7 @@ TEST_F(NetworkConnectionTests, ReleaseFromDelegate) {
         newConnectionDelegate,
         packetReceivedDelegate,
         SystemAbstractions::NetworkEndpoint::Mode::Connection,
-        0,
+        0x7F000001,
         0,
         0
     );
