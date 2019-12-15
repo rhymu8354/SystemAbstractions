@@ -63,7 +63,7 @@ namespace {
             } else {
                 commandLine.push_back('"');
                 int slashCount = 0;
-                for (int i = 0; i < arg.length(); ++i) {
+                for (int i = 0; i < (int)arg.length(); ++i) {
                     if (arg[i] == '\\') {
                         ++slashCount;
                     } else {

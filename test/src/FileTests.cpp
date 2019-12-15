@@ -152,7 +152,7 @@ TEST_F(FileTests, BasicFileMethods) {
         ASSERT_TRUE(file.Copy(file2.GetPath()));
         ASSERT_TRUE(file2.IsExisting());
         ASSERT_TRUE(file2.OpenReadOnly());
-        SystemAbstractions::IFile::Buffer buffer(file2.GetSize());
+        SystemAbstractions::IFile::Buffer buffer((size_t)file2.GetSize());
         ASSERT_EQ(buffer.size(), file2.Read(buffer));
         ASSERT_EQ(testString, std::string(buffer.begin(), buffer.end()));
         file2.Destroy();
@@ -207,7 +207,7 @@ TEST_F(FileTests, DirectoryTests) {
     const std::string testSubFilePath2 = subPath2 + "/bar.txt";
     SystemAbstractions::File file4(testSubFilePath2);
     ASSERT_TRUE(file4.OpenReadOnly());
-    SystemAbstractions::IFile::Buffer buffer(file4.GetSize());
+    SystemAbstractions::IFile::Buffer buffer((size_t)file4.GetSize());
     ASSERT_EQ(buffer.size(), file4.Read(buffer));
     ASSERT_EQ(testString2, std::string(buffer.begin(), buffer.end()));
     file4.Close();
