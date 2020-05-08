@@ -10,6 +10,7 @@
  */
 
 #include "IFile.hpp"
+#include "IFileSystemEntry.hpp"
 
 #include <memory>
 #include <string>
@@ -21,7 +22,7 @@ namespace SystemAbstractions {
      * This class represents a file accessed through the
      * native operating system.
      */
-    class File: public IFile {
+    class File: public IFileSystemEntry {
         // Lifecycle Management
     public:
         ~File() noexcept;
@@ -39,95 +40,6 @@ namespace SystemAbstractions {
          *     This is the path to the file in the file system.
          */
         File(std::string path);
-
-        /**
-         * This method is used to check if the file exists in the
-         * file system.
-         *
-         * @return
-         *     A flag is returned that indicates whether or not the
-         *     file exists in the file system.
-         */
-        bool IsExisting();
-
-        /**
-         * This method is used to check if the file is a directory.
-         *
-         * @return
-         *     A flag is returned that indicates whether or not the
-         *     file exists in the file system as a directory.
-         */
-        bool IsDirectory();
-
-        /**
-         * This method opens the file for reading, expecting it to
-         * already exist.
-         *
-         * @return
-         *     A flag indicating whether or not the method succeeded
-         *     is returned.
-         */
-        bool OpenReadOnly();
-
-        /**
-         * This method closes the file, applying any changes made to it.
-         */
-        void Close();
-
-        /**
-         * This method opens the file for reading and writing, creating
-         * it if it does not already exist.
-         *
-         * @return
-         *     A flag indicating whether or not the method succeeded
-         *     is returned.
-         */
-        bool OpenReadWrite();
-
-        /**
-         * This method destroys the file in the file system.
-         */
-        void Destroy();
-
-        /**
-         * This method moves the file to a new path in the file system.
-         *
-         * @param[in] newPath
-         *     This is the new path to which to move the file.
-         *
-         * @return
-         *     A flag indicating whether or not the method succeeded
-         *     is returned.
-         */
-        bool Move(const std::string& newPath);
-
-        /**
-         * This method copies the file to another location in the file system.
-         *
-         * @param[in] destination
-         *     This is the file name and path to create as a copy of the file.
-         *
-         * @return
-         *     A flag indicating whether or not the method succeeded
-         *     is returned.
-         */
-        bool Copy(const std::string& destination);
-
-        /**
-         * This method returns the time the file was last modified.
-         *
-         * @return
-         *     The time the file was last modified is returned.
-         */
-        time_t GetLastModifiedTime() const;
-
-        /**
-         * This method returns the path of the file.
-         *
-         * @return
-         *     The path of the file is returned.
-         */
-        std::string GetPath() const;
 
         /**
          * This function determines whether or not the given path string
@@ -291,6 +203,19 @@ namespace SystemAbstractions {
          *     directory for the process.
          */
         static void SetWorkingDirectory(const std::string& workingDirectory);
+
+        // IFileSystemEntry
+    public:
+        virtual bool IsExisting() override;
+        virtual bool IsDirectory() override;
+        virtual bool OpenReadOnly() override;
+        virtual void Close() override;
+        virtual bool OpenReadWrite() override;
+        virtual void Destroy() override;
+        virtual bool Move(const std::string& newPath) override;
+        virtual bool Copy(const std::string& destination) override;
+        virtual time_t GetLastModifiedTime() const override;
+        virtual std::string GetPath() const override;
 
         // IFile
     public:
